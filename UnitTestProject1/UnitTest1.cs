@@ -10,9 +10,11 @@ namespace UnitTestProject1
         [TestMethod]
         public void LoginTest()
         {
-            var session = new MonitorSession();
-            session.RequestVerificationCode += session_RequestVerificationCode;
-            session.Login("nvforest93@163.com", "haveatry");
+            using (var session = new MonitorSession())
+            {
+                session.RequestVerificationCode += session_RequestVerificationCode;
+                session.Login("nvforest93@163.com", "haveatry");
+            }
         }
 
         void session_RequestVerificationCode(object sender, RequestVerificationCodeEventArgs e)
