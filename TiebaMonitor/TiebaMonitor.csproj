@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UnexpectedDataException.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="ExtendedWebClient.cs">
       <SubType>Component</SubType>
     </Compile>

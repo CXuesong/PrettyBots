@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TiebaMonitor.Kernel {
+namespace UnitTestProject1.Properties {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace TiebaMonitor.Kernel {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Prompts {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Prompts() {
+        internal Resources() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace TiebaMonitor.Kernel {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TiebaMonitor.Kernel.Prompts", typeof(Prompts).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("UnitTestProject1.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,47 +61,12 @@ namespace TiebaMonitor.Kernel {
         }
         
         /// <summary>
-        ///   查找类似 登录失败。 的本地化字符串。
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
-        internal static string LoginException {
+        internal static System.Drawing.Bitmap f001 {
             get {
-                return ResourceManager.GetString("LoginException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 登录失败。错误代码：{0}。 的本地化字符串。
-        /// </summary>
-        internal static string LoginException_ErrorCode {
-            get {
-                return ResourceManager.GetString("LoginException_ErrorCode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 密码错误。 的本地化字符串。
-        /// </summary>
-        internal static string LoginException_Password {
-            get {
-                return ResourceManager.GetString("LoginException_Password", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 无效的用户名。 的本地化字符串。
-        /// </summary>
-        internal static string LoginException_UserName {
-            get {
-                return ResourceManager.GetString("LoginException_UserName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 接受到了预期之外格式的数据。 的本地化字符串。
-        /// </summary>
-        internal static string UnexpectedDataException {
-            get {
-                return ResourceManager.GetString("UnexpectedDataException", resourceCulture);
+                object obj = ResourceManager.GetObject("f001", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

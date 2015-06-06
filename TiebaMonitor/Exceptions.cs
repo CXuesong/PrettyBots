@@ -28,4 +28,26 @@ namespace TiebaMonitor.Kernel
             : base(info, context)
         { }
     }
+
+    /// <summary>
+    /// 表示因登录失败而引发的异常。
+    /// </summary>
+    public class LoginException : InvalidOperationException
+    {
+        public LoginException()
+            : this(Prompts.UnexpectedDataException)
+        { }
+
+        public LoginException(string message)
+            : base(message)
+        { }
+
+        public LoginException(string message, Exception inner)
+            : base(message, inner)
+        { }
+
+        public LoginException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        { }
+    }
 }
