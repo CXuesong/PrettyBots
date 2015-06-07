@@ -44,13 +44,13 @@ namespace UnitTestProject1
         public void ForumVisitTest()
         {
             var visitor = CreateVisitor();
-            LoginVisitor(visitor);
+            //LoginVisitor(visitor);
             var f = visitor.TiebaVisitor.Forum("化学");
             foreach (var t in f.Topics())
             {
                 Trace.WriteLine(t);
             }
-            visitor.Logout();
+            //visitor.Logout();
         }
     }
 }

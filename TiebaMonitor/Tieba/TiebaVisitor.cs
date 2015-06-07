@@ -16,7 +16,9 @@ namespace TiebaMonitor.Kernel.Tieba
         /// </summary>
         public ForumVisitor Forum(string name)
         {
-            return new ForumVisitor(name, Parent);
+            var f = new ForumVisitor(name, Parent);
+            f.Update();
+            return f;
         }
 
         internal TiebaVisitor(BaiduVisitor parent)

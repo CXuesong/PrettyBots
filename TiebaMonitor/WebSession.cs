@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Specialized;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace TiebaMonitor.Kernel
 {
@@ -39,6 +41,37 @@ namespace TiebaMonitor.Kernel
             if (this.CookieContainer != container)
             {
                 //TODO
+            }
+        }
+
+        public void SaveCookies(Stream s)
+        {
+            if (s == null) throw new ArgumentNullException("s");
+            var formatter = new BinaryFormatter();
+            if (CookieContainer != null) formatter.Serialize(s, CookieContainer);
+        }
+
+        public void SaveCookies(string path)
+        {
+            using (var fs = File.OpenWrite(path))
+                SaveCookies(fs);
+        }
+
+        public void LoadCookies(Stream s)
+        {
+            if (s == null) throw new ArgumentNullException("s");
+            var formatter = new BinaryFormatter();
+            CookieContainer = (CookieContainer)formatter.Deserialize(s);
+        }
+
+        public void LoadCookies(string path)
+        {
+            using (var fs = File.OpenRead(path))
+            {
+                if (fs.Length == 0)
+                    CookieContainer = new CookieContainer();
+                else
+                    LoadCookies(fs);
             }
         }
 
