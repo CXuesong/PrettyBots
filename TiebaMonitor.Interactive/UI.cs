@@ -394,7 +394,7 @@ namespace TiebaMonitor.Interactive
 
         public static string InputPassword(string prompt = null)
         {
-            Console.Write(prompt ?? "键入密码：");
+            Console.Write((prompt ?? "键入密码") + "：");
             var pass = "";
             UI.CursorLocked = true;
             while (true)

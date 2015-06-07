@@ -42,5 +42,20 @@ namespace TiebaMonitor.Kernel
             }
             return c;
         }
+
+        /// <summary>
+        /// 解析 HTML 实体表达式，并返回与之对应的原文本。
+        /// </summary>
+        public static string ParseHtmlEntities(string source)
+        {
+            if (string.IsNullOrEmpty(source)) return string.Empty;
+            var builder = new StringBuilder(source);
+            builder.Replace("&quot;", "\"");
+            builder.Replace("&apos;", "'");
+            builder.Replace("&lt;", "<");
+            builder.Replace("&gt;", ">");
+            builder.Replace("&amp;", "&");
+            return builder.ToString();
+        }
     }
 }
