@@ -17,30 +17,29 @@ namespace BaiduInterop.Interactive
             UI.Init();
             visitor = new BaiduVisitor();
             visitor.Session.RequestingVerificationCode += session_RequestVerificationCode;
-            AccountManagementRoutine();
+            var isFirstLoop = true;
             while (true)
             {
                 try
                 {
-                    while (true)
+                    if (isFirstLoop) AccountManagementRoutine();
+                    isFirstLoop = false;
+                    switch (UI.Input("操作", "S",
+                            "A", "账户管理",
+                            "S", "百度搜索",
+                            "P", "百度贴吧",
+                        "E", "退出"))
                     {
-                        switch (UI.Input("操作", "S",
-                                "A", "账户管理",
-                                "S", "百度搜索",
-                                "P", "百度贴吧",
-                            "E", "退出"))
-                        {
-                            case "A":
-                                AccountManagementRoutine();
-                                break;
-                            case "S":
-                                break;
-                            case "P":
-                                BaiduTiebaRoutine();
-                                break;
-                            case "E":
-                                return 0;
-                        }
+                        case "A":
+                            AccountManagementRoutine();
+                            break;
+                        case "S":
+                            break;
+                        case "P":
+                            BaiduTiebaRoutine();
+                            break;
+                        case "E":
+                            return 0;
                     }
                 }
                 catch (Exception ex)
@@ -55,13 +54,10 @@ namespace BaiduInterop.Interactive
         static void session_RequestVerificationCode(object sender, RequestingVerificationCodeEventArgs e)
         {
             byte[] data;
-            using (var client = new WebClient())
-                data = client.DownloadData(e.ImageUrl);
+            using (var client = new WebClient()) data = client.DownloadData(e.ImageUrl);
             using (var s = new MemoryStream(data, false))
             using (var bmp = new Bitmap(s))
-            {
                 UI.Print(AsciiArtGenerator.ConvertToAscii(bmp, Console.WindowWidth - 2));
-            }
             var vc = UI.Input("键入验证码");
             if (!string.IsNullOrEmpty(vc)) e.VerificationCode = vc;
         }
@@ -72,6 +68,7 @@ namespace BaiduInterop.Interactive
             UI.Print("=== 登录到：baidu.com ===");
             UI.Print("要取消，请直接按下回车键。");
             var userName = UI.Input("用户名");
+            if (string.IsNullOrWhiteSpace(userName)) return;
             var password = UI.InputPassword("密码");
             try
             {
@@ -86,7 +83,7 @@ namespace BaiduInterop.Interactive
 
         static void AccountManagementRoutine()
         {
-            SHOW_ACCOUNT:
+        SHOW_ACCOUNT:
             UI.Print();
             if (visitor.AccountInfo.IsLoggedIn)
                 UI.Print("您已经作为 {0} 登录至 baidu.com 。", visitor.AccountInfo.UserName);
@@ -142,7 +139,7 @@ namespace BaiduInterop.Interactive
             var forum = UI.PromptWait(() => visitor.TiebaVisitor.Forum(fn));
             if (!forum.IsExists)
             {
-                UI.Print("贴吧不存在。");
+                UI.Print(string.IsNullOrEmpty(forum.QueryResult) ? "贴吧不存在。" : forum.QueryResult);
                 goto INPUT_FN;
             }
             if (forum.IsRedirected) UI.Print("重定向至：{0}。", forum.Name);
@@ -156,24 +153,9 @@ namespace BaiduInterop.Interactive
                     "B", Prompts.Back))
                 {
                     case "L":
-                        var topics = forum.Topics().ToList();
-                        int i = 0;
-                        foreach (var t in topics)
-                        {
-                            PrintTopic(i, t);
-                            i++;
-                        }
-                        while (true)
-                        {
-                            var sel = UI.Input<int>("键入编号以查看帖子", "取消");
-                            if (sel == null) break;
-                            if (sel < 0 || sel >= topics.Count)
-                            {
-                                UI.Print(Prompts.NumberOverflow);
-                                continue;
-                            }
-                            TiebaTopicRoutine(topics[sel.Value]);
-                        }
+                        var viewer = new EnumerableViewer<TopicVisitor>(
+                            forum.Topics(), ForumViewer_OnViewItem, ForumViewer_OnItemSelected);
+                        viewer.Show();
                         break;
                     case "B":
                         goto INPUT_FN;
@@ -181,29 +163,58 @@ namespace BaiduInterop.Interactive
             }
         }
 
-        private static void PrintTopic(int index, TopicVisitor t)
+        private static void ForumViewer_OnViewItem(int index, TopicVisitor t)
         {
             var marks = "";
             if (t.IsTop) marks += "^";
             if (t.IsGood) marks += "*";
-            UI.Write("{0,2} ", index);
-            UI.Print("[{0,2}][{1,4}] {2}\n          by {3}\tRe by {4} @ {5}",
+            UI.Write("{0}\t", index);
+            UI.Print("{0,2} [{1,4}] {2}\n          by {3}\tRe by {4} @ {5}",
                 marks, t.RepliesCount, t.Title,
                 t.AuthorName, t.LastReplyer, t.LastReplyTime);
         }
 
-        private static void TiebaTopicRoutine(TopicVisitor t)
+        private static void ForumViewer_OnItemSelected(TopicVisitor t)
         {
             var marks = "";
             if (t.IsTop) marks += "^";
             if (t.IsGood) marks += "*";
-            UI.Print(t.Title);
-            UI.Print("[{0}] {1} [By {2}][Re {3}]", marks, t.Title, t.AuthorName, t.RepliesCount);
-            foreach (var p in t.Posts())
+            UI.Print("[{0}] {1}\n[By {2}][Re {3}]", marks, t.Title, t.AuthorName, t.RepliesCount);
+            UI.Print(t.PreviewText);
+            while (true)
             {
-                UI.Print("#{0, 4} [By {1}]", p.Floor, p.AuthorName);
-                UI.Print("    " + Utility.StringEllipsis(p.Content, 20));
+                switch (UI.Input(Prompts.SelectAnOperation, "L",
+                    "L", "查看帖子",
+                    "B", Prompts.Back))
+                {
+                    case "L":
+                        var viewer = new EnumerableViewer<PostVisitor>(t.Posts(),
+                            TopicViewer_OnViewItem, TopicViewer_OnItemSelected);
+                        viewer.Show();
+                        break;
+                    case "B":
+                        return;
+                }
             }
+        }
+
+        private static void TopicViewer_OnViewItem(int index, PostVisitor p)
+        {
+            UI.Print("{0}\t{1}楼 [By {2}] [Re {3}]", index, p.Floor, p.AuthorName, p.CommentsCount);
+            //UI.PrintToMargin("    " + Utility.PrettyParseHtml(p.Content, true));
+            UI.Print(Utility.PrettyParseHtml(p.Content, PrettyParseHtmlOptions.DefaultCompact));
+            UI.Print();
+        }
+
+        private static void TopicViewer_OnItemSelected(PostVisitor p)
+        {
+            UI.Print("[{0}F] [By {1}] [@{2}] [Re {3}]", p.Floor, p.AuthorName, p.SubmissionTime, p.CommentsCount);
+            using (var client = new WebClient())
+            {
+                var pphOptions = new PrettyParseHtmlOptions(false, true, client, Console.WindowWidth - 2);
+                UI.Print(Utility.PrettyParseHtml(p.Content, pphOptions));
+            }
+            UI.Print();
         }
     }
 }

@@ -120,6 +120,9 @@
   <data name="Back" xml:space="preserve">
     <value>返回</value>
   </data>
+  <data name="EnumerableViewEOF" xml:space="preserve">
+    <value>== EOF ==</value>
+  </data>
   <data name="EnumerableViewNavigator" xml:space="preserve">
     <value>已显示：{0}项。操作：[空格]下一页 [回车]下一项 [Esc]返回 [→]选择项目</value>
   </data>

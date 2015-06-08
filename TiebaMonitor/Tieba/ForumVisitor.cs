@@ -20,6 +20,8 @@ namespace TiebaMonitor.Kernel.Tieba
 
         public bool IsExists { get; private set; }
 
+        public string QueryResult { get; private set; }
+
         public long Id { get; private set; }
 
         public string Name { get; private set; }
@@ -65,11 +67,11 @@ namespace TiebaMonitor.Kernel.Tieba
                 {
                     var linkNode = eachLi.SelectSingleNode(".//a[@class='j_th_tit']");
                     if (linkNode == null) continue;
-                    var title = Utility.HtmlDecode(linkNode.GetAttributeValue("title", ""));
+                    var title = HtmlEntity.DeEntitize(linkNode.GetAttributeValue("title", ""));
                     href = linkNode.GetAttributeValue("href", "");
                     if (string.IsNullOrEmpty(href)) continue;
                     var threadTextNode = eachLi.SelectSingleNode(".//div[@class='threadlist_text']");
-                    var preview = threadTextNode == null ? null : Utility.HtmlDecode(threadTextNode.InnerText.Trim());
+                    var preview = threadTextNode == null ? null : Utility.StringCollapse(HtmlEntity.DeEntitize(threadTextNode.InnerText.Trim()));
                     var threadDetailNode = eachLi.SelectSingleNode(".//div[contains(@class, 'threadlist_detail')]");
                     string replyer = null, replyTime = null;
                     if (threadDetailNode != null)
@@ -80,7 +82,7 @@ namespace TiebaMonitor.Kernel.Tieba
                         if (replyerNode != null) replyer = replyerNode.InnerText.Trim();
                         if (replyTimeNode != null) replyTime = replyTimeNode.InnerText.Trim();
                     }
-                    var dataFieldStr = Utility.HtmlDecode(eachLi.GetAttributeValue("data-field", ""));
+                    var dataFieldStr = HtmlEntity.DeEntitize(eachLi.GetAttributeValue("data-field", ""));
                     //Debug.Print(dataFieldStr);
                     //{"author_name":"Mark5ds","id":3540683824,"first_post_id":63285795913,
                     //"reply_num":1,"is_bakan":0,"vid":"","is_good":0,"is_top":0,"is_protal":0}
@@ -91,7 +93,6 @@ namespace TiebaMonitor.Kernel.Tieba
                         replyer, replyTime, Parent);
                 }
                 //解析下一页
-                yield break;
                 var pagerNode = doc.GetElementbyId("frs_list_pager");
                 if (pagerNode == null) yield break;
                 var nextPageNode = pagerNode.SelectSingleNode("./a[@class='next']");
@@ -116,14 +117,17 @@ namespace TiebaMonitor.Kernel.Tieba
             using (var s = Parent.Session.CreateWebClient())
                 doc.LoadHtml(s.DownloadString(string.Format(ForumUrlFormat, QueryName)));
             var noResultTipNode =
-                doc.DocumentNode.SelectSingleNode("//div[@class='search_noresult']")
+                doc.GetElementbyId("forum_not_exist")
+                ?? doc.DocumentNode.SelectSingleNode("//div[@class='search_noresult']")
                 ?? doc.DocumentNode.SelectSingleNode("//div[@class='s_make_bar']");
             if (noResultTipNode != null)
             {
                 //无结果。
+                QueryResult = noResultTipNode.InnerText.Trim();
                 IsExists = false;
                 return;
             }
+            QueryResult = string.Empty;
             var redirectTipNode = doc.DocumentNode.SelectSingleNode("//div[@class='polysemant-redirect-section']");
             //检查重定向
             IsRedirected = (redirectTipNode != null);
@@ -211,7 +215,7 @@ namespace TiebaMonitor.Kernel.Tieba
             //"post_no":966,"type":"0","comment_num":2,"props":null,"post_index":1}}
             foreach (var eachNode in postListNode.SelectNodes("./div[@data-field]"))
             {
-                var pd = JObject.Parse(Utility.HtmlDecode(eachNode.GetAttributeValue("data-field", "")));
+                var pd = JObject.Parse(HtmlEntity.DeEntitize(eachNode.GetAttributeValue("data-field", "")));
                 var pdc = pd["content"];
                 var id = (long) pdc["post_id"];
                 var content = (string) pdc["content"];

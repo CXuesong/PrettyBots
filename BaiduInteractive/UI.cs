@@ -244,6 +244,21 @@ namespace BaiduInterop.Interactive
         }
 
         /// <summary>
+        /// 输出文本直到窗口的右边缘。
+        /// </summary>
+        public static void PrintToMargin(string v)
+        {
+            var width = Console.BufferWidth - 2;
+            foreach (var c in v)
+            {
+                if (c == '\r' || c == '\n') break;
+                if (Console.CursorLeft >= width) break;
+                Console.Write(c);
+            }
+            Console.WriteLine();
+        }
+
+        /// <summary>
         /// 输出字符串。
         /// </summary>
         public static void Write(string v)

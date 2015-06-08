@@ -1,8 +1,43 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Xml;
+using System.Xml.Linq;
+using HtmlAgilityPack;
 
 namespace BaiduInterop.Interactive
 {
+    public class PrettyParseHtmlOptions
+    {
+        public static PrettyParseHtmlOptions Default = new PrettyParseHtmlOptions(false);
+
+        public static PrettyParseHtmlOptions DefaultCompact = new PrettyParseHtmlOptions(true);
+
+        public bool Compact { get; set; }
+
+        public bool LoadImages { get; set; }
+
+        public WebClient WebClient { get; set; }
+
+        public int ImageWidth { get; set; }
+
+        public PrettyParseHtmlOptions(bool compact, bool loadImages, WebClient webClient, int imageWidth)
+        {
+            Compact = compact;
+            LoadImages = loadImages;
+            WebClient = webClient;
+            ImageWidth = imageWidth;
+        }
+
+        public PrettyParseHtmlOptions(bool compact)
+            : this(compact, false, null, 0)
+        { }
+
+    }
+
     class Utility
     {
         private static string _ApplicationTitle;
@@ -65,6 +100,71 @@ namespace BaiduInterop.Interactive
         public static string FallbackUrl(string url)
         {
             throw new NotImplementedException();
+        }
+
+        public static string PrettyParseHtml(string html)
+        {
+            return PrettyParseHtml(html, PrettyParseHtmlOptions.Default);
+        }
+
+        public static string PrettyParseHtml(string html, PrettyParseHtmlOptions options)
+        {
+            if (options == null) options = PrettyParseHtmlOptions.Default;
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            return PrettyParseHtml(doc.DocumentNode, options);
+        }
+
+        private static string PrettyParseHtml(HtmlNode node, PrettyParseHtmlOptions opts)
+        {
+            if (node.NodeType == HtmlNodeType.Comment) return string.Empty;
+            if (node.NodeType == HtmlNodeType.Text) return node.InnerText;
+            string s = null, pre = null, post = null;
+            switch (node.Name)
+            {
+                case "p":
+                    post = "\n";
+                    break;
+                case "br":
+                    return "\n";
+                case "img":
+                    var src = node.GetAttributeValue("src", "");
+                    if (string.IsNullOrWhiteSpace(src)) return "[]";
+                    if (opts.Compact) return "[图]";
+                    s = "[" + node.GetAttributeValue("src", "") + "]";
+                    if (opts.LoadImages)
+                    {
+                        if (opts.WebClient == null) throw new InvalidOperationException();
+                        try
+                        {
+                            var data = opts.WebClient.DownloadData(src);
+                            using (var ms = new MemoryStream(data, false))
+                            using (var bmp = new Bitmap(ms))
+                                s += "\n" + (AsciiArtGenerator.ConvertToAscii(bmp, opts.ImageWidth)) + "\n";
+                        }
+                        catch (WebException)
+                        {
+                        }
+                        catch (NotSupportedException)
+                        {
+                        }
+                    }
+                    return s;
+                case "a":
+                    var href = node.GetAttributeValue("href", "");
+                    if (!string.IsNullOrWhiteSpace(href))
+                        return opts.Compact ?
+                            "[" + node.InnerText + "]" 
+                            : "[" + href + "|" + node.InnerText + "]";
+                    break;
+                case "strong":
+                    pre = "''";
+                    post = "''";
+                    break;
+            }
+            if (opts.Compact)
+                return pre + node.InnerText + post;
+            return pre + string.Join("", from n in node.ChildNodes select PrettyParseHtml(n, opts)) + post;
         }
     }
 }

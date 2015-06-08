@@ -70,6 +70,15 @@ namespace BaiduInterop.Interactive {
         }
         
         /// <summary>
+        ///   查找类似 == EOF == 的本地化字符串。
+        /// </summary>
+        internal static string EnumerableViewEOF {
+            get {
+                return ResourceManager.GetString("EnumerableViewEOF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 已显示：{0}项。操作：[空格]下一页 [回车]下一项 [Esc]返回 [→]选择项目 的本地化字符串。
         /// </summary>
         internal static string EnumerableViewNavigator {

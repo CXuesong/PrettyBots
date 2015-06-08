@@ -45,20 +45,20 @@ namespace TiebaMonitor.Kernel
             return c;
         }
 
-        /// <summary>
-        /// 解析 HTML 实体表达式，并返回与之对应的原文本。
-        /// </summary>
-        public static string HtmlDecode(string source)
-        {
-            if (string.IsNullOrEmpty(source)) return string.Empty;
-            var builder = new StringBuilder(source);
-            builder.Replace("&quot;", "\"");
-            builder.Replace("&apos;", "'");
-            builder.Replace("&lt;", "<");
-            builder.Replace("&gt;", ">");
-            builder.Replace("&amp;", "&");
-            return builder.ToString();
-        }
+        ///// <summary>
+        ///// 解析 HTML 实体表达式，并返回与之对应的原文本。
+        ///// </summary>
+        //public static string HtmlDecode(string source)
+        //{
+        //    if (string.IsNullOrEmpty(source)) return string.Empty;
+        //    var builder = new StringBuilder(source);
+        //    builder.Replace("&quot;", "\"");
+        //    builder.Replace("&apos;", "'");
+        //    builder.Replace("&lt;", "<");
+        //    builder.Replace("&gt;", ">");
+        //    builder.Replace("&amp;", "&");
+        //    return builder.ToString();
+        //}
 
         public static JObject FindJsonAssignment(string source, string lhs, bool noException = false)
         {
@@ -71,6 +71,28 @@ namespace TiebaMonitor.Kernel
                 throw new UnexpectedDataException();
             }
             return JObject.Parse(result.Groups[1].Value);
+        }
+
+        public static string StringCollapse(string source)
+        {
+            if (string.IsNullOrWhiteSpace(source)) return string.Empty;
+            var builder = new StringBuilder();
+            var lastIsWhiteSpace = false;
+            foreach (var c in source)
+            {
+                if (char.IsWhiteSpace(c))
+                {
+                    if (lastIsWhiteSpace) continue;
+                    lastIsWhiteSpace = true;
+                    builder.Append(" ");
+                }
+                else
+                {
+                    lastIsWhiteSpace = false;
+                    builder.Append(c);
+                }
+            }
+            return builder.ToString();
         }
     }
 }
