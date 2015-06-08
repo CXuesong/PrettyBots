@@ -70,6 +70,15 @@ namespace BaiduInterop.Interactive {
         }
         
         /// <summary>
+        ///   查找类似 已显示：{0}项。操作：[空格]下一页 [回车]下一项 [Esc]返回 [→]选择项目 的本地化字符串。
+        /// </summary>
+        internal static string EnumerableViewNavigator {
+            get {
+                return ResourceManager.GetString("EnumerableViewNavigator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 贴吧名称 的本地化字符串。
         /// </summary>
         internal static string InputForumName {
@@ -97,7 +106,7 @@ namespace BaiduInterop.Interactive {
         }
         
         /// <summary>
-        ///   查找类似 数值过大。 的本地化字符串。
+        ///   查找类似 数值越界。 的本地化字符串。
         /// </summary>
         internal static string NumberOverflow {
             get {
@@ -111,6 +120,15 @@ namespace BaiduInterop.Interactive {
         internal static string Over {
             get {
                 return ResourceManager.GetString("Over", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请稍后…… 的本地化字符串。
+        /// </summary>
+        internal static string PleaseWait {
+            get {
+                return ResourceManager.GetString("PleaseWait", resourceCulture);
             }
         }
         

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Collections.Specialized;
+using Newtonsoft.Json.Linq;
 
 namespace TiebaMonitor.Kernel
 {
@@ -46,7 +48,7 @@ namespace TiebaMonitor.Kernel
         /// <summary>
         /// 解析 HTML 实体表达式，并返回与之对应的原文本。
         /// </summary>
-        public static string ParseHtmlEntities(string source)
+        public static string HtmlDecode(string source)
         {
             if (string.IsNullOrEmpty(source)) return string.Empty;
             var builder = new StringBuilder(source);
@@ -56,6 +58,19 @@ namespace TiebaMonitor.Kernel
             builder.Replace("&gt;", ">");
             builder.Replace("&amp;", "&");
             return builder.ToString();
+        }
+
+        public static JObject FindJsonAssignment(string source, string lhs, bool noException = false)
+        {
+            //TODO 检查字段内部是否可能出现分号。
+            var forumDataMatcher = new Regex(lhs + @"\s=\s(\{.*?\});");
+            var result = forumDataMatcher.Match(source);
+            if (!result.Success)
+            {
+                if (noException) return null;
+                throw new UnexpectedDataException();
+            }
+            return JObject.Parse(result.Groups[1].Value);
         }
     }
 }

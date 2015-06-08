@@ -24,12 +24,30 @@ namespace BaiduInterop.Interactive
             }
         }
 
+        private class LockCursorToken : IDisposable
+        {
+            public void Dispose()
+            {
+                UI.CursorLocked = false;
+            }
+        }
+
 
         private static bool m_CursorLocked;
         public static bool CursorLocked
         {
             get { return m_CursorLocked; }
             set { m_CursorLocked = value; }
+        }
+
+        private static LockCursorToken _LockCursorToken = new LockCursorToken();
+        /// <summary>
+        /// 配合 using 语句使用，用于在 using 块中锁定控制台的指针位置。
+        /// </summary>
+        public static IDisposable LockCursor()
+        {
+            CursorLocked = true;
+            return _LockCursorToken;
         }
 
         /// <summary>
@@ -220,22 +238,39 @@ namespace BaiduInterop.Interactive
         /// </summary>
         public static void Print(object v)
         {
-            if (m_CursorLocked)
-                PushCursor();
+            if (m_CursorLocked) PushCursor();
             Console.WriteLine(v);
-            if (m_CursorLocked)
-                PopCursor();
+            if (m_CursorLocked) PopCursor();
         }
+
+        /// <summary>
+        /// 输出字符串。
+        /// </summary>
+        public static void Write(string v)
+        {
+            if (m_CursorLocked) PushCursor();
+            Console.Write(v);
+            if (m_CursorLocked) PopCursor();
+        }
+
+        /// <summary>
+        /// 输出字符串。
+        /// </summary>
+        public static void Write(string format, params object[] args)
+        {
+            if (m_CursorLocked) PushCursor();
+            Console.Write(format, args);
+            if (m_CursorLocked) PopCursor();
+        }
+
         /// <summary>
         /// 输出字符串。
         /// </summary>
         public static void Print(string v)
         {
-            if (m_CursorLocked)
-                PushCursor();
+            if (m_CursorLocked) PushCursor();
             Console.WriteLine(v);
-            if (m_CursorLocked)
-                PopCursor();
+            if (m_CursorLocked) PopCursor();
         }
 
         /// <summary>
@@ -243,11 +278,9 @@ namespace BaiduInterop.Interactive
         /// </summary>
         public static void Print(string format, params object[] args)
         {
-            if (m_CursorLocked)
-                PushCursor();
+            if (m_CursorLocked) PushCursor();
             Console.WriteLine(format, args);
-            if (m_CursorLocked)
-                PopCursor();
+            if (m_CursorLocked) PopCursor();
         }
 
         /// <summary>
@@ -259,13 +292,9 @@ namespace BaiduInterop.Interactive
             foreach (var eachItem in v)
             {
                 if (isFirst)
-                {
                     isFirst = false;
-                }
                 else
-                {
                     Console.Write(", ");
-                }
                 Console.Write(eachItem);
             }
             Console.WriteLine();
@@ -380,32 +409,55 @@ namespace BaiduInterop.Interactive
             Console.ReadKey();
         }
 
+        public static void PromptWait(Action action)
+        {
+            using (LockCursor())
+            {
+                Print(Prompts.PleaseWait);
+                action();
+                Print();
+            }
+        }
+
+        public static T PromptWait<T>(Func<T> action)
+        {
+            using (LockCursor())
+            {
+                Print(Prompts.PleaseWait);
+                var result = action();
+                Print();
+                return result;
+            }
+        }
+
         public static string InputPassword(string prompt = null)
         {
             Console.Write((prompt ?? "键入密码") + "：");
             var pass = "";
-            UI.CursorLocked = true;
-            while (true)
+            using (LockCursor())
             {
-                UI.Print("[已键入{0}字符]", pass.Length);
-                var key = Console.ReadKey(true);
-                switch (key.Key)
+                while (true)
                 {
-                    case ConsoleKey.Enter:
-                        UI.Print();
-                        UI.Print("[已键入]");
-                        UI.CursorLocked = false;
-                        UI.Print();
-                        return pass;
-                    case ConsoleKey.Backspace:
-                        if (pass.Length > 0) pass = pass.Substring(0, pass.Length - 1);
-                        break;
-                    case ConsoleKey.Escape:
-                        pass = "";
-                        break;
-                    default:
-                        if (key.KeyChar != '\0') pass += key.KeyChar;
-                        break;
+                    UI.Print("[已键入{0}字符]", pass.Length);
+                    var key = Console.ReadKey(true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.Enter:
+                            UI.Print();
+                            UI.Print("[已键入]");
+                            UI.CursorLocked = false;
+                            UI.Print();
+                            return pass;
+                        case ConsoleKey.Backspace:
+                            if (pass.Length > 0) pass = pass.Substring(0, pass.Length - 1);
+                            break;
+                        case ConsoleKey.Escape:
+                            pass = "";
+                            break;
+                        default:
+                            if (key.KeyChar != '\0') pass += key.KeyChar;
+                            break;
+                    }
                 }
             }
         }

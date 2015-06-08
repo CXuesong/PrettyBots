@@ -39,6 +39,14 @@ namespace TiebaMonitor.Kernel
             UserName = node.InnerText;
         }
 
+        public override string ToString()
+        {
+            if (IsLoggedIn)
+                return "已登录：" + UserName;
+            else
+                return "未登录";
+        }
+
         internal BaiduAccountInfo(BaiduVisitor parent)
             : base(parent)
         {

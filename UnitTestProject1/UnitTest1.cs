@@ -22,18 +22,26 @@ namespace UnitTestProject1
             return s;
         }
 
-        void LoginVisitor(BaiduVisitor v)
+        void LoginVisitor(BaiduVisitor v, bool fromCredentials = false)
         {
-            var cred = XDocument.Load("_credentials.xml");
-            var login = cred.Root.Element("login");
-            v.Login((string) login.Attribute("username"), (string) login.Attribute("password"));
+            if (fromCredentials)
+            {
+                var cred = XDocument.Load("_credentials.xml");
+                var login = cred.Root.Element("login");
+                v.Login((string) login.Attribute("username"), (string) login.Attribute("password"));
+            }
+            else
+            {
+                v.Session.LoadCookies("../../../BaiduInteractive/bin/Debug/BDICookies.bin");
+                Trace.WriteLine(v.AccountInfo);
+            }
         }
 
         [TestMethod]
         public void LoginTest()
         {
             var visitor = CreateVisitor();
-            LoginVisitor(visitor);
+            LoginVisitor(visitor, true);
             Assert.IsTrue(visitor.AccountInfo.IsLoggedIn);
             Trace.WriteLine(visitor.AccountInfo.UserName);
             visitor.Logout();
@@ -44,7 +52,7 @@ namespace UnitTestProject1
         public void ForumVisitTest()
         {
             var visitor = CreateVisitor();
-            //LoginVisitor(visitor);
+            LoginVisitor(visitor);
             var f = visitor.TiebaVisitor.Forum("化学");
             foreach (var t in f.Topics())
             {

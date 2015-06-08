@@ -43,5 +43,28 @@ namespace BaiduInterop.Interactive
                 return _ProductVersion;
             }
         }
+
+        public static string StringEllipsis(string source, int length)
+        {
+            if (length < 3) throw new ArgumentOutOfRangeException("length");
+            if (string.IsNullOrEmpty(source)) return string.Empty;
+            if (source.Length <= length) return source;
+            return source.Substring(0, length - 3) + "...";
+        }
+
+        public static string PadString(string s, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 回退指定的 Url。例如，将 http://abc.def/abc/def 回退为 http://abc.def/abc 。
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public static string FallbackUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

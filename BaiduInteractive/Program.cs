@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Net;
 using TiebaMonitor.Kernel;
+using TiebaMonitor.Kernel.Tieba;
 
 namespace BaiduInterop.Interactive
 {
@@ -37,7 +40,6 @@ namespace BaiduInterop.Interactive
                                 break;
                             case "E":
                                 return 0;
-                                break;
                         }
                     }
                 }
@@ -52,16 +54,13 @@ namespace BaiduInterop.Interactive
 
         static void session_RequestVerificationCode(object sender, RequestingVerificationCodeEventArgs e)
         {
+            byte[] data;
             using (var client = new WebClient())
+                data = client.DownloadData(e.ImageUrl);
+            using (var s = new MemoryStream(data, false))
+            using (var bmp = new Bitmap(s))
             {
-                using (var s = client.OpenRead(e.ImageUrl))
-                {
-                    // ReSharper disable once AssignNullToNotNullAttribute
-                    using (var bmp = new Bitmap(s))
-                    {
-                        UI.Print(bmp.ASCIIFilter(2, 5));
-                    }
-                }
+                UI.Print(AsciiArtGenerator.ConvertToAscii(bmp, Console.WindowWidth - 2));
             }
             var vc = UI.Input("键入验证码");
             if (!string.IsNullOrEmpty(vc)) e.VerificationCode = vc;
@@ -71,6 +70,7 @@ namespace BaiduInterop.Interactive
         {
         BEGIN:
             UI.Print("=== 登录到：baidu.com ===");
+            UI.Print("要取消，请直接按下回车键。");
             var userName = UI.Input("用户名");
             var password = UI.InputPassword("密码");
             try
@@ -82,25 +82,27 @@ namespace BaiduInterop.Interactive
                 UI.PrintError(ex);
                 goto BEGIN;
             }
-            UI.Print("已作为 {0} 登录 baidu.com 。", visitor.AccountInfo.UserName);
         }
 
         static void AccountManagementRoutine()
         {
+            SHOW_ACCOUNT:
+            UI.Print();
             if (visitor.AccountInfo.IsLoggedIn)
-                UI.Print("您已经登录。\n用户名：{0}", visitor.AccountInfo.UserName);
+                UI.Print("您已经作为 {0} 登录至 baidu.com 。", visitor.AccountInfo.UserName);
             else
                 UI.Print("您尚未登录。");
             while (true)
             {
                 switch (UI.Input(Prompts.SelectAnOperation, "B",
                     "L", visitor.AccountInfo.IsLoggedIn ? "注销" : "登录",
+                    "SS", "保存会话",
+                    "LS", "载入会话",
                     "B", "返回"))
                 {
                     case "L":
                         if (visitor.AccountInfo.IsLoggedIn)
                         {
-                            visitor.Logout();
                             if (UI.Confirm("确实要注销吗？"))
                             {
                                 visitor.Logout();
@@ -111,7 +113,20 @@ namespace BaiduInterop.Interactive
                         {
                             LoginRoutine();
                         }
+                        goto SHOW_ACCOUNT;
+                    case "SS":
+                        using (var fs = File.OpenWrite(UI.InputFile("BDICookies.bin")))
+                        {
+                            visitor.Session.SaveCookies(fs);
+                        }
                         break;
+                    case "LS":
+                        using (var fs = File.OpenRead(UI.InputFile("BDICookies.bin")))
+                        {
+                            visitor.Session.LoadCookies(fs);
+                        }
+                        visitor.AccountInfo.Update();
+                        goto SHOW_ACCOUNT;
                     case "B":
                         return;
                 }
@@ -123,8 +138,8 @@ namespace BaiduInterop.Interactive
         INPUT_FN:
             UI.Print();
             var fn = UI.Input(Prompts.InputForumName, "化学");
-            if (string.IsNullOrEmpty(fn)) return;
-            var forum = visitor.TiebaVisitor.Forum(fn);
+            if (string.IsNullOrWhiteSpace(fn)) return;
+            var forum = UI.PromptWait(() => visitor.TiebaVisitor.Forum(fn));
             if (!forum.IsExists)
             {
                 UI.Print("贴吧不存在。");
@@ -141,20 +156,53 @@ namespace BaiduInterop.Interactive
                     "B", Prompts.Back))
                 {
                     case "L":
-                        var topics = forum.Topics();
+                        var topics = forum.Topics().ToList();
+                        int i = 0;
                         foreach (var t in topics)
                         {
-                            var marks = "";
-                            if (t.IsTop) marks += "^";
-                            if (t.IsGood) marks += "*";
-                            UI.Print("[{0,2}][{1,4}] {2}\n          by {3}\tRe by {4} @ {5}",
-                                marks, t.RepliesCount, t.Title,
-                                t.AuthorName, t.LastReplyer, t.LastReplyTime);
+                            PrintTopic(i, t);
+                            i++;
+                        }
+                        while (true)
+                        {
+                            var sel = UI.Input<int>("键入编号以查看帖子", "取消");
+                            if (sel == null) break;
+                            if (sel < 0 || sel >= topics.Count)
+                            {
+                                UI.Print(Prompts.NumberOverflow);
+                                continue;
+                            }
+                            TiebaTopicRoutine(topics[sel.Value]);
                         }
                         break;
                     case "B":
                         goto INPUT_FN;
                 }
+            }
+        }
+
+        private static void PrintTopic(int index, TopicVisitor t)
+        {
+            var marks = "";
+            if (t.IsTop) marks += "^";
+            if (t.IsGood) marks += "*";
+            UI.Write("{0,2} ", index);
+            UI.Print("[{0,2}][{1,4}] {2}\n          by {3}\tRe by {4} @ {5}",
+                marks, t.RepliesCount, t.Title,
+                t.AuthorName, t.LastReplyer, t.LastReplyTime);
+        }
+
+        private static void TiebaTopicRoutine(TopicVisitor t)
+        {
+            var marks = "";
+            if (t.IsTop) marks += "^";
+            if (t.IsGood) marks += "*";
+            UI.Print(t.Title);
+            UI.Print("[{0}] {1} [By {2}][Re {3}]", marks, t.Title, t.AuthorName, t.RepliesCount);
+            foreach (var p in t.Posts())
+            {
+                UI.Print("#{0, 4} [By {1}]", p.Floor, p.AuthorName);
+                UI.Print("    " + Utility.StringEllipsis(p.Content, 20));
             }
         }
     }

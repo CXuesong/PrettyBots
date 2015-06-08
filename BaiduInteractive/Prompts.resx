@@ -120,6 +120,9 @@
   <data name="Back" xml:space="preserve">
     <value>返回</value>
   </data>
+  <data name="EnumerableViewNavigator" xml:space="preserve">
+    <value>已显示：{0}项。操作：[空格]下一页 [回车]下一项 [Esc]返回 [→]选择项目</value>
+  </data>
   <data name="InputForumName" xml:space="preserve">
     <value>贴吧名称</value>
   </data>
@@ -130,10 +133,13 @@
     <value>列出主题</value>
   </data>
   <data name="NumberOverflow" xml:space="preserve">
-    <value>数值过大。</value>
+    <value>数值越界。</value>
   </data>
   <data name="Over" xml:space="preserve">
     <value>结束</value>
+  </data>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>请稍后……</value>
   </data>
   <data name="PressAnyKeyToContinue" xml:space="preserve">
     <value>请按任意键继续。</value>

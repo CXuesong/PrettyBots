@@ -42,7 +42,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExtBitmap.cs" />
+    <Compile Include="AsciiArtGenerator.cs" />
+    <Compile Include="EnumerableViewer.cs" />
     <Compile Include="Program.cs">
       <SubType>
       </SubType>
