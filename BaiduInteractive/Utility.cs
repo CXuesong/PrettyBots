@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 using HtmlAgilityPack;
+using System.Text;
 
 namespace BaiduInterop.Interactive
 {
@@ -140,7 +141,7 @@ namespace BaiduInterop.Interactive
                             var data = opts.WebClient.DownloadData(src);
                             using (var ms = new MemoryStream(data, false))
                             using (var bmp = new Bitmap(ms))
-                                s += "\n" + (AsciiArtGenerator.ConvertToAscii(bmp, opts.ImageWidth)) + "\n";
+                                s += "\n" + (AsciiArtGenerator.ConvertToAscii(bmp, opts.ImageWidth, true)) + "\n";
                         }
                         catch (WebException)
                         {
@@ -162,9 +163,34 @@ namespace BaiduInterop.Interactive
                     post = "''";
                     break;
             }
-            if (opts.Compact)
-                return pre + node.InnerText + post;
-            return pre + string.Join("", from n in node.ChildNodes select PrettyParseHtml(n, opts)) + post;
+            var builder = new StringBuilder(pre);
+            var isNewLine = false;
+            foreach (var n in node.ChildNodes)
+            {
+                var ns = PrettyParseHtml(n, opts);
+                if (opts.Compact)
+                {
+                    if (string.IsNullOrWhiteSpace(ns))
+                    {
+                        if (!isNewLine)
+                        {
+                            builder.AppendLine();
+                            isNewLine = true;
+                        }
+                    }
+                    else
+                    {
+                        isNewLine = false;
+                        builder.Append(ns);
+                    }
+                }
+                else
+                {
+                    builder.Append(ns);
+                }
+            }
+            builder.Append(post);
+            return builder.ToString();
         }
     }
 }

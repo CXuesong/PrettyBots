@@ -90,7 +90,7 @@ namespace TiebaMonitor.Kernel.Tieba
                     yield return new TopicVisitor((long) jo["id"], title,
                         (int) jo["is_good"] != 0, (int) jo["is_top"] != 0,
                         (string) jo["author_name"], preview, (int) jo["reply_num"],
-                        replyer, replyTime, Parent);
+                        replyer, replyTime, this.Id, Parent);
                 }
                 //解析下一页
                 var pagerNode = doc.GetElementbyId("frs_list_pager");
@@ -150,135 +150,6 @@ namespace TiebaMonitor.Kernel.Tieba
             : base(parent)
         {
             QueryName = queryName;
-        }
-    }
-
-    public class TopicVisitor : BaiduChildVisitor
-    {
-        const string TopicUrlFormat = "http://tieba.baidu.com/p/{0}?ie=utf-8";
-
-        public bool IsExists { get; private set; }
-
-        public long Id { get; private set; }
-
-        public string Title { get; private set; }
-
-        public string AuthorName { get; private set; }
-
-        public string PreviewText { get; private set; }
-
-        public bool IsGood { get; private set; }
-
-        public bool IsTop { get; private set; }
-
-        public int RepliesCount { get; private set; }
-
-        public string LastReplyer { get; private set; }
-
-        public string LastReplyTime { get; private set; }
-
-        public void Update()
-        {
-            var doc = new HtmlDocument();
-            using (var s = Parent.Session.CreateWebClient())
-                doc.LoadHtml(s.DownloadString(string.Format(TopicUrlFormat, Id)));
-            var errorTextNode = doc.GetElementbyId("errorText");
-            if (errorTextNode != null)
-            {
-                Debug.Print("pid={0}, {1}", Id, errorTextNode.InnerText);
-                IsExists = false;
-                return;
-            }
-            var topicData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.thread");
-            //PageData.thread = 
-            //{ author: "来自草原的雪狼", thread_id: 3369574832, 
-            //title: "【珈瑚传奇】猫头鹰王国之战火纷飞", reply_num: 506,
-            //thread_type: "0",
-            //topic: { is_topic: false, topic_type: false, is_live_post: false,
-            //is_lpost: false, lpost_type: 0 }, /*null,*/ is_ad: 0, video_url: "" };
-            AuthorName = (string)topicData["author"];
-            Id = (long)topicData["thread_id"];
-            Title = (string)topicData["title"];
-            RepliesCount = (int)topicData["reply_num"];
-        }
-
-        public IEnumerable<PostVisitor> Posts()
-        {
-            var doc = new HtmlDocument();
-            using (var s = Parent.Session.CreateWebClient())
-                doc.LoadHtml(s.DownloadString(string.Format(TopicUrlFormat, Id)));
-            var postListNode = doc.GetElementbyId("j_p_postlist");
-            if (postListNode == null) yield break;
-            //{"author":{"user_id":355004908,"user_name":"hellodrf","props":null},
-            //"content":{"post_id":64616765755,"is_anonym":false,"forum_id":656638,
-            //"thread_id":1747016486,"content":"\u5347\u7ea7\uff01\uff01",
-            //"post_no":966,"type":"0","comment_num":2,"props":null,"post_index":1}}
-            foreach (var eachNode in postListNode.SelectNodes("./div[@data-field]"))
-            {
-                var pd = JObject.Parse(HtmlEntity.DeEntitize(eachNode.GetAttributeValue("data-field", "")));
-                var pdc = pd["content"];
-                var id = (long) pdc["post_id"];
-                var content = (string) pdc["content"];
-                if (content == null)
-                {
-                    //从HTML获取内容。
-                    var contentNode = doc.GetElementbyId("post_content_" + id);
-                    if (contentNode == null) throw new UnexpectedDataException();
-                    content = contentNode.InnerHtml.Trim();
-                }
-                yield return new PostVisitor(id, (int) pdc["post_no"],
-                    (string) pd["author"]["user_name"], content,
-                    (int) pdc["comment_num"], Parent);
-            }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("[{0}]{1}[A={2}][R={3}][{4}]", Id, Title, AuthorName, RepliesCount, PreviewText);
-        }
-
-        internal TopicVisitor(long id, string title, bool isGood, bool isTop,
-            string author, string preview, int repliesCount, string lastReplyer, string lastReplyTime,
-            BaiduVisitor parent)
-            : base(parent)
-        {
-            Id = id;
-            Title = title;
-            IsGood = isGood;
-            IsTop = isTop;
-            AuthorName = author;
-            PreviewText = preview;
-            RepliesCount = repliesCount;
-            LastReplyer = lastReplyer;
-            LastReplyTime = lastReplyTime;
-            //默认表示帖子肯定是存在的。
-            IsExists = true;
-        }
-    }
-
-    public class PostVisitor : BaiduChildVisitor
-    {
-
-        public long Id { get; private set; }
-
-        public string AuthorName { get; private set; }
-
-        public int Floor { get; private set; }
-
-        public string Content { get; private set; }
-
-        public int CommentsCount { get; private set; }
-
-        public DateTime SubmissionTime { get; private set; }
-
-        internal PostVisitor(long id, int floor, string author, string content, int commentsCount, BaiduVisitor parent)
-            : base(parent)
-        {
-            Id = id;
-            AuthorName = author;
-            Floor = floor;
-            Content = content;
-            CommentsCount = commentsCount;
         }
     }
 }

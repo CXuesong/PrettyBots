@@ -31,7 +31,7 @@ namespace BaiduInterop.Interactive
         {
             int index = -1;
             int pageTop = Console.CursorTop;
-            var viewHeight = Console.WindowHeight - 2;
+            var viewHeight = Console.WindowHeight - 4;
             var stepMode = false;
             var displayedItems = new List<T>();
             var displayQueue = new Queue<T>();
@@ -66,7 +66,7 @@ namespace BaiduInterop.Interactive
                         goto NAVIGATION;
                 }
                 pageTop = Console.CursorTop;
-                viewHeight = Console.WindowHeight - 2;
+                viewHeight = Console.WindowHeight - 4;
                 if (Console.BufferHeight - pageTop < viewHeight) Console.Clear();
                 return true;
             };
@@ -79,7 +79,7 @@ namespace BaiduInterop.Interactive
                 {
                     var obj = displayQueue.Dequeue();
                     if (OnViewItem != null) OnViewItem(index, obj);
-                    if (stepMode || Console.CursorTop - pageTop >= viewHeight)
+                    if (stepMode || Console.CursorTop - pageTop >= viewHeight || Console.BufferHeight - pageTop < viewHeight)
                         if (!showNavigator()) return;
                 }
             }

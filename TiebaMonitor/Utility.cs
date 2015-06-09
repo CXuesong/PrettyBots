@@ -25,9 +25,14 @@ namespace TiebaMonitor.Kernel
 
         public static long ToUnixDateTime(DateTime d)
         {
-            return (d.Ticks - 621355968000000000L)/10000;
+            return d.Ticks/10000 - 62135596800000L;
         }
-         
+
+        public static DateTime FromUnixDateTime(long d)
+        {
+            return new DateTime((d + 62135596800000L)*10000);
+        }
+
         /// <summary>
         /// 将 Uri 格式的 Query 转换为对应的键-值对集合。
         /// </summary>

@@ -179,10 +179,10 @@ namespace BaiduInterop.Interactive
             var marks = "";
             if (t.IsTop) marks += "^";
             if (t.IsGood) marks += "*";
-            UI.Print("[{0}] {1}\n[By {2}][Re {3}]", marks, t.Title, t.AuthorName, t.RepliesCount);
-            UI.Print(t.PreviewText);
             while (true)
             {
+                UI.Print("[{0}] {1}\n[By {2}][Re {3}]", marks, t.Title, t.AuthorName, t.RepliesCount);
+                UI.Print(t.PreviewText);
                 switch (UI.Input(Prompts.SelectAnOperation, "L",
                     "L", "查看帖子",
                     "B", Prompts.Back))
@@ -200,7 +200,7 @@ namespace BaiduInterop.Interactive
 
         private static void TopicViewer_OnViewItem(int index, PostVisitor p)
         {
-            UI.Print("{0}\t{1}楼 [By {2}] [Re {3}]", index, p.Floor, p.AuthorName, p.CommentsCount);
+            UI.Print("{0}\t{1}楼\t[By {2}]\t[Re {3}]", index, p.Floor, p.AuthorName, p.CommentsCount);
             //UI.PrintToMargin("    " + Utility.PrettyParseHtml(p.Content, true));
             UI.Print(Utility.PrettyParseHtml(p.Content, PrettyParseHtmlOptions.DefaultCompact));
             UI.Print();
@@ -208,11 +208,24 @@ namespace BaiduInterop.Interactive
 
         private static void TopicViewer_OnItemSelected(PostVisitor p)
         {
-            UI.Print("[{0}F] [By {1}] [@{2}] [Re {3}]", p.Floor, p.AuthorName, p.SubmissionTime, p.CommentsCount);
+            UI.Print("[{0}F]\t[By {1}]\t[@{2}]\t[Re {3}]", p.Floor, p.AuthorName, p.SubmissionTime, p.CommentsCount);
             using (var client = new WebClient())
             {
                 var pphOptions = new PrettyParseHtmlOptions(false, true, client, Console.WindowWidth - 2);
                 UI.Print(Utility.PrettyParseHtml(p.Content, pphOptions));
+                if (p.CommentsCount > 0)
+                {
+                    if (UI.Confirm("查看楼中楼？"))
+                    {
+                        var viewer = new EnumerableViewer<PostComment>(p.Comments(),
+                            (index, c) =>
+                            {
+                                UI.Print("{0}\tBy {1}\t@ {2}", index, c.AuthorName, c.SubmissionTime);
+                                UI.Print(Utility.PrettyParseHtml(c.Content, pphOptions));
+                            }, null);
+                        viewer.Show();
+                    }
+                }
             }
             UI.Print();
         }

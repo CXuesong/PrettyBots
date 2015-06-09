@@ -61,8 +61,9 @@ namespace BaiduInterop.Interactive
             return sb.ToString();
         }
 
-        public static string ConvertToAscii(Image image, int asciiWidth)
+        public static string ConvertToAscii(Image image, int asciiWidth, bool noStretch = false)
         {
+            if (noStretch && asciiWidth > image.Width) asciiWidth = image.Width;
             using (var resized = ResizeImage(image, asciiWidth))
                 return ConvertToAscii(resized);
         }

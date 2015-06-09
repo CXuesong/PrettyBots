@@ -79,7 +79,7 @@ namespace TiebaMonitor.Kernel
                     {"verifycode", verifycode}
                 };
                 var loginResultData = client.UploadValues("https://passport.baidu.com/v2/api/?login", loginParams);
-                var loginResultStr = Encoding.UTF8.GetString(loginResultData);
+                var loginResultStr = client.Encoding.GetString(loginResultData);
                 /*
 <!DOCTYPE html>
 <html>

@@ -47,6 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaiduAccountInfo.cs" />
+    <Compile Include="PostComment.cs" />
+    <Compile Include="Tieba\MessageNotifier.cs" />
+    <Compile Include="Tieba\PostVisitor.cs" />
     <Compile Include="Tieba\TiebaVisitor.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="ExtendedWebClient.cs">
@@ -60,6 +63,7 @@
       <DependentUpon>Prompts.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tieba\TopicVisitor.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="WebSession.cs" />
   </ItemGroup>
