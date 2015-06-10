@@ -5,11 +5,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TiebaMonitor.Kernel;
 using System.Net;
 using System.IO;
-using TiebaMonitor.Kernel.Strategies;
 using System.Threading;
+using PrettyBots.Monitor;
+using PrettyBots.Monitor.Baidu;
+using PrettyBots.Monitor.Strategies;
 
 namespace TiebaMonitor.Interactive
 {
@@ -47,11 +48,15 @@ namespace TiebaMonitor.Interactive
                     isFirstLoop = false;
                     switch (UI.Input("操作", "C",
                             "L", "载入Cookies",
+                            "P", "前缀检查",
                             "C", "知道-贴吧重定向问题检查",
                         "E", "退出"))
                     {
                         case "L":
                             AccountManagementRoutine();
+                            break;
+                        case "P":
+                            PrefixCheckRoutine();
                             break;
                         case "C":
                             ZhidaoRedirectionCheckRoutine();
@@ -80,6 +85,23 @@ namespace TiebaMonitor.Interactive
                 UI.Print("您尚未登录。");
         }
 
+        private static void PrefixCheckRoutine(string fn = null)
+        {
+            UI.Print();
+            var isAuto = fn != null;
+            if (fn == null)
+                fn = UI.Input("键入贴吧名称", "mark5ds");
+            if (string.IsNullOrWhiteSpace(fn)) return;
+            var f = visitor.Tieba.Forum(fn);
+            if (!f.IsExists) return;
+            var suspectedTopics = f.Topics().Take(20).Where(t => !f.IsTopicPrefixMatch(t.Title)).ToList();
+            if (suspectedTopics.Count > 0)
+            {
+                foreach (var t in suspectedTopics)
+                    UI.Print(t);
+            }
+        }
+
         private static void ZhidaoRedirectionCheckRoutine(string fn = null)
         {
             UI.Print();
@@ -87,14 +109,17 @@ namespace TiebaMonitor.Interactive
             if (fn == null)
                 fn = UI.Input("键入贴吧名称", "mark5ds");
             if (string.IsNullOrWhiteSpace(fn)) return;
+            var f = visitor.Tieba.Forum(fn);
+            if (!f.IsExists) return;
             var checker = new TiebaZhidaoRedirectionDetector(visitor);
+            var rnd = new Random();
             /*
              容易误判的内容
              * RT~~
              * 跪求解答T_T
              * 
              */
-            checker.RedirectionMatcher = new[]
+            checker.StrongMatcher = new[]
             {
                 "不解释 ！！！！答的上的乃神人！",
                 "急急急 谢谢了",
@@ -104,9 +129,33 @@ namespace TiebaMonitor.Interactive
                 "哪位高手如果知道是请告诉我一下，谢谢！",
                 "红旗镇楼跪求解答",
                 "求好心人解答~",
-                "本吧好心人解答一下吧~~~"
+                "本吧好心人解答一下吧~~~",
+                "求大神指导,好心人帮助"
             };
-            var suspectedTopics = checker.CheckForum(fn).ToList();
+            checker.WeakMatcher = new[]
+            {
+                "是不是",
+                "有没有",
+                "怎么",
+                "什么",
+                "？"
+            };
+            var suspectedTopics = checker.CheckForum(fn, 15).Where(t =>
+            {
+                if (t.RepliesCount > 20) return false;
+                //hasReplied
+                if (t.Posts().Any(p =>
+                {
+                    if (p.AuthorName == visitor.AccountInfo.UserName)
+                    {
+                        if (string.IsNullOrWhiteSpace(p.Content)) return false;
+                        if (p.Content.IndexOf("__checked__", StringComparison.Ordinal) >= 0)
+                            return true;
+                    }
+                    return false;
+                })) return false;
+                return true;
+            }).ToList();
             if (suspectedTopics.Count > 0)
             {
                 foreach (var t in suspectedTopics) UI.Print(t);
@@ -118,27 +167,22 @@ namespace TiebaMonitor.Interactive
                     {
                         try
                         {
-                            var hasReplied = t.Posts().Any(p =>
+                            UI.Print("回复：\n{0}", t);
+                            var timeLapse = DateTime.Now - lastReplyTime;
+                            if (timeLapse.TotalSeconds < 2)
+                                Thread.Sleep((int)(2000 + rnd.Next(1000) - timeLapse.TotalMilliseconds));
+                            string content = null;
+                            if (f.TopicPrefix.Count > 0)
                             {
-                                if (p.AuthorName == visitor.AccountInfo.UserName)
-                                {
-                                    if (string.IsNullOrWhiteSpace(p.Content)) return false;
-                                    if (p.Content.IndexOf("Checked", StringComparison.Ordinal) >= 0)
-                                        return true;
-                                }
-                                return false;
-                            });
-                            if (!hasReplied)
-                            {
-                                UI.Print("回复：\n{0}", t);
-                                var timeLapse = DateTime.Now - lastReplyTime;
-                                if (timeLapse.TotalSeconds < 2)
-                                    Thread.Sleep((int)(3000 - timeLapse.TotalMilliseconds));
-                                t.Reply(
-                                    BaiduUtility.TiebaEscape(string.Format(
-                                        "这是从百度知道上面转发过来的问题吗……\n我只是说有这种可能。\n\nChecked @ {0:F}",
-                                        DateTime.Now)));
+                                content = string.Format(Prompts.TiebaZhidaoRedirectionReply_HasPrefix,
+                                    f.Name, f.GetTopicPrefix(rnd.Next(f.TopicPrefix.Count)));
                             }
+                            else
+                            {
+                                content = string.Format(Prompts.TiebaZhidaoRedirectionReply, f.Name);
+                            }
+                            content += string.Format("\n\n__checked__ @ {0:F}", DateTime.Now);
+                            t.Reply(BaiduUtility.TiebaEscape(content));
                         }
                         catch (Exception ex)
                         {

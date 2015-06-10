@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiebaMonitor", "TiebaMonitor\TiebaMonitor.csproj", "{29478543-B265-45B1-99BF-4EB4E2EDBCDF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyBots.Monitor", "TiebaMonitor\PrettyBots.Monitor.csproj", "{29478543-B265-45B1-99BF-4EB4E2EDBCDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiebaMonitor.Interactive", "TiebaMonitor.Interactive\TiebaMonitor.Interactive.csproj", "{3E6A27F5-D1F6-44A5-94FC-B8B9619473F2}"
 EndProject

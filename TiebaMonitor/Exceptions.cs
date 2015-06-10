@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TiebaMonitor.Kernel
+namespace PrettyBots.Monitor
 {
     /// <summary>
     /// 表示因接受到的数据与期望不符而引发的异常。

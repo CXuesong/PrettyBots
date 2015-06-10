@@ -9,15 +9,6 @@ using System.Reflection;
 
 namespace TiebaMonitor.Interactive
 {
-
-    public partial class Prompts
-    {
-        public const string InvalidInput = "无效输入。";
-        public const string NumberOverflow = "数值过大。";
-        public const string Over = "结束";
-        public const string PressAnyKeyToContinue = "请按任意键继续。";
-    }
-
     /// <summary>
     /// 负责处理基本的用户界面操作。
     /// </summary>

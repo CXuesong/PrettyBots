@@ -117,25 +117,36 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LoginException" xml:space="preserve">
-    <value>登录失败。</value>
+  <data name="InvalidInput" xml:space="preserve">
+    <value>无效输入。</value>
   </data>
-  <data name="LoginException_ErrorCode" xml:space="preserve">
-    <value>登录失败。错误代码：{0}。</value>
+  <data name="ListTopics" xml:space="preserve">
+    <value>列出主题</value>
   </data>
-  <data name="LoginException_Password" xml:space="preserve">
-    <value>密码错误。</value>
+  <data name="NumberOverflow" xml:space="preserve">
+    <value>数值越界。</value>
   </data>
-  <data name="LoginException_UserName" xml:space="preserve">
-    <value>无效的用户名。</value>
+  <data name="Over" xml:space="preserve">
+    <value>结束</value>
   </data>
-  <data name="NeedLogin" xml:space="preserve">
-    <value>需要登录以进行操作。</value>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>请稍后……</value>
   </data>
-  <data name="OperationFailedException_ErrorCode" xml:space="preserve">
-    <value>操作失败。错误代码：{0}。</value>
+  <data name="PressAnyKeyToContinue" xml:space="preserve">
+    <value>请按任意键继续。</value>
   </data>
-  <data name="UnexpectedDataException" xml:space="preserve">
-    <value>接收到了预期之外格式的数据。</value>
+  <data name="SelectAnOperation" xml:space="preserve">
+    <value>选择操作</value>
+  </data>
+  <data name="TiebaZhidaoRedirectionReply" xml:space="preserve">
+    <value>这是从百度知道上面转发过来的问题吗……
+我只是说有这种可能。
+总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复了。</value>
+  </data>
+  <data name="TiebaZhidaoRedirectionReply_HasPrefix" xml:space="preserve">
+    <value>首先，请LZ注意前缀，例如 {1} 之类的，如果你能加上前缀的话，应该就不会有什么问题了。
+其次，这是从百度知道上面转发过来的问题吗……
+我只是说有这种可能。
+总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复了。</value>
   </data>
 </root>

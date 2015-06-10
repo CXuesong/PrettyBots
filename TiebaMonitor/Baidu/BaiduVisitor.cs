@@ -1,25 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Collections.Specialized;
-using TiebaMonitor.Kernel.Tieba;
+using PrettyBots.Monitor.Baidu.Tieba;
 
-namespace TiebaMonitor.Kernel
+namespace PrettyBots.Monitor.Baidu
 {
     /// <summary>
     /// 用于登录百度平台。
     /// </summary>
     /// <remarks>可以使用同一个<see cref="WebSession"/>建立多个Visitor。</remarks>
-    public class BaiduVisitor
+    public class BaiduVisitor : VisitorBase
     {
-        public WebSession Session { get; set; }
-
         public BaiduAccountInfo AccountInfo { get; private set; }
 
         private static void TraceCookies(ExtendedWebClient wc)
@@ -33,7 +27,7 @@ namespace TiebaMonitor.Kernel
         /// <summary>
         /// 登录百度帐号。
         /// </summary>
-        public bool Login(string userName, string password)
+        public override bool Login(string userName, string password)
         {
             using (var client = Session.CreateWebClient())
             {
@@ -139,23 +133,23 @@ window.location.replace(url);
             }
         }
 
-        private TiebaVisitor _TiebaVisitor;
+        private TiebaVisitor _Tieba;
         /// <summary>
         /// 访问百度贴吧。
         /// </summary>
-        public TiebaVisitor TiebaVisitor
+        public TiebaVisitor Tieba
         {
             get
             {
-                if (_TiebaVisitor == null) _TiebaVisitor = new TiebaVisitor(this);
-                return _TiebaVisitor;
+                if (_Tieba == null) _Tieba = new TiebaVisitor(this);
+                return _Tieba;
             }
         }
 
         /// <summary>
         /// 注销当前用户。
         /// </summary>
-        public void Logout()
+        public override void Logout()
         {
             var request = WebRequest.CreateHttp("https://passport.baidu.com/?logout&u=http://www.baidu.com");
             Session.SetupCookies(request);
@@ -169,9 +163,8 @@ window.location.replace(url);
         { }
 
         public BaiduVisitor(WebSession session)
+            : base(session)
         {
-            if (session == null) throw new ArgumentNullException("session");
-            this.Session = session;
             AccountInfo = new BaiduAccountInfo(this);
         }
     }

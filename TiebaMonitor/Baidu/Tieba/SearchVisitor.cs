@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HtmlAgilityPack;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
-namespace TiebaMonitor.Kernel.Tieba
+namespace PrettyBots.Monitor.Baidu.Tieba
 {
     public class SearchVisitor : BaiduChildVisitor
     {

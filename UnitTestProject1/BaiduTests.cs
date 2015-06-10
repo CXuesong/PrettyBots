@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TiebaMonitor.Kernel;
 using System.Xml.Linq;
+using PrettyBots.Monitor;
+using PrettyBots.Monitor.Baidu;
 
 namespace UnitTestProject1
 {
     [TestClass]
-    public class UnitTest1
+    public class BaiduTests
     {
         BaiduVisitor CreateVisitor()
         {
@@ -53,7 +54,7 @@ namespace UnitTestProject1
         {
             var visitor = CreateVisitor();
             LoginVisitor(visitor);
-            var f = visitor.TiebaVisitor.Forum("化学");
+            var f = visitor.Tieba.Forum("化学");
             foreach (var t in f.Topics())
             {
                 Trace.WriteLine(t);

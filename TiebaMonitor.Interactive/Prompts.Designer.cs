@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PrettyBots.Monitor {
+namespace TiebaMonitor.Interactive {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace PrettyBots.Monitor {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PrettyBots.Monitor.Prompts", typeof(Prompts).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TiebaMonitor.Interactive.Prompts", typeof(Prompts).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,65 +61,88 @@ namespace PrettyBots.Monitor {
         }
         
         /// <summary>
-        ///   查找类似 登录失败。 的本地化字符串。
+        ///   查找类似 无效输入。 的本地化字符串。
         /// </summary>
-        internal static string LoginException {
+        internal static string InvalidInput {
             get {
-                return ResourceManager.GetString("LoginException", resourceCulture);
+                return ResourceManager.GetString("InvalidInput", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 登录失败。错误代码：{0}。 的本地化字符串。
+        ///   查找类似 列出主题 的本地化字符串。
         /// </summary>
-        internal static string LoginException_ErrorCode {
+        internal static string ListTopics {
             get {
-                return ResourceManager.GetString("LoginException_ErrorCode", resourceCulture);
+                return ResourceManager.GetString("ListTopics", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 密码错误。 的本地化字符串。
+        ///   查找类似 数值越界。 的本地化字符串。
         /// </summary>
-        internal static string LoginException_Password {
+        internal static string NumberOverflow {
             get {
-                return ResourceManager.GetString("LoginException_Password", resourceCulture);
+                return ResourceManager.GetString("NumberOverflow", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 无效的用户名。 的本地化字符串。
+        ///   查找类似 结束 的本地化字符串。
         /// </summary>
-        internal static string LoginException_UserName {
+        internal static string Over {
             get {
-                return ResourceManager.GetString("LoginException_UserName", resourceCulture);
+                return ResourceManager.GetString("Over", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 需要登录以进行操作。 的本地化字符串。
+        ///   查找类似 请稍后…… 的本地化字符串。
         /// </summary>
-        internal static string NeedLogin {
+        internal static string PleaseWait {
             get {
-                return ResourceManager.GetString("NeedLogin", resourceCulture);
+                return ResourceManager.GetString("PleaseWait", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 操作失败。错误代码：{0}。 的本地化字符串。
+        ///   查找类似 请按任意键继续。 的本地化字符串。
         /// </summary>
-        internal static string OperationFailedException_ErrorCode {
+        internal static string PressAnyKeyToContinue {
             get {
-                return ResourceManager.GetString("OperationFailedException_ErrorCode", resourceCulture);
+                return ResourceManager.GetString("PressAnyKeyToContinue", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 接收到了预期之外格式的数据。 的本地化字符串。
+        ///   查找类似 选择操作 的本地化字符串。
         /// </summary>
-        internal static string UnexpectedDataException {
+        internal static string SelectAnOperation {
             get {
-                return ResourceManager.GetString("UnexpectedDataException", resourceCulture);
+                return ResourceManager.GetString("SelectAnOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 这是从百度知道上面转发过来的问题吗……
+        ///我只是说有这种可能。
+        ///总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复了。 的本地化字符串。
+        /// </summary>
+        internal static string TiebaZhidaoRedirectionReply {
+            get {
+                return ResourceManager.GetString("TiebaZhidaoRedirectionReply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 首先，请LZ注意前缀，例如 {1} 之类的，如果你能加上前缀的话，应该就不会有什么问题了。
+        ///其次，这是从百度知道上面转发过来的问题吗……
+        ///我只是说有这种可能。
+        ///总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复了。 的本地化字符串。
+        /// </summary>
+        internal static string TiebaZhidaoRedirectionReply_HasPrefix {
+            get {
+                return ResourceManager.GetString("TiebaZhidaoRedirectionReply_HasPrefix", resourceCulture);
             }
         }
     }

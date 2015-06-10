@@ -3,8 +3,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using TiebaMonitor.Kernel;
-using TiebaMonitor.Kernel.Tieba;
+using PrettyBots.Monitor;
+using PrettyBots.Monitor.Baidu;
+using PrettyBots.Monitor.Baidu.Tieba;
 
 namespace BaiduInterop.Interactive
 {
@@ -136,7 +137,7 @@ namespace BaiduInterop.Interactive
             UI.Print();
             var fn = UI.Input(Prompts.InputForumName, "mark5ds");
             if (string.IsNullOrWhiteSpace(fn)) return;
-            var forum = UI.PromptWait(() => visitor.TiebaVisitor.Forum(fn));
+            var forum = UI.PromptWait(() => visitor.Tieba.Forum(fn));
             if (!forum.IsExists)
             {
                 UI.Print(string.IsNullOrEmpty(forum.QueryResult) ? "贴吧不存在。" : forum.QueryResult);

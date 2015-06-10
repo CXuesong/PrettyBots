@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TiebaMonitor.Kernel.Tieba
+﻿namespace PrettyBots.Monitor.Baidu.Tieba
 {
     /// <summary>
     /// 用于访问百度贴吧。

@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-namespace TiebaMonitor.Kernel.Tieba
+namespace PrettyBots.Monitor.Baidu.Tieba
 {
     public class PostVisitor : BaiduChildVisitor, ITextMessageVisitor
     {

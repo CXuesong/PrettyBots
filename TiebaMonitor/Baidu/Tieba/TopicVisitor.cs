@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
-using System.Collections.Specialized;
-using System.Text;
 
-namespace TiebaMonitor.Kernel.Tieba
+namespace PrettyBots.Monitor.Baidu.Tieba
 {
     public class TopicVisitor : BaiduChildVisitor
     {

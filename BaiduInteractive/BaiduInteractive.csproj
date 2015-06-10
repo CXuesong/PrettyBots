@@ -66,9 +66,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TiebaMonitor\TiebaMonitor.csproj">
+    <ProjectReference Include="..\TiebaMonitor\PrettyBots.Monitor.csproj">
       <Project>{29478543-b265-45b1-99bf-4eb4e2edbcdf}</Project>
-      <Name>TiebaMonitor</Name>
+      <Name>PrettyBots.Monitor</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

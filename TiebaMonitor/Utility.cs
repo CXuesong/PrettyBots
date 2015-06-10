@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Collections.Specialized;
+using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
-namespace TiebaMonitor.Kernel
+namespace PrettyBots.Monitor
 {
     static class Utility
     {
@@ -67,15 +66,35 @@ namespace TiebaMonitor.Kernel
 
         public static JObject FindJsonAssignment(string source, string lhs, bool noException = false)
         {
-            //TODO 检查字段内部是否可能出现分号。
-            var forumDataMatcher = new Regex(lhs + @"\s=\s(\{.*?\});");
+            //TODO 检查字段内部是否可能出现 { 。
+            var forumDataMatcher = new Regex(lhs + @"\s*=\s*((?<lb>\{).*?(?<-lb>}))\s*;");
             var result = forumDataMatcher.Match(source);
-            if (!result.Success)
+            if (result.Success) return JObject.Parse(result.Groups[1].Value);
+            if (noException) return null;
+            throw new UnexpectedDataException();
+        }
+
+        /// <summary>
+        /// 查找诸如 _.Module.use("common/widget/RichPoster", {...}); 这样的调用。
+        /// </summary>
+        public static JObject Find_ModuleUse(string source, string moduleName, string subProperty = null, bool noException = false)
+        {
+            //TODO 检查字段内部是否可能出现 { 。
+            var matcher =
+                new Regex(@"_.Module.use\(\s*" + "\"" + moduleName + "\"" + @"\s*,\s*((?<lb>\{).*?(?<-lb>\})).*?\);");
+            var result = matcher.Match(source);
+            if (!result.Success) goto ERR;
+            if (!string.IsNullOrEmpty(subProperty))
             {
-                if (noException) return null;
-                throw new UnexpectedDataException();
+                //直接搜索子元素。
+                matcher = new Regex(subProperty + "\"?" + @"\s*:\s*((?<lb>\{).*?(?<-lb>\}))");
+                result = matcher.Match(result.Groups[1].Value);
+                if (!result.Success) goto ERR;
             }
             return JObject.Parse(result.Groups[1].Value);
+        ERR:
+            if (noException) return null;
+            throw new UnexpectedDataException();
         }
 
         public static string StringCollapse(string source)
@@ -98,6 +117,23 @@ namespace TiebaMonitor.Kernel
                 }
             }
             return builder.ToString();
+        }
+
+        private static Regex ExtractMetaRedirectionUrl_EntityMatcher = new Regex(@"&#\d*(?!(\d|;))");
+        /// <summary>
+        /// 从指定的 META http-equiv="refresh" content="x; url=..." 的 content 中提取重定向 URL。
+        /// </summary>
+        public static string ExtractMetaRedirectionUrl(string contentExpression)
+        {
+            if (string.IsNullOrWhiteSpace(contentExpression)) return null;
+            const string urlSeparator = "URL=";
+            var separatorPos = contentExpression.IndexOf(urlSeparator, StringComparison.OrdinalIgnoreCase);
+            if (separatorPos < 0) return null;
+            //替换不标准的实体引用。
+            contentExpression = contentExpression.Substring(separatorPos + urlSeparator.Length);
+            contentExpression = ExtractMetaRedirectionUrl_EntityMatcher.Replace(contentExpression, "$0;");
+            contentExpression = HtmlEntity.DeEntitize(contentExpression);
+            return contentExpression;
         }
     }
 }

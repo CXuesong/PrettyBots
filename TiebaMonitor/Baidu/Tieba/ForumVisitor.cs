@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HtmlAgilityPack;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 
-namespace TiebaMonitor.Kernel.Tieba
+namespace PrettyBots.Monitor.Baidu.Tieba
 {
     public class ForumVisitor : BaiduChildVisitor
     {
@@ -39,6 +36,18 @@ namespace TiebaMonitor.Kernel.Tieba
 
         public int PostsCount { get; private set; }
 
+        /// <summary>
+        /// 在此论坛发帖时，建议的主题前缀。
+        /// </summary>
+        public IList<string> TopicPrefix { get; private set; }
+
+        private string topicPrefixTime;
+
+        private List<Regex> cachedTopicMatchers = new List<Regex>();
+
+        private static IList<string> emptyStringList = new string[] {};
+
+        #region 数据采集
         /// <summary>
         /// 枚举主题列表。
         /// </summary>
@@ -87,9 +96,9 @@ namespace TiebaMonitor.Kernel.Tieba
                     //{"author_name":"Mark5ds","id":3540683824,"first_post_id":63285795913,
                     //"reply_num":1,"is_bakan":0,"vid":"","is_good":0,"is_top":0,"is_protal":0}
                     var jo = JObject.Parse(dataFieldStr);
-                    yield return new TopicVisitor((long) jo["id"], title,
-                        (int) jo["is_good"] != 0, (int) jo["is_top"] != 0,
-                        (string) jo["author_name"], preview, (int) jo["reply_num"],
+                    yield return new TopicVisitor((long)jo["id"], title,
+                        (int)jo["is_good"] != 0, (int)jo["is_top"] != 0,
+                        (string)jo["author_name"], preview, (int)jo["reply_num"],
                         replyer, replyTime, this, Parent);
                 }
                 //解析下一页
@@ -139,6 +148,85 @@ namespace TiebaMonitor.Kernel.Tieba
             TopicsCount = (int)forumData["thread_num"];
             PostsCount = (int)forumData["post_num"];
             IsExists = true;
+            //记录发帖信息。
+            var prefixSettings = Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
+            /*
+杂谈北京{
+    prefix: {
+        "mode": 1,
+        "text": "\u300e06.10\u300f",
+        "type": [
+            ""
+        ],
+        "time": "06.10",
+        "sug_html": "<div class=\"pprefix-item\">\u300e06.10\u300f<\/div>",
+        "value": "\u300e06.10\u300f",
+        "need_sug": true
+    },
+    QinglangData: [
+        
+    ],
+    redirectAfterPost: isGameTab?getNormalTabUrl(): false,
+    isPaypost: 0,
+    needPaypostAgree: !0
+}
+}
+ */
+            var prefixFormat = (string)prefixSettings["text"];
+            if (string.IsNullOrWhiteSpace(prefixFormat))
+                TopicPrefix = emptyStringList;
+            else
+            {
+                prefixFormat = prefixFormat.Replace((string)prefixSettings["time"], "#time#");
+                if (prefixSettings["type"].Type == JTokenType.Array)
+                {
+                    TopicPrefix =
+                        prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string) type)).ToArray();
+                }
+                else
+                {
+                    //type == ""
+                    TopicPrefix = new string[] { prefixFormat };
+                }
+                JToken jt;
+                if (prefixSettings.TryGetValue("time", out jt))
+                    topicPrefixTime = (string) jt;
+                else
+                    topicPrefixTime = null;
+            }
+            cachedTopicMatchers.Clear();
+        }
+        #endregion
+
+
+        public string GetTopicPrefix(int index)
+        {
+            return TopicPrefix[index].Replace("#time#", topicPrefixTime);
+        }
+
+        public string MatchTopicPrefix(string topicTitle)
+        {
+            if (TopicPrefix.Count == 0) return string.Empty;
+            if (cachedTopicMatchers.Count != TopicPrefix.Count)
+            {
+                foreach (var p in TopicPrefix)
+                {
+                    //宽松匹配。
+                    var exp = Regex.Escape(p).Replace(@"\#time\#", ".*?");
+                    cachedTopicMatchers.Add(new Regex(exp));
+                }
+            }
+            for(var i = 0;i < cachedTopicMatchers.Count;i++)
+                if (cachedTopicMatchers[i].IsMatch(topicTitle)) return TopicPrefix[i];
+            return null;
+        }
+
+        /// <summary>
+        /// 判断指定的主题名称是否符合当前论坛的前缀要求。
+        /// </summary>
+        public bool IsTopicPrefixMatch(string topicTitle)
+        {
+            return MatchTopicPrefix(topicTitle) != null;
         }
 
         public override string ToString()

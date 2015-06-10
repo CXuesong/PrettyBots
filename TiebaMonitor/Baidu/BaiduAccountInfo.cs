@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 
-namespace TiebaMonitor.Kernel
+namespace PrettyBots.Monitor.Baidu
 {
     /// <summary>
     /// 表示当前登录账户的信息。
