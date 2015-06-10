@@ -134,7 +134,7 @@ namespace BaiduInterop.Interactive
         {
         INPUT_FN:
             UI.Print();
-            var fn = UI.Input(Prompts.InputForumName, "化学");
+            var fn = UI.Input(Prompts.InputForumName, "mark5ds");
             if (string.IsNullOrWhiteSpace(fn)) return;
             var forum = UI.PromptWait(() => visitor.TiebaVisitor.Forum(fn));
             if (!forum.IsExists)
@@ -183,24 +183,38 @@ namespace BaiduInterop.Interactive
             {
                 UI.Print("[{0}] {1}\n[By {2}][Re {3}]", marks, t.Title, t.AuthorName, t.RepliesCount);
                 UI.Print(t.PreviewText);
-                switch (UI.Input(Prompts.SelectAnOperation, "L",
-                    "L", "查看帖子",
-                    "B", Prompts.Back))
+                try
                 {
-                    case "L":
-                        var viewer = new EnumerableViewer<PostVisitor>(t.Posts(),
-                            TopicViewer_OnViewItem, TopicViewer_OnItemSelected);
-                        viewer.Show();
-                        break;
-                    case "B":
-                        return;
+                    switch (UI.Input(Prompts.SelectAnOperation, "L",
+                        "L", "查看帖子",
+                        "R", "回复",
+                        "B", Prompts.Back))
+                    {
+                        case "L":
+                            var viewer = new EnumerableViewer<PostVisitor>(t.Posts(),
+                                TopicViewer_OnViewItem, TopicViewer_OnItemSelected);
+                            viewer.Show();
+                            break;
+                        case "R":
+                            var content = UI.InputMultiline(Prompts.InputReplyContent);
+                            if (!string.IsNullOrWhiteSpace(content))
+                                t.Reply(BaiduUtility.TiebaEscape(content));
+                            break;
+                        case "B":
+                            return;
+                    }
                 }
+                catch (System.Exception ex)
+                {
+                    UI.PrintError(ex);
+                }
+
             }
         }
 
         private static void TopicViewer_OnViewItem(int index, PostVisitor p)
         {
-            UI.Print("{0}\t{1}楼\t[By {2}]\t[Re {3}]", index, p.Floor, p.AuthorName, p.CommentsCount);
+            UI.Print("{0}\t{1}楼\tBy [{2}]\t@{3}\tRe {4}", index, p.Floor, p.AuthorName, p.SubmissionTime, p.CommentsCount);
             //UI.PrintToMargin("    " + Utility.PrettyParseHtml(p.Content, true));
             UI.Print(Utility.PrettyParseHtml(p.Content, PrettyParseHtmlOptions.DefaultCompact));
             UI.Print();
@@ -208,26 +222,45 @@ namespace BaiduInterop.Interactive
 
         private static void TopicViewer_OnItemSelected(PostVisitor p)
         {
-            UI.Print("[{0}F]\t[By {1}]\t[@{2}]\t[Re {3}]", p.Floor, p.AuthorName, p.SubmissionTime, p.CommentsCount);
+            UI.Print("{0}F\tBy [{1}]\t@{2}\tRe {3}", p.Floor, p.AuthorName, p.SubmissionTime, p.CommentsCount);
             using (var client = new WebClient())
             {
                 var pphOptions = new PrettyParseHtmlOptions(false, true, client, Console.WindowWidth - 2);
                 UI.Print(Utility.PrettyParseHtml(p.Content, pphOptions));
-                if (p.CommentsCount > 0)
+                UI.Print();
+                while (true)
                 {
-                    if (UI.Confirm("查看楼中楼？"))
+                    try
                     {
-                        var viewer = new EnumerableViewer<PostComment>(p.Comments(),
-                            (index, c) =>
-                            {
-                                UI.Print("{0}\tBy {1}\t@ {2}", index, c.AuthorName, c.SubmissionTime);
-                                UI.Print(Utility.PrettyParseHtml(c.Content, pphOptions));
-                            }, null);
-                        viewer.Show();
+                        switch (UI.Input(Prompts.SelectAnOperation, "L",
+                            "L", "查看楼中楼[" + p.CommentsCount + "]",
+                            "R", "回复",
+                            "B", Prompts.Back))
+                        {
+                            case "L":
+                                var viewer = new EnumerableViewer<PostComment>(p.Comments(),
+                                    (index, c) =>
+                                    {
+                                        UI.Print("{0}\tBy {1}\t@ {2}", index, c.AuthorName, c.SubmissionTime);
+                                        UI.Print(Utility.PrettyParseHtml(c.Content, pphOptions));
+                                    }, null);
+                                viewer.Show();
+                                break;
+                            case "R":
+                                var content = UI.InputMultiline(Prompts.InputReplyContent);
+                                if (!string.IsNullOrWhiteSpace(content))
+                                    p.Reply(BaiduUtility.TiebaEscape(content));
+                                break;
+                            case "B":
+                                return;
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        UI.PrintError(ex);
                     }
                 }
             }
-            UI.Print();
         }
     }
 }

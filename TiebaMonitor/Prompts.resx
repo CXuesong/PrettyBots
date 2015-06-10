@@ -129,6 +129,12 @@
   <data name="LoginException_UserName" xml:space="preserve">
     <value>无效的用户名。</value>
   </data>
+  <data name="NeedLogin" xml:space="preserve">
+    <value>需要登录以进行操作。</value>
+  </data>
+  <data name="OperationFailedException_ErrorCode" xml:space="preserve">
+    <value>操作失败。错误代码：{0}。</value>
+  </data>
   <data name="UnexpectedDataException" xml:space="preserve">
     <value>接受到了预期之外格式的数据。</value>
   </data>

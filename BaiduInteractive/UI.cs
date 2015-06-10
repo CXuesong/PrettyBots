@@ -72,6 +72,19 @@ namespace BaiduInterop.Interactive
             return (Input(prompt, defaultValue ? "Y" : "N", "Y", "是", "N", "否") == "Y");
         }
 
+        public static string InputMultiline(string prompt, string EofMark = ".")
+        {
+            Console.WriteLine(prompt);
+            var builder = new StringBuilder();
+            while (true)
+            {
+                var s = Console.ReadLine();
+                if (s == EofMark)
+                    return builder.ToString();
+                builder.AppendLine(s);
+            }
+        }
+
         /// <summary>
         /// 接受数据输入。
         /// </summary>

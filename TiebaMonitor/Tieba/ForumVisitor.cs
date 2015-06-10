@@ -70,7 +70,7 @@ namespace TiebaMonitor.Kernel.Tieba
                     var title = HtmlEntity.DeEntitize(linkNode.GetAttributeValue("title", ""));
                     href = linkNode.GetAttributeValue("href", "");
                     if (string.IsNullOrEmpty(href)) continue;
-                    var threadTextNode = eachLi.SelectSingleNode(".//div[@class='threadlist_text']");
+                    var threadTextNode = eachLi.SelectSingleNode(".//div[contains(@class,'threadlist_detail')]/div[contains(@class,'threadlist_text')]");
                     var preview = threadTextNode == null ? null : Utility.StringCollapse(HtmlEntity.DeEntitize(threadTextNode.InnerText.Trim()));
                     var threadDetailNode = eachLi.SelectSingleNode(".//div[contains(@class, 'threadlist_detail')]");
                     string replyer = null, replyTime = null;
@@ -90,7 +90,7 @@ namespace TiebaMonitor.Kernel.Tieba
                     yield return new TopicVisitor((long) jo["id"], title,
                         (int) jo["is_good"] != 0, (int) jo["is_top"] != 0,
                         (string) jo["author_name"], preview, (int) jo["reply_num"],
-                        replyer, replyTime, this.Id, Parent);
+                        replyer, replyTime, this, Parent);
                 }
                 //解析下一页
                 var pagerNode = doc.GetElementbyId("frs_list_pager");

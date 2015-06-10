@@ -49,7 +49,7 @@ namespace TiebaMonitor.Interactive
         /// </summary>
         public static void Init()
         {
-            Console.CursorVisible = false;
+            if (!Console.IsOutputRedirected) Console.CursorVisible = true;
             Console.WriteLine(Utility.ProductName);
             Console.WriteLine(Utility.ApplicationTitle);
             Console.WriteLine(Utility.ProductVersion);

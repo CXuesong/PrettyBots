@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -47,9 +48,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaiduAccountInfo.cs" />
+    <Compile Include="BaiduUtility.cs" />
     <Compile Include="PostComment.cs" />
+    <Compile Include="ITextMessageVisitor.cs" />
+    <Compile Include="Strategies\TiebaZhidaoRedirectionDetector.cs" />
     <Compile Include="Tieba\MessageNotifier.cs" />
     <Compile Include="Tieba\PostVisitor.cs" />
+    <Compile Include="Tieba\SearchVisitor.cs" />
     <Compile Include="Tieba\TiebaVisitor.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="ExtendedWebClient.cs">
@@ -76,6 +81,7 @@
       <LastGenOutput>Prompts.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

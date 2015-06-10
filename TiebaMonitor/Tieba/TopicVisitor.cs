@@ -1,10 +1,11 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using System.Collections.Specialized;
+using System.Text;
 
 namespace TiebaMonitor.Kernel.Tieba
 {
@@ -14,7 +15,7 @@ namespace TiebaMonitor.Kernel.Tieba
 
         public const string TopicUrlFormatPN = "http://tieba.baidu.com/p/{0}?pn={1}&ie=utf-8";
 
-        public const string CommentUrlFormat =
+        public const string OverallCommentUrlFormat =
             "http://tieba.baidu.com/p/totalComment?t={0}&tid={1}&fid={2}&pn={3}&see_lz=0";
 
         public const string ReplyUrl = "http://tieba.baidu.com/f/commit/post/add";
@@ -23,7 +24,13 @@ namespace TiebaMonitor.Kernel.Tieba
 
         public bool IsExists { get; private set; }
 
-        public long ForumId { get; private set; }
+        //public string ForumName { get; private set; }
+
+        //public long ForumId { get; private set; }
+
+        private long? _ForumId;
+
+        public ForumVisitor Forum { get; private set; }
 
         public long Id { get; private set; }
 
@@ -43,6 +50,27 @@ namespace TiebaMonitor.Kernel.Tieba
 
         public string LastReplyTime { get; private set; }
 
+        private string pageData_tbs = null;
+
+        private bool internalUpdated = false;
+
+        private void UpdateInternal(HtmlDocument doc)
+        {
+            var pageData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData");
+            pageData_tbs = (string) pageData["tbs"];
+            internalUpdated = true;
+        }
+
+        private void EnsureInternal(ExtendedWebClient client)
+        {
+            if (!internalUpdated)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(client.DownloadString(string.Format(TopicUrlFormat, Id)));
+                UpdateInternal(doc);
+            }
+        }
+
         public void Update()
         {
             var doc = new HtmlDocument();
@@ -56,11 +84,11 @@ namespace TiebaMonitor.Kernel.Tieba
                 return;
             }
             var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
-            ForumId = (long) forumData["forum_id"];
+            _ForumId = (long)forumData["forum_id"];
             var topicData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.thread");
             //PageData.thread = 
-            //{ author: "À´×Ô²İÔ­µÄÑ©ÀÇ", thread_id: 3369574832, 
-            //title: "¡¾çìº÷´«Ææ¡¿Ã¨Í·Ó¥Íõ¹úÖ®Õ½»ğ·×·É", reply_num: 506,
+            //{ author: "æ¥è‡ªè‰åŸçš„é›ªç‹¼", thread_id: 3369574832, 
+            //title: "ã€çˆç‘šä¼ å¥‡ã€‘çŒ«å¤´é¹°ç‹å›½ä¹‹æˆ˜ç«çº·é£", reply_num: 506,
             //thread_type: "0",
             //topic: { is_topic: false, topic_type: false, is_live_post: false,
             //is_lpost: false, lpost_type: 0 }, /*null,*/ is_ad: 0, video_url: "" };
@@ -79,14 +107,14 @@ namespace TiebaMonitor.Kernel.Tieba
                 var pageUrl = string.Format(TopicUrlFormat, Id);
                 PARSE_PAGE:
                 doc.LoadHtml(s.DownloadString(pageUrl));
-                //Â¥ÖĞÂ¥
+                //æ¥¼ä¸­æ¥¼
                 var dateTimeBase = Utility.ToUnixDateTime(DateTime.Now);
                 var commentData =
-                    JObject.Parse(s.DownloadString(string.Format(CommentUrlFormat, dateTimeBase,
-                        Id, ForumId, pageNum)));
+                    JObject.Parse(s.DownloadString(string.Format(OverallCommentUrlFormat, dateTimeBase,
+                        Id, Forum.Id, pageNum)));
                 if ((int)commentData["errno"] != 0)
                 {
-                    Debug.Print("Comment, Fid={0}, Page={1}, Error:{2}, {3}", ForumId, pageNum,
+                    Debug.Print("Comment, Fid={0}, Page={1}, Error:{2}, {3}", Forum.Id, pageNum,
                         (string) commentData["errno"], (string) commentData["errmsg"]);
                     commentData = null;
                 }
@@ -104,12 +132,12 @@ namespace TiebaMonitor.Kernel.Tieba
                     var content = (string) pdc["content"];
                     if (content == null)
                     {
-                        //´ÓHTML»ñÈ¡ÄÚÈİ¡£
+                        //ä»HTMLè·å–å†…å®¹ã€‚
                         var contentNode = doc.GetElementbyId("post_content_" + pid);
                         if (contentNode == null) throw new UnexpectedDataException();
                         content = contentNode.InnerHtml.Trim();
                     }
-                    //Â¥ÖĞÂ¥
+                    //æ¥¼ä¸­æ¥¼
                     /*
                      {
     "errno": 0,
@@ -124,10 +152,10 @@ namespace TiebaMonitor.Kernel.Tieba
                         "thread_id": "3636549985",
                         "post_id": "65718232016",
                         "comment_id": "65718247989",
-                        "username": "Ë«ÓãÂúÔÂ",
+                        "username": "åŒé±¼æ»¡æœˆ",
                         "user_id": "1038711401",
                         "now_time": 1426567930,
-                        "content": "p.s. Lz×¢ÒâÇ°×º<img class=\"BDE_Smiley\" pic_type=\"1\" width=\"30\" height=\"30\" src=\"http://tb2.bdstatic.com/tb/editor/images/face/i_f01.png?t=20140803\" >",
+                        "content": "p.s. Lzæ³¨æ„å‰ç¼€<img class=\"BDE_Smiley\" pic_type=\"1\" width=\"30\" height=\"30\" src=\"http://tb2.bdstatic.com/tb/editor/images/face/i_f01.png?t=20140803\" >",
                         "ptype": 0,
                         "during_time": 0
                     }
@@ -137,11 +165,11 @@ namespace TiebaMonitor.Kernel.Tieba
         "user_list": {
             "1038711401": {
                 "user_id": 1038711401,
-                "user_name": "Ë«ÓãÂúÔÂ",
+                "user_name": "åŒé±¼æ»¡æœˆ",
                 "user_sex": 2,
                 "user_status": 0,
                 "bg_id": "1012",
-                "card": "a:6:{s:8:\"post_num\";i:4175;s:8:\"good_num\";i:3;s:12:\"manager_info\";a:2:{s:7:\"manager\";a:2:{s:10:\"forum_list\";a:0:{}s:5:\"count\";i:0;}s:6:\"assist\";a:2:{s:10:\"forum_list\";a:3:{i:0;s:10:\"Ã¨Í·Ó¥Íõ¹ú\";i:1;s:8:\"Ò¹É·ÎŞÑÀ\";i:2;s:6:\"ÇñÎâºé\";}s:5:\"count\";i:3;}}s:10:\"like_forum\";a:3:{i:10;a:2:{s:10:\"forum_list\";a:1:{i:0;s:10:\"Ã¨Í·Ó¥Íõ¹ú\";}s:5:\"count\";i:1;}i:8;a:2:{s:10:\"forum_list\";a:2:{i:0;s:10:\"ÊØÎÀÕß´«Ææ\";i:1;s:9:\"aea¹¤×÷ÊÒ\";}s:5:\"count\";i:2;}i:7;a:2:{s:10:\"forum_list\";a:2:{i:0;s:8:\"Ò¹É·ÎŞÑÀ\";i:1;s:8:\"¾ø¾³ÀÇÍõ\";}s:5:\"count\";i:4;}}s:9:\"is_novice\";i:0;s:7:\"op_time\";i:1433760933;}",
+                "card": "a:6:{s:8:\"post_num\";i:4175;s:8:\"good_num\";i:3;s:12:\"manager_info\";a:2:{s:7:\"manager\";a:2:{s:10:\"forum_list\";a:0:{}s:5:\"count\";i:0;}s:6:\"assist\";a:2:{s:10:\"forum_list\";a:3:{i:0;s:10:\"çŒ«å¤´é¹°ç‹å›½\";i:1;s:8:\"å¤œç…æ— ç‰™\";i:2;s:6:\"é‚±å´æ´ª\";}s:5:\"count\";i:3;}}s:10:\"like_forum\";a:3:{i:10;a:2:{s:10:\"forum_list\";a:1:{i:0;s:10:\"çŒ«å¤´é¹°ç‹å›½\";}s:5:\"count\";i:1;}i:8;a:2:{s:10:\"forum_list\";a:2:{i:0;s:10:\"å®ˆå«è€…ä¼ å¥‡\";i:1;s:9:\"aeaå·¥ä½œå®¤\";}s:5:\"count\";i:2;}i:7;a:2:{s:10:\"forum_list\";a:2:{i:0;s:8:\"å¤œç…æ— ç‰™\";i:1;s:8:\"ç»å¢ƒç‹¼ç‹\";}s:5:\"count\";i:4;}}s:9:\"is_novice\";i:0;s:7:\"op_time\";i:1433760933;}",
                 "portrait_time": "1393118701",
                 "mParr_props": [],
                 "tbscore_repeate_finish_time": "1433562554",
@@ -160,7 +188,7 @@ namespace TiebaMonitor.Kernel.Tieba
                     "1": []
                 },
                 "portrait": "697ae58f8ce9b1bce6bba1e69c88e93d",
-                "nickname": "Ë«ÓãÂúÔÂ"
+                "nickname": "åŒé±¼æ»¡æœˆ"
             }
         }
     }
@@ -169,25 +197,26 @@ namespace TiebaMonitor.Kernel.Tieba
                     IList<PostComment> comments = null;
                     if (commentData != null)
                     {
-                        var thisComments = commentData["data"]["comment_list"][pid.ToString(CultureInfo.InvariantCulture)];
+                        var thisComments = commentData["data"]["comment_list"];
+                        //å¯èƒ½æ²¡æœ‰å›å¤å¯ç”¨ã€‚
+                        thisComments = thisComments.SelectToken(pid.ToString(CultureInfo.InvariantCulture), false);
                         if (thisComments != null)
                         {
                             comments = new List<PostComment>(Math.Min((int) thisComments["comment_num"], MaxCommentLimit));
                             foreach (var et in thisComments["comment_info"])
                             {
-                                //TODO: ĞŞ¸´»ØÌûÊ±¼ä²»ÕıÈ·µÄÎÊÌâ¡£
                                 comments.Add(new PostComment((long) et["comment_id"], (string) et["username"],
-                                    (long) et["user_id"], Utility.FromUnixDateTime(dateTimeBase - (long) et["comment_id"]),
+                                    (long)et["user_id"], Utility.FromUnixDateTime((long)et["now_time"] * 1000),
                                     (string) et["content"]));
                                 if (comments.Count >= MaxCommentLimit) break;
                             }
                         }
                     }
                     yield return new PostVisitor(pid, (int) pdc["post_no"],
-                        (string) pd["author"]["user_name"], content,
-                        (int) pdc["comment_num"], comments, Parent);
+                        (string) pd["author"]["user_name"], content, (DateTime) pdc["date"],
+                        (int) pdc["comment_num"], comments, this, Parent);
                 }
-                //ÏÂÒ»Ò³
+                //ä¸‹ä¸€é¡µ
                 var pagerData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.pager", true);
                 if (pagerData != null)
                 {
@@ -204,18 +233,90 @@ namespace TiebaMonitor.Kernel.Tieba
         }
 
         /// <summary>
-        /// »Ø¸´Ö÷Ìâ¡£
+        /// å›å¤ä¸»é¢˜ã€‚
         /// </summary>
-        /// <param name="content">Òª»Ø¸´µÄÄÚÈİ¡£</param>
+        /// <param name="content">è¦å›å¤çš„å†…å®¹ã€‚</param>
         public bool Reply(string content)
         {
-            throw new NotImplementedException();
+            return Reply(content, null);
+        }
+
+        internal bool Reply(string contentCode, long? pid)
+        {
+            if (string.IsNullOrWhiteSpace(contentCode)) return false;
+            Debug.Assert(_ForumId == null || Forum.Id == _ForumId);
             using (var client = Parent.Session.CreateWebClient())
             {
-                var replyParams = new NameValueCollection();
+                EnsureInternal(client);
+                var baseTime = Utility.ToUnixDateTime(DateTime.Now);
+                var baseTimeStr = baseTime.ToString(CultureInfo.InvariantCulture);
+                var replyParams = new NameValueCollection
+                {
+                    {"ie", "utf-8"},
+                    {"kw", Forum.Name},
+                    {"fid", Forum.Id.ToString(CultureInfo.InvariantCulture)},
+                    {"tid", Id.ToString(CultureInfo.InvariantCulture)},
+                    {"vcode_md5", ""},
+                    /*{"floor_num", "5"},*/
+                    {"rich_text", "1"},
+                    {"tbs", pageData_tbs},
+                    {"content", contentCode},
+                    {"files", "[]"},
+                    //{"sign_id", "4787987"},
+                    {
+                        "mouse_pwd",
+                        "46,44,32,52,41,45,41,47,33,17,41,52,40,52,41,52,40,52,41,52,40,17,43,42,46,47,40,17,41,43,46,46,52,47,46,32," +
+                        baseTimeStr
+                    },
+                    {"mouse_pwd_t", baseTimeStr},
+                    {"mouse_pwd_isclick", "0"},
+                    {"__type__", "reply"}
+                };
+                if (pid != null)
+                {
+                    replyParams["quote_id"] = pid.ToString();
+                    replyParams["repostid"] = pid.ToString();
+                }
                 var result = client.UploadValues(ReplyUrl, replyParams);
                 var resultStr = client.Encoding.GetString(result);
                 var resultObj = JObject.Parse(resultStr);
+                /*
+                 {
+  "no": 40,
+  "err_code": 40,
+  "error": "",
+  "data": {
+    "autoMsg": "",
+    "fid": 2195006,
+    "fname": "mark5ds",
+    "tid": 0,
+    "is_login": 1,
+    "content": "",
+    "vcode": {
+      "need_vcode": 1,
+      "str_reason": "è¯·ç‚¹å‡»éªŒè¯ç å®Œæˆå‘è´´",
+      "captcha_vcode_str": "captchaservice3832303567744451634c64626552716953795a71306d576c715337424d6c2f55502f36614b6e5a674c337766766f53544a68693737615847356b6f2f50332b736d4337524a772b64697133332f792b5638663838704b433072324a6e746234396a35444454627868476b6637656861686b744841724c62733471786e6e764271597a6b58755044552b51334875724b324a38726e38437842516b6957554c54355945756b44385350535278475645543056433971347a6937786d776e5a4152556a764e4c354e5a6461796c355839526b52494350664f557562567a2f4972754579424a7433582b6876435431345232785239534233686752562b697166414d4271477457327069366e4b77525978684d356c696334415158742f324d6a7231616d5a6f6635526d574745696576577158684a6c69",
+      "captcha_code_type": 4,
+      "userstatevcode": 0
+    }
+  }
+}
+                 */
+                //Debug.Print(resultObj.ToString());
+                switch ((int) resultObj["no"])
+                {
+                    case 0:
+                        return true;
+                    case 40:
+                        //éœ€è¦éªŒè¯ç ã€‚
+                        return false;
+                    case 265:
+                        throw new InvalidOperationException(Prompts.NeedLogin);
+                    default:
+                        throw new InvalidOperationException(string.Format(Prompts.OperationFailedException_ErrorCode,
+                            (int) resultObj["no"]));
+                }
+                return true;
             }
         }
 
@@ -224,9 +325,15 @@ namespace TiebaMonitor.Kernel.Tieba
             return string.Format("[{0}]{1}[A={2}][R={3}][{4}]", Id, Title, AuthorName, RepliesCount, PreviewText);
         }
 
+        internal TopicVisitor(long id, BaiduVisitor parent)
+            : base(parent)
+        {
+            Id = id;
+        }
+
         internal TopicVisitor(long id, string title, bool isGood, bool isTop,
             string author, string preview, int repliesCount, string lastReplyer, string lastReplyTime,
-            long forumId, BaiduVisitor parent)
+            ForumVisitor forum, BaiduVisitor parent)
             : base(parent)
         {
             Id = id;
@@ -238,8 +345,8 @@ namespace TiebaMonitor.Kernel.Tieba
             RepliesCount = repliesCount;
             LastReplyer = lastReplyer;
             LastReplyTime = lastReplyTime;
-            ForumId = forumId;
-            //Ä¬ÈÏ±íÊ¾Ìû×Ó¿Ï¶¨ÊÇ´æÔÚµÄ¡£
+            Forum = forum;
+            //é»˜è®¤è¡¨ç¤ºå¸–å­è‚¯å®šæ˜¯å­˜åœ¨çš„ã€‚
             IsExists = true;
         }
     }

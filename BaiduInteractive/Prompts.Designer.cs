@@ -97,6 +97,24 @@ namespace BaiduInterop.Interactive {
         }
         
         /// <summary>
+        ///   查找类似 键入回帖内容，之后另起一行，键入 . 并回车。 的本地化字符串。
+        /// </summary>
+        internal static string InputReplyContent {
+            get {
+                return ResourceManager.GetString("InputReplyContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 键入主题内容，之后另起一行，键入 . 并回车。 的本地化字符串。
+        /// </summary>
+        internal static string InputTopicContent {
+            get {
+                return ResourceManager.GetString("InputTopicContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 无效输入。 的本地化字符串。
         /// </summary>
         internal static string InvalidInput {

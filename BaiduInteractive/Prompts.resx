@@ -129,6 +129,12 @@
   <data name="InputForumName" xml:space="preserve">
     <value>贴吧名称</value>
   </data>
+  <data name="InputReplyContent" xml:space="preserve">
+    <value>键入回帖内容，之后另起一行，键入 . 并回车。</value>
+  </data>
+  <data name="InputTopicContent" xml:space="preserve">
+    <value>键入主题内容，之后另起一行，键入 . 并回车。</value>
+  </data>
   <data name="InvalidInput" xml:space="preserve">
     <value>无效输入。</value>
   </data>

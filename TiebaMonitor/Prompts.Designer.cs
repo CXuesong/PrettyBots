@@ -97,6 +97,24 @@ namespace TiebaMonitor.Kernel {
         }
         
         /// <summary>
+        ///   查找类似 需要登录以进行操作。 的本地化字符串。
+        /// </summary>
+        internal static string NeedLogin {
+            get {
+                return ResourceManager.GetString("NeedLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 操作失败。错误代码：{0}。 的本地化字符串。
+        /// </summary>
+        internal static string OperationFailedException_ErrorCode {
+            get {
+                return ResourceManager.GetString("OperationFailedException_ErrorCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 接受到了预期之外格式的数据。 的本地化字符串。
         /// </summary>
         internal static string UnexpectedDataException {
