@@ -19,7 +19,7 @@ namespace UnitTestProject1
         {
             if (fromCredentials)
             {
-                var cred = XDocument.Load("_credentials.xml");
+                var cred = XDocument.Load("../../../_credentials.xml");
                 var login = cred.Root.Element("lofterLogin");
                 v.Login((string)login.Attribute("username"), (string)login.Attribute("password"));
             }
