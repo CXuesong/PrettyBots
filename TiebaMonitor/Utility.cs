@@ -135,5 +135,20 @@ namespace PrettyBots.Monitor
             contentExpression = HtmlEntity.DeEntitize(contentExpression);
             return contentExpression;
         }
+
+        /// <summary>
+        /// 从指定的网页文档中查找 META 重定向指令，并返回重定向地址。
+        /// </summary>
+        /// <returns>解析后的重定向地址。如果没有重定向，则为<c>null</c>。</returns>
+        public static string GetRedirectionUrl(HtmlDocument doc)
+        {
+            if (doc == null) throw new ArgumentNullException("doc");
+            var metaNodes = doc.DocumentNode.SelectNodes("//meta[@http-equiv]");
+            if (metaNodes == null) return null;
+            var redirectionNode = metaNodes.FirstOrDefault(n1 => string.Compare(n1.GetAttributeValue("http-equiv", ""), "refresh", StringComparison.OrdinalIgnoreCase) == 0);
+            if (redirectionNode == null) return null;
+            //<meta http-equiv="refresh" content="5; url=....." />
+            return ExtractMetaRedirectionUrl(redirectionNode.GetAttributeValue("content", ""));
+        }
     }
 }

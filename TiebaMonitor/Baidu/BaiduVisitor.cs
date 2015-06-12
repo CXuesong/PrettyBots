@@ -12,7 +12,7 @@ namespace PrettyBots.Monitor.Baidu
     /// 用于登录百度平台。
     /// </summary>
     /// <remarks>可以使用同一个<see cref="WebSession"/>建立多个Visitor。</remarks>
-    public class BaiduVisitor : VisitorBase
+    public class BaiduVisitor : Visitor
     {
         public BaiduAccountInfo AccountInfo { get; private set; }
 
@@ -159,11 +159,6 @@ window.location.replace(url);
         }
 
         public BaiduVisitor()
-            : this(new WebSession())
-        { }
-
-        public BaiduVisitor(WebSession session)
-            : base(session)
         {
             AccountInfo = new BaiduAccountInfo(this);
         }

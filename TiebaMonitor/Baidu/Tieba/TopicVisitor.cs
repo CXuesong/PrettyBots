@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
@@ -117,6 +118,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
                         (string) commentData["errno"], (string) commentData["errmsg"]);
                     commentData = null;
                 }
+                //帖子列表。
                 var postListNode = doc.GetElementbyId("j_p_postlist");
                 if (postListNode == null) yield break;
                 foreach (var eachNode in postListNode.SelectNodes("./div[@data-field]"))
@@ -128,6 +130,13 @@ namespace PrettyBots.Monitor.Baidu.Tieba
                     var pd = JObject.Parse(HtmlEntity.DeEntitize(eachNode.GetAttributeValue("data-field", "")));
                     var pdc = pd["content"];
                     var pid = (long) pdc["post_id"];
+                    var submissionTime = (DateTime?) pdc["date"];
+                    if (submissionTime == null)
+                    {
+                        var nc = eachNode.SelectNodes(".//div[@class='post-tail-wrap']//span[@class='tail-info']");
+                        var n = nc == null ? null : nc.LastOrDefault();
+                        submissionTime = n == null ? DateTime.MinValue : Convert.ToDateTime(n.InnerText);
+                    }
                     var content = (string) pdc["content"];
                     if (content == null)
                     {
@@ -212,7 +221,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
                         }
                     }
                     yield return new PostVisitor(pid, (int) pdc["post_no"],
-                        (string) pd["author"]["user_name"], content, (DateTime) pdc["date"],
+                        (string)pd["author"]["user_name"], content, submissionTime.Value,
                         (int) pdc["comment_num"], comments, this, Parent);
                 }
                 //下一页

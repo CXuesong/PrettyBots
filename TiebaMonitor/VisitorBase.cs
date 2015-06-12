@@ -8,7 +8,25 @@ namespace PrettyBots.Monitor
 {
     public abstract class VisitorBase
     {
-        public WebSession Session { get; set; }
+        public abstract WebSession Session { get; set; }
+
+        protected VisitorBase()
+        { }
+    }
+
+    public abstract class Visitor : VisitorBase
+    {
+        private WebSession _Session;
+
+        public override WebSession Session
+        {
+            get
+            {
+                if (_Session == null) _Session = new WebSession();
+                return _Session;
+            }
+            set { _Session = value; }
+        }
 
         /// <summary>
         /// 登录帐号。
@@ -20,14 +38,38 @@ namespace PrettyBots.Monitor
         /// </summary>
         public abstract void Logout();
 
-        protected VisitorBase(WebSession session)
+        protected Visitor(WebSession session)
         {
-            if (session == null) throw new ArgumentNullException("session");
-            this.Session = session;
+            _Session = session;
         }
 
-        protected VisitorBase()
-            : this(new WebSession())
+        protected Visitor() : this(null)
+        { }
+    }
+
+    public abstract class ChildVisitorBase : VisitorBase
+    {
+        public Visitor Parent { get; private set; }
+
+        public override WebSession Session
+        {
+            get { return Parent.Session; }
+            set { throw new NotSupportedException(); }
+        }
+
+        protected ChildVisitorBase(Visitor parent)
+        {
+            if (parent == null) throw new ArgumentNullException("parent");
+            Parent = parent;
+        }
+    }
+
+    public abstract class ChildVisitor<T> : ChildVisitorBase where T:Visitor
+    {
+        public new T Parent { get { return (T) base.Parent; } }
+
+        protected ChildVisitor(T parent)
+            : base(parent)
         { }
     }
 }

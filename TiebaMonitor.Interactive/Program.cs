@@ -161,7 +161,6 @@ namespace TiebaMonitor.Interactive
                 foreach (var t in suspectedTopics) UI.Print(t);
                 if (isAuto || UI.Confirm("是否回复？"))
                 {
-                    var isFirstReply = true;
                     var lastReplyTime = DateTime.MinValue;
                     foreach (var t in suspectedTopics)
                     {

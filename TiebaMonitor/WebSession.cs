@@ -18,6 +18,10 @@ namespace PrettyBots.Monitor
 
         public NameValueCollection Headers { get; set; }
 
+        /// <summary>
+        /// 根据当前的会话，建立一个网络客户端。
+        /// </summary>
+        /// <returns>一个网络客户端，其引用了当前会话的 Cookie，并使用标头的副本。</returns>
         internal ExtendedWebClient CreateWebClient()
         {
             var c = new ExtendedWebClient();
@@ -93,7 +97,7 @@ namespace PrettyBots.Monitor
             CookieContainer = new CookieContainer();
             Headers = new NameValueCollection
             {
-                {"user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)"}
+                {"user-agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; InfoPath.3; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; Tablet PC 2.0; rv:11.0) like Gecko"}
             };
         }
     }
