@@ -74,6 +74,7 @@ namespace PrettyBots.Monitor.Strategies
             var normalizedFn = Utility.NormalizeString(f.Name);
             foreach (var t in f.Topics().Take(checkCount))
             {
+                if (t.IsTop || t.IsGood) continue;
                 if (string.IsNullOrWhiteSpace(t.PreviewText)) continue;
                 if (t.RepliesCount > RepliesCountLimit) continue;
                 var title = Utility.NormalizeString(t.Title);
@@ -108,7 +109,7 @@ namespace PrettyBots.Monitor.Strategies
                 var posts = t.Posts().ToList();
                 var authorPost = posts.FirstOrDefault(p => string.Compare(p.Author.Name, t.AuthorName, StringComparison.OrdinalIgnoreCase) == 0);
                 if (authorPost == null) continue;
-                if (authorPost.Author.Level > AuthorLevelLimit) continue;
+                if (authorPost.Author.Level == null || authorPost.Author.Level > AuthorLevelLimit) continue;
                 if (posts.Any(p => InString(p.Content, AntiRecursionMagicString))) continue;
                 Debug.Print("\tMatched: {0}", t.Id);
                 yield return t;

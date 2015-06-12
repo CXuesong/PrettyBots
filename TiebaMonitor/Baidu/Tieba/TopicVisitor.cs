@@ -254,6 +254,8 @@ namespace PrettyBots.Monitor.Baidu.Tieba
 
         internal bool Reply(string contentCode, long? pid)
         {
+            //TIP
+            //"@La_Mobile&nbsp;....[br][url]http://tieba.baidu.com/[/url]"
             if (string.IsNullOrWhiteSpace(contentCode)) return false;
             Debug.Assert(_ForumId == null || Forum.Id == _ForumId);
             using (var client = Parent.Session.CreateWebClient())

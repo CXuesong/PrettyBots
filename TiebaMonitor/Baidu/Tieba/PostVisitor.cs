@@ -45,16 +45,14 @@ namespace PrettyBots.Monitor.Baidu.Tieba
             if (bufferedComments != null)
             {
                 foreach (var c in bufferedComments)
-                {
                     yield return c;
-                }
             }
             //TODO:加载10条以后的楼中楼。
         }
 
         public void Update()
         {
-            throw new NotImplementedException();
+            
         }
 
         public bool Reply(string contentCode)

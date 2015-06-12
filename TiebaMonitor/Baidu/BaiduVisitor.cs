@@ -142,6 +142,7 @@ window.location.replace(url);
         }
 
         private TiebaVisitor _Tieba;
+
         /// <summary>
         /// 访问百度贴吧。
         /// </summary>

@@ -1,3 +1,5 @@
+using System;
+
 namespace PrettyBots.Monitor.Baidu.Tieba
 {
 
@@ -5,8 +7,24 @@ namespace PrettyBots.Monitor.Baidu.Tieba
     /// 保存了百度贴吧帖子列表中的基本用户信息。
     /// 稍后可以利用这些信息查找个人页面。
     /// </summary>
-    public struct TiebaUserStub
+    public struct TiebaUserStub : IEquatable<TiebaUserStub>
     {
+        public bool Equals(TiebaUserStub other)
+        {
+            return string.CompareOrdinal(Name, other.Name) == 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            return obj is TiebaUserStub && Equals((TiebaUserStub) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Name != null ? Name.GetHashCode() : 0);
+        }
+
         public long? Id { get; set; }
 
         public string Name { get; set; }
@@ -17,6 +35,16 @@ namespace PrettyBots.Monitor.Baidu.Tieba
         public override string ToString()
         {
             return string.Format("{0},{1},Lv{2}", Id, Name, Level);
+        }
+
+        public static bool operator==(TiebaUserStub x, TiebaUserStub y)
+        {
+            return string.CompareOrdinal(x.Name, y.Name) == 0;
+        }
+
+        public static bool operator !=(TiebaUserStub x, TiebaUserStub y)
+        {
+            return string.CompareOrdinal(x.Name, y.Name) != 0;
         }
 
         internal TiebaUserStub(string name) : this(null, name, null)

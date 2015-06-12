@@ -20,6 +20,14 @@
             return f;
         }
 
+        /// <summary>
+        /// 对贴吧执行搜索。
+        /// </summary>
+        public SearchVisitor Search(string keyword = null, string forumName = null, string userName = null)
+        {
+            return new SearchVisitor(Parent, keyword, forumName, userName);
+        }
+
         internal TiebaVisitor(BaiduVisitor parent)
             : base(parent)
         {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using HtmlAgilityPack;
 
 namespace PrettyBots.Monitor.Baidu.Tieba
@@ -9,7 +11,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
     {
         // 贴吧名 / 关键字 / 用户名
         public const string QueryFormat =
-            "http://tieba.baidu.com/f/search/ures?ie=utf-8&kw={0}&qw={1}&rn=30&un={2}&sm=1";
+            "http://tieba.baidu.com/f/search/res?ie=utf-8&kw={0}&qw={1}&rn=30&un={2}&sm=1";
 
         public string ForumName { get; private set; }
 
@@ -26,9 +28,12 @@ namespace PrettyBots.Monitor.Baidu.Tieba
         {
             using (var c = Parent.Session.CreateWebClient())
             {
-                var currentUrl = string.Format(QueryFormat, ForumName, Keyword, UserName);
+                c.Encoding = Encoding.GetEncoding("GBK");
+                var currentUrl = string.Format(QueryFormat,
+                    HttpUtility.UrlEncode(ForumName), HttpUtility.UrlEncode(Keyword),
+                    HttpUtility.UrlEncode(UserName));
                 var doc = new HtmlDocument();
-                doc.Load(c.DownloadString(currentUrl));
+                doc.LoadHtml(c.DownloadString(currentUrl));
                 var resultNode = doc.DocumentNode.SelectSingleNode("//div[@class='s_post_list']");
                 if (resultNode == null) yield break;
                 foreach (var eachNode in resultNode.SelectNodes("./div[@class='s_post']"))
@@ -54,10 +59,12 @@ namespace PrettyBots.Monitor.Baidu.Tieba
             }
         }
 
-        internal SearchVisitor(BaiduVisitor parent)
+        internal SearchVisitor(BaiduVisitor parent, string keyword, string forumName, string userName)
             : base(parent)
         {
-
+            ForumName = forumName;
+            Keyword = keyword;
+            UserName = UserName;
         }
     }
 }

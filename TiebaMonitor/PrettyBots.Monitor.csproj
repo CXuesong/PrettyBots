@@ -57,7 +57,7 @@
     <Compile Include="NetEase\LofterTextEntry.cs" />
     <Compile Include="NetEase\LofterVisitor.cs" />
     <Compile Include="Strategies\Strategy.cs" />
-    <Compile Include="Strategies\TiebaWelcomePoster.cs" />
+    <Compile Include="Strategies\TiebaNewbieDetector.cs" />
     <Compile Include="Strategies\TiebaZhidaoRedirectionDetector.cs" />
     <Compile Include="Baidu\Tieba\MessagesVisitor.cs" />
     <Compile Include="Baidu\Tieba\PostVisitor.cs" />

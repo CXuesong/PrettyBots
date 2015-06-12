@@ -23,6 +23,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
         public NewMessagesCounter Counter { get; set; }
 
         private static Regex countersMatcher = new Regex(@"\[.*\]");
+
         public void Update()
         {
             //initItiebaMessage([0,0,0,4,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);

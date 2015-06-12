@@ -50,7 +50,8 @@ namespace TiebaMonitor.Interactive
                             "L", "载入Cookies",
                             "P", "前缀检查",
                             "C", "知道-贴吧重定向问题检查",
-                        "E", "退出"))
+                            "W", "贴吧迎新",
+                            "E", "退出"))
                     {
                         case "L":
                             AccountManagementRoutine();
@@ -60,6 +61,9 @@ namespace TiebaMonitor.Interactive
                             break;
                         case "C":
                             ZhidaoRedirectionCheckRoutine();
+                            break;
+                        case "W":
+                            TiebaWelcomerRoutine();
                             break;
                         case "E":
                             return 0;
@@ -176,6 +180,31 @@ namespace TiebaMonitor.Interactive
                         }
                         lastReplyTime = DateTime.Now;
                     }
+                }
+            }
+        }
+
+
+        private static void TiebaWelcomerRoutine(string fn = null)
+        {
+            UI.Print();
+            var isAuto = fn != null;
+            if (fn == null)
+                fn = UI.Input("键入贴吧名称", "mark5ds");
+            if (string.IsNullOrWhiteSpace(fn)) return;
+            var f = visitor.Tieba.Forum(fn);
+            if (!f.IsExists) return;
+            var checker = new TiebaNewbieDetector(visitor)
+            {
+                TopicKeywords = new []{"新人", "报道"},
+                ReplyKeywords = new []{"你好", "欢迎", "这里", "介里", "大家好", "求昵称"},
+            };
+            var suspectedTopics = checker.CheckForum(fn, 15).ToList();
+            if (suspectedTopics.Count > 0)
+            {
+                foreach (var t in suspectedTopics) UI.Print(t);
+                if (isAuto || UI.Confirm("是否回复？"))
+                {
                 }
             }
         }

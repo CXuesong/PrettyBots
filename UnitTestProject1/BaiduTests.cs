@@ -83,5 +83,17 @@ namespace UnitTestProject1
             visitor.Tieba.Messages.Update();
             Trace.WriteLine(visitor.Tieba.Messages.Counter);
         }
+        //http://tieba.baidu.com/i/sys/jump?u=066c666f726573743933d100&type=replyme
+        [TestMethod]
+        public void TiebaSearchTest()
+        {
+            var visitor = CreateVisitor();
+            LoginVisitor(visitor);
+            var s = visitor.Tieba.Search("滴定", "化学");
+            foreach (var p in s.Posts())
+            {
+                Trace.WriteLine(p.Content);
+            }
+        }
     }
 }
