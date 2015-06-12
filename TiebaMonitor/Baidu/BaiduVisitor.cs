@@ -14,7 +14,15 @@ namespace PrettyBots.Monitor.Baidu
     /// <remarks>可以使用同一个<see cref="WebSession"/>建立多个Visitor。</remarks>
     public class BaiduVisitor : Visitor
     {
+        /// <summary>
+        /// 管理当前用户的账户信息。
+        /// </summary>
         public BaiduAccountInfo AccountInfo { get; private set; }
+
+        /// <summary>
+        /// 管理当前用户的贴吧消息。
+        /// </summary>
+        public MessagesVisitor Messages { get; private set; }
 
         private static void TraceCookies(ExtendedWebClient wc)
         {
@@ -161,21 +169,7 @@ window.location.replace(url);
         public BaiduVisitor()
         {
             AccountInfo = new BaiduAccountInfo(this);
-        }
-    }
-
-    public class BaiduChildVisitor
-    {
-        private BaiduVisitor _Parent;
-
-        public BaiduVisitor Parent
-        {
-            get { return _Parent; }
-        }
-
-        protected BaiduChildVisitor(BaiduVisitor parent)
-        {
-            _Parent = parent;
+            Messages = new MessagesVisitor(this);
         }
     }
 }

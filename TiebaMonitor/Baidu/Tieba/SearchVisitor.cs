@@ -5,7 +5,7 @@ using HtmlAgilityPack;
 
 namespace PrettyBots.Monitor.Baidu.Tieba
 {
-    public class SearchVisitor : BaiduChildVisitor
+    public class SearchVisitor : ChildVisitor<BaiduVisitor>
     {
         // 贴吧名 / 关键字 / 用户名
         public const string QueryFormat =

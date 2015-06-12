@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace PrettyBots.Monitor.Baidu.Tieba
 {
-    public class ForumVisitor : BaiduChildVisitor
+    public class ForumVisitor : ChildVisitor<BaiduVisitor>
     {
         const string ForumUrlFormat = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search";
         const string ForumUrlFormatPN = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search&pn={1}";

@@ -67,7 +67,7 @@ namespace PrettyBots.Monitor
         public static JObject FindJsonAssignment(string source, string lhs, bool noException = false)
         {
             //TODO 检查字段内部是否可能出现 { 。
-            var forumDataMatcher = new Regex(lhs + @"\s*=\s*((?<lb>\{).*?(?<-lb>}))\s*;");
+            var forumDataMatcher = new Regex(Regex.Escape(lhs) + @"\s*=\s*((?<lb>\{).*?(?<-lb>}))\s*;");
             var result = forumDataMatcher.Match(source);
             if (result.Success) return JObject.Parse(result.Groups[1].Value);
             if (noException) return null;

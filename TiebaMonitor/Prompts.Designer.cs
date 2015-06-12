@@ -61,6 +61,15 @@ namespace PrettyBots.Monitor {
         }
         
         /// <summary>
+        ///   查找类似 用户的 Portrait 特性为空。这一般表明载入的页面数据有误。 的本地化字符串。
+        /// </summary>
+        internal static string Exception_PortraitIsNull {
+            get {
+                return ResourceManager.GetString("Exception_PortraitIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 登录失败。 的本地化字符串。
         /// </summary>
         internal static string LoginException {

@@ -87,7 +87,7 @@ namespace BaiduInterop.Interactive
         SHOW_ACCOUNT:
             UI.Print();
             if (visitor.AccountInfo.IsLoggedIn)
-                UI.Print("您已经作为 {0} 登录至 baidu.com 。", visitor.AccountInfo.UserName);
+                UI.Print(visitor.AccountInfo);
             else
                 UI.Print("您尚未登录。");
             while (true)

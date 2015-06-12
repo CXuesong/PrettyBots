@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace PrettyBots.Monitor.Baidu.Tieba
 {
-    public class PostVisitor : BaiduChildVisitor, ITextMessageVisitor
+    public class PostVisitor : ChildVisitor<BaiduVisitor>, ITextMessageVisitor
     {
         // pn >= 2
         public const string CommentUrlFormat = "http://tieba.baidu.com/p/comment?t={0}&tid={1}&pid={2}&pn={3}";

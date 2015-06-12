@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace PrettyBots.Monitor.Baidu.Tieba
 {
-    public class TopicVisitor : BaiduChildVisitor
+    public class TopicVisitor : ChildVisitor<BaiduVisitor>
     {
         public const string TopicUrlFormat = "http://tieba.baidu.com/p/{0}?ie=utf-8";
 
