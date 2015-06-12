@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaiduInteractive", "BaiduInteractive\BaiduInteractive.csproj", "{D8567B45-E972-4360-866E-5C85D392C927}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestApp", "TestApp\TestApp.fsproj", "{C5CA8F10-363F-4208-87F0-991B6C37A79C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D8567B45-E972-4360-866E-5C85D392C927}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8567B45-E972-4360-866E-5C85D392C927}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8567B45-E972-4360-866E-5C85D392C927}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

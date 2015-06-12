@@ -94,11 +94,6 @@
     <None Include="packages.config" />
     <None Include="Resources\f001.jpg" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="_credentials.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -199,7 +199,7 @@ namespace TiebaMonitor.Interactive
                 TopicKeywords = new []{"新人", "报道"},
                 ReplyKeywords = new []{"你好", "欢迎", "这里", "介里", "大家好", "求昵称"},
             };
-            var suspectedTopics = checker.CheckForum(fn, 15).ToList();
+            var suspectedTopics = checker.CheckForum(fn, 40).ToList();
             if (suspectedTopics.Count > 0)
             {
                 foreach (var t in suspectedTopics) UI.Print(t);

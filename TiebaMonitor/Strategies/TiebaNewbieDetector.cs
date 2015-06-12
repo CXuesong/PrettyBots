@@ -77,7 +77,7 @@ namespace PrettyBots.Monitor.Strategies
         public TiebaNewbieDetector(BaiduVisitor visitor)
             : base(visitor)
         {
-            RepliesCountLimit = 20;
+            RepliesCountLimit = 40;
             AuthorLevelLimit = 7;
         }
     }
