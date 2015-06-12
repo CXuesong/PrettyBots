@@ -30,7 +30,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
 
         }
 
-        public string AuthorName { get; private set; }
+        public TiebaUserStub Author { get; set; }
 
         public int Floor { get; private set; }
 
@@ -62,26 +62,31 @@ namespace PrettyBots.Monitor.Baidu.Tieba
             return Topic.Reply(contentCode, Id);
         }
 
-        internal PostVisitor(long id, string author, string content, DateTime submissionTime, long topicId,
+        internal PostVisitor(long id, TiebaUserStub author, string content, DateTime submissionTime, long topicId,
             BaiduVisitor parent)
             : this(id , 0, author, content, submissionTime, 0, null, null, parent)
         {
             _TopicId = topicId;
         }
 
-        internal PostVisitor(long id, int floor, string author, string content, DateTime submissionTime,
+        internal PostVisitor(long id, int floor, TiebaUserStub author, string content, DateTime submissionTime,
             int commentsCount, IEnumerable<PostComment> loadedComments, TopicVisitor topic, BaiduVisitor parent)
             : base(parent)
         {
             Id = id;
-            AuthorName = author;
             Floor = floor;
+            Author = author;
             Content = content;
             SubmissionTime = submissionTime;
             CommentsCount = commentsCount;
             bufferedComments = loadedComments;
             _TopicId = null;
             _Topic = topic;
+        }
+
+        string ITextMessageVisitor.AuthorName
+        {
+            get { return Author.Name; }
         }
     }
 }

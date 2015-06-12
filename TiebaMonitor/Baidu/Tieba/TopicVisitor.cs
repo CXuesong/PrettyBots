@@ -145,6 +145,9 @@ namespace PrettyBots.Monitor.Baidu.Tieba
                         if (contentNode == null) throw new UnexpectedDataException();
                         content = contentNode.InnerHtml.Trim();
                     }
+                    var badageNode = eachNode.SelectSingleNode(".//div[@class='d_badge_lv']");
+                    var author = new TiebaUserStub((long) pd["author"]["user_id"],
+                        (string)pd["author"]["user_name"], Convert.ToInt32(badageNode.InnerText));
                     //楼中楼
                     /*
                      {
@@ -221,7 +224,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
                         }
                     }
                     yield return new PostVisitor(pid, (int) pdc["post_no"],
-                        (string)pd["author"]["user_name"], content, submissionTime.Value,
+                        author, content, submissionTime.Value,
                         (int) pdc["comment_num"], comments, this, Parent);
                 }
                 //下一页

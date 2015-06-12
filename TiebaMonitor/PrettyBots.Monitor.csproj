@@ -49,11 +49,14 @@
   <ItemGroup>
     <Compile Include="Baidu\BaiduAccountInfo.cs" />
     <Compile Include="Baidu\BaiduUtility.cs" />
+    <Compile Include="Baidu\Tieba\BaiduUserStubs.cs" />
     <Compile Include="Baidu\Tieba\PostComment.cs" />
     <Compile Include="ITextMessageVisitor.cs" />
     <Compile Include="NetEase\LofterAccountInfo.cs" />
     <Compile Include="NetEase\LofterTextEntry.cs" />
     <Compile Include="NetEase\LofterVisitor.cs" />
+    <Compile Include="Strategies\Strategy.cs" />
+    <Compile Include="Strategies\TiebaWelcomePoster.cs" />
     <Compile Include="Strategies\TiebaZhidaoRedirectionDetector.cs" />
     <Compile Include="Baidu\Tieba\MessageNotifier.cs" />
     <Compile Include="Baidu\Tieba\PostVisitor.cs" />
@@ -73,7 +76,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Baidu\Tieba\TopicVisitor.cs" />
     <Compile Include="Utility.cs" />
-    <Compile Include="VisitorBase.cs" />
+    <Compile Include="Visitor.cs" />
     <Compile Include="WebSession.cs" />
   </ItemGroup>
   <ItemGroup>

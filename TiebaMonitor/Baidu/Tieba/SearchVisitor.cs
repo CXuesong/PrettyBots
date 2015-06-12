@@ -49,7 +49,7 @@ namespace PrettyBots.Monitor.Baidu.Tieba
                     var date = node == null ? DateTime.MinValue : Convert.ToDateTime(node.InnerText);
                     var tid = Convert.ToInt64(matchResult.Groups[1].Value);
                     var pid = Convert.ToInt64(matchResult.Groups[2].Value);
-                    yield return new PostVisitor(tid, author, content, date, tid, Parent);
+                    yield return new PostVisitor(tid, new TiebaUserStub(author), content, date, tid, Parent);
                 }
             }
         }

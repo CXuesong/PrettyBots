@@ -111,51 +111,38 @@ namespace TiebaMonitor.Interactive
             if (string.IsNullOrWhiteSpace(fn)) return;
             var f = visitor.Tieba.Forum(fn);
             if (!f.IsExists) return;
-            var checker = new TiebaZhidaoRedirectionDetector(visitor);
-            var rnd = new Random();
-            /*
-             容易误判的内容
-             * RT~~
-             * 跪求解答T_T
-             * 
-             */
-            checker.StrongMatcher = new[]
+            var checker = new TiebaZhidaoRedirectionDetector(visitor)
             {
-                "不解释 ！！！！答的上的乃神人！",
-                "急急急 谢谢了",
-                "哪位大大知道呀，小弟在此感激不尽",
-                "谢谢吧里各位大爷，爱你们~",
-                "麻烦知道的说下～我在此先谢过",
-                "哪位高手如果知道是请告诉我一下，谢谢！",
-                "红旗镇楼跪求解答",
-                "求好心人解答~",
-                "本吧好心人解答一下吧~~~",
-                "求大神指导,好心人帮助"
-            };
-            checker.WeakMatcher = new[]
-            {
-                "是不是",
-                "有没有",
-                "怎么",
-                "什么",
-                "？"
-            };
-            var suspectedTopics = checker.CheckForum(fn, 15).Where(t =>
-            {
-                if (t.RepliesCount > 20) return false;
-                //hasReplied
-                if (t.Posts().Any(p =>
+                StrongMatcher = new[]
                 {
-                    if (p.AuthorName == visitor.AccountInfo.UserName)
-                    {
-                        if (string.IsNullOrWhiteSpace(p.Content)) return false;
-                        if (p.Content.IndexOf("__checked__", StringComparison.Ordinal) >= 0)
-                            return true;
-                    }
-                    return false;
-                })) return false;
-                return true;
-            }).ToList();
+                    "不解释 ！！！！答的上的乃神人！",
+                    "急急急 谢谢了",
+                    "哪位大大知道呀，小弟在此感激不尽",
+                    "谢谢吧里各位大爷，爱你们~",
+                    "麻烦知道的说下～我在此先谢过",
+                    "哪位高手如果知道是请告诉我一下，谢谢！",
+                    "红旗镇楼跪求解答",
+                    "求好心人解答~",
+                    "本吧好心人解答一下吧~~~",
+                    "求大神指导,好心人帮助"
+                },
+/*
+ 容易误判的内容
+ * RT~~
+ * 跪求解答T_T
+ * 
+ */
+                WeakMatcher = new[]
+                {
+                    "是不是",
+                    "有没有",
+                    "怎么",
+                    "什么",
+                },
+                AntiRecursionMagicString = "__checked__",
+            };
+            var rnd = new Random();
+            var suspectedTopics = checker.CheckForum(fn, 15).ToList();
             if (suspectedTopics.Count > 0)
             {
                 foreach (var t in suspectedTopics) UI.Print(t);

@@ -6,19 +6,16 @@ using System.Threading.Tasks;
 
 namespace PrettyBots.Monitor
 {
-    public abstract class VisitorBase
+    public interface IVisitor
     {
-        public abstract WebSession Session { get; set; }
-
-        protected VisitorBase()
-        { }
+        WebSession Session { get; }
     }
 
-    public abstract class Visitor : VisitorBase
+    public abstract class Visitor : IVisitor
     {
         private WebSession _Session;
 
-        public override WebSession Session
+        public virtual WebSession Session
         {
             get
             {
@@ -47,14 +44,13 @@ namespace PrettyBots.Monitor
         { }
     }
 
-    public abstract class ChildVisitorBase : VisitorBase
+    public abstract class ChildVisitorBase : IVisitor
     {
         public Visitor Parent { get; private set; }
 
-        public override WebSession Session
+        public WebSession Session
         {
             get { return Parent.Session; }
-            set { throw new NotSupportedException(); }
         }
 
         protected ChildVisitorBase(Visitor parent)
