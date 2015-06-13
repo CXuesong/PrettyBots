@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Web;
 
-namespace PrettyBots.Monitor.Baidu
+namespace PrettyBots.Visitors.Baidu
 {
     public static class BaiduUtility
     {

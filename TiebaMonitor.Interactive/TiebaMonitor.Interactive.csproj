@@ -56,9 +56,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TiebaMonitor\PrettyBots.Monitor.csproj">
+    <ProjectReference Include="..\PrettyBots.Strategies\PrettyBots.Strategies.csproj">
+      <Project>{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}</Project>
+      <Name>PrettyBots.Strategies</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TiebaMonitor\PrettyBots.Visitors.csproj">
       <Project>{29478543-b265-45b1-99bf-4eb4e2edbcdf}</Project>
-      <Name>PrettyBots.Monitor</Name>
+      <Name>PrettyBots.Visitors</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,10 +7,25 @@
     <ProjectGuid>{29478543-B265-45B1-99BF-4EB4E2EDBCDF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PrettyBots.Monitor</RootNamespace>
-    <AssemblyName>PrettyBots.Monitor</AssemblyName>
+    <RootNamespace>PrettyBots.Visitors</RootNamespace>
+    <AssemblyName>PrettyBots.Visitors</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <PublishUrl>发布\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,12 +45,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EntityFramework.6.1.1\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\packages\EntityFramework.6.1.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -44,8 +53,8 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
@@ -61,37 +70,15 @@
     <Compile Include="Baidu\MessagesVisitor.cs" />
     <Compile Include="Baidu\Tieba\BaiduUserStubs.cs" />
     <Compile Include="Baidu\Tieba\PostComment.cs" />
-    <Compile Include="DataModel\Account.cs">
-      <DependentUpon>PbPrimary.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DataModel\Logging.cs">
-      <DependentUpon>PbPrimary.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DataModel\LoggingType.cs">
-      <DependentUpon>PbPrimary.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DataModel\PbPrimary.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PbPrimary.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DataModel\PbPrimary.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PbPrimary.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DataModel\PbPrimary.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PbPrimary.edmx</DependentUpon>
-    </Compile>
     <Compile Include="ITextMessageVisitor.cs" />
     <Compile Include="NetEase\LofterAccountInfo.cs" />
     <Compile Include="NetEase\LofterTextEntry.cs" />
     <Compile Include="NetEase\LofterVisitor.cs" />
-    <Compile Include="Strategies\Strategy.cs" />
-    <Compile Include="Strategies\TiebaNewbieDetector.cs" />
-    <Compile Include="Strategies\TiebaZhidaoRedirectionDetector.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Baidu\Tieba\MessagesVisitor.cs" />
     <Compile Include="Baidu\Tieba\PostVisitor.cs" />
     <Compile Include="Baidu\Tieba\SearchVisitor.cs" />
@@ -114,23 +101,14 @@
     <Compile Include="WebSession.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EntityDeploy Include="DataModel\PbPrimary.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>PbPrimary.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <None Include="App.Config" />
-    <None Include="DataModel\PbPrimary.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PbPrimary.Context.cs</LastGenOutput>
-    </None>
-    <None Include="DataModel\PbPrimary.edmx.diagram">
-      <DependentUpon>PbPrimary.edmx</DependentUpon>
-    </None>
-    <None Include="DataModel\PbPrimary.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PbPrimary.cs</LastGenOutput>
+    <None Include="App.Config">
+      <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Prompts.resx">
@@ -139,10 +117,25 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DataModel\Primary.edmx.sql" />
+    <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

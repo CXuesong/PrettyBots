@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PrettyBots.Monitor
+namespace PrettyBots.Visitors
 {
     public interface IVisitor
     {

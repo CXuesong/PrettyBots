@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="DataClasses1">
+  <DataContextMoniker Name="/PrimaryDataContext" />
+  <nestedChildShapes>
+    <classShape Id="f4b561f6-1bde-4ede-b47a-59037e3613cd" absoluteBounds="0.75, 0.75, 2, 1.5373050944010416">
+      <DataClassMoniker Name="/PrimaryDataContext/Account" />
+      <nestedChildShapes>
+        <elementListCompartment Id="40bfa981-be17-4aae-a315-592a758a3baf" absoluteBounds="0.765, 1.21, 1.9700000000000002, 0.97730509440104174" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="587fdd25-9060-4bd1-b7d2-692a1924dc2c" absoluteBounds="3.75, 0.75, 2, 1.9068933105468751">
+      <DataClassMoniker Name="/PrimaryDataContext/LogEntry" />
+      <nestedChildShapes>
+        <elementListCompartment Id="9fe50fa7-9ed0-426e-bff6-927463fd4fa5" absoluteBounds="3.765, 1.21, 1.9700000000000002, 1.346893310546875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="3e256086-3334-4d28-a09b-cca1b965c21d" absoluteBounds="0.75, 2.625, 2, 1.3525109863281251">
+      <DataClassMoniker Name="/PrimaryDataContext/Session" />
+      <nestedChildShapes>
+        <elementListCompartment Id="8b5fe638-986d-46f3-981f-6dbac388b8ff" absoluteBounds="0.76500000000000012, 3.085, 1.9700000000000002, 0.792510986328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

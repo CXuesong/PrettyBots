@@ -10,7 +10,7 @@ using System.Collections.Specialized;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
-namespace PrettyBots.Monitor.NetEase
+namespace PrettyBots.Visitors.NetEase
 {
     public enum EntryPrivacy
     {

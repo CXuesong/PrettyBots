@@ -1,4 +1,4 @@
-﻿namespace PrettyBots.Monitor
+﻿namespace PrettyBots.Visitors
 {
     public interface ITextMessageVisitor
     {

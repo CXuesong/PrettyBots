@@ -5,7 +5,7 @@ using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
-namespace PrettyBots.Monitor
+namespace PrettyBots.Visitors
 {
     /// <summary>
     /// 保存了一次网页会话的信息。
@@ -63,6 +63,12 @@ namespace PrettyBots.Monitor
             if (s == null) throw new ArgumentNullException("s");
             var formatter = new BinaryFormatter();
             CookieContainer = (CookieContainer)formatter.Deserialize(s);
+        }
+
+        public void LoadCookies(CookieContainer c)
+        {
+            if (c == null) throw new ArgumentNullException("c");
+            CookieContainer = c;
         }
 
         public void LoadCookies(string path)

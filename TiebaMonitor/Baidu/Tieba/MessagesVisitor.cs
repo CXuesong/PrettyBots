@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
-namespace PrettyBots.Monitor.Baidu.Tieba
+namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class MessagesVisitor : ChildVisitor<BaiduVisitor>
     {

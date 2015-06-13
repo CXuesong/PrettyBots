@@ -1,4 +1,4 @@
-﻿namespace PrettyBots.Monitor.Baidu.Tieba
+﻿namespace PrettyBots.Visitors.Baidu.Tieba
 {
     /// <summary>
     /// 用于访问百度贴吧。

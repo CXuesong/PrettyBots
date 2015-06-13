@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
-namespace PrettyBots.Monitor.NetEase
+namespace PrettyBots.Visitors.NetEase
 {
     public class LofterAccountInfo : ChildVisitor<LofterVisitor>
     {

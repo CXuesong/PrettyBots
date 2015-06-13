@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
-namespace PrettyBots.Monitor.Baidu.Tieba
+namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class ForumVisitor : ChildVisitor<BaiduVisitor>
     {

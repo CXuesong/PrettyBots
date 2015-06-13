@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace PrettyBots.Monitor.Baidu
+namespace PrettyBots.Visitors.Baidu
 {
     /// <summary>
     /// 用于管理百度平台的消息。

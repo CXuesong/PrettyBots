@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace PrettyBots.Monitor
+namespace PrettyBots.Visitors
 {
     /// <summary>
     /// 表示因接受到的数据与期望不符而引发的异常。

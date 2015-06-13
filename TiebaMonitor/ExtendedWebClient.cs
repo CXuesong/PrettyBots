@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 
-namespace PrettyBots.Monitor
+namespace PrettyBots.Visitors
 {
     class ExtendedWebClient : WebClient
     {

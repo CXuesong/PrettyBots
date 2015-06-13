@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace PrettyBots.Monitor.Baidu.Tieba
+namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class PostVisitor : ChildVisitor<BaiduVisitor>, ITextMessageVisitor
     {

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PrettyBots.Monitor.NetEase;
+using PrettyBots.Visitors.NetEase;
 
 namespace UnitTestProject1
 {

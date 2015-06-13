@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
 
-namespace PrettyBots.Monitor.Baidu.Tieba
+namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class SearchVisitor : ChildVisitor<BaiduVisitor>
     {

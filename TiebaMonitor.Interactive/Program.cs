@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 using System.Net;
 using System.IO;
 using System.Threading;
-using PrettyBots.Monitor;
-using PrettyBots.Monitor.Baidu;
-using PrettyBots.Monitor.Strategies;
+using PrettyBots.Strategies;
+using PrettyBots.Visitors.Baidu;
 
 namespace TiebaMonitor.Interactive
 {

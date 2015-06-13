@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PrettyBots.Monitor.Baidu.Tieba
+namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class PostComment
     {

@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PrettyBots.Monitor.Baidu;
-using PrettyBots.Monitor.Baidu.Tieba;
+using PrettyBots.Visitors.Baidu;
+using PrettyBots.Visitors.Baidu.Tieba;
 
-namespace PrettyBots.Monitor.Strategies
+namespace PrettyBots.Strategies
 {
     /// <summary>
     /// 用于贴吧迎新。

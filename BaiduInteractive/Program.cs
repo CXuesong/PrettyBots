@@ -3,9 +3,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using PrettyBots.Monitor;
-using PrettyBots.Monitor.Baidu;
-using PrettyBots.Monitor.Baidu.Tieba;
+using PrettyBots.Visitors;
+using PrettyBots.Visitors.Baidu;
+using PrettyBots.Visitors.Baidu.Tieba;
 
 namespace BaiduInterop.Interactive
 {

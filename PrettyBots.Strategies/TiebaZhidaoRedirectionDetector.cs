@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using PrettyBots.Monitor.Baidu;
-using PrettyBots.Monitor.Baidu.Tieba;
+using PrettyBots.Visitors.Baidu;
+using PrettyBots.Visitors.Baidu.Tieba;
 
-namespace PrettyBots.Monitor.Strategies
+namespace PrettyBots.Strategies
 {
     /// <summary>
     /// 用于检查由百度知道重定向而来的贴吧主题。

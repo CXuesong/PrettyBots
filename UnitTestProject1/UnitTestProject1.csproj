@@ -35,19 +35,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EntityFramework.6.1.1\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\packages\EntityFramework.6.1.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -76,6 +70,7 @@
     <Compile Include="NetEaseTests.cs" />
     <Compile Include="DataModelTests.cs" />
     <Compile Include="LibUnitTest.cs" />
+    <Compile Include="Utility.cs" />
     <Compile Include="VerificationCodeInputBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,9 +79,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TiebaMonitor\PrettyBots.Monitor.csproj">
+    <ProjectReference Include="..\PrettyBots.Strategies\PrettyBots.Strategies.csproj">
+      <Project>{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}</Project>
+      <Name>PrettyBots.Strategies</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TiebaMonitor\PrettyBots.Visitors.csproj">
       <Project>{29478543-b265-45b1-99bf-4eb4e2edbcdf}</Project>
-      <Name>PrettyBots.Monitor</Name>
+      <Name>PrettyBots.Visitors</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@ using System.Linq;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
-namespace PrettyBots.Monitor.Baidu.Tieba
+namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class TopicVisitor : ChildVisitor<BaiduVisitor>
     {

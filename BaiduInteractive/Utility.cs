@@ -121,6 +121,7 @@ namespace BaiduInterop.Interactive
             if (node.NodeType == HtmlNodeType.Comment) return string.Empty;
             if (node.NodeType == HtmlNodeType.Text) return node.InnerText;
             string s = null, pre = null, post = null;
+            if (node.NodeType == HtmlNodeType.Document) goto BUILD_CONTENT;
             switch (node.Name)
             {
                 case "p":
@@ -162,7 +163,12 @@ namespace BaiduInterop.Interactive
                     pre = "''";
                     post = "''";
                     break;
+                default:
+                    pre = "<" + node.Name + ">{";
+                    post = "}";
+                    break;
             }
+            BUILD_CONTENT:
             var builder = new StringBuilder(pre);
             var isNewLine = false;
             foreach (var n in node.ChildNodes)

@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using PrettyBots.Monitor.Baidu.Tieba;
+using PrettyBots.Visitors.Baidu.Tieba;
 
-namespace PrettyBots.Monitor.Baidu
+namespace PrettyBots.Visitors.Baidu
 {
     /// <summary>
     /// 用于登录百度平台。

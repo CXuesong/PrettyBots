@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PrettyBots.Monitor.Baidu;
+using PrettyBots.Visitors;
 
-namespace PrettyBots.Monitor.Strategies
+namespace PrettyBots.Strategies
 {
     public interface IStrategy
     {

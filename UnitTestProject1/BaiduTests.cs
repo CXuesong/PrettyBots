@@ -3,8 +3,7 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Xml.Linq;
-using PrettyBots.Monitor;
-using PrettyBots.Monitor.Baidu;
+using PrettyBots.Visitors.Baidu;
 
 namespace UnitTestProject1
 {

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyBots.Monitor", "TiebaMonitor\PrettyBots.Monitor.csproj", "{29478543-B265-45B1-99BF-4EB4E2EDBCDF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyBots.Visitors", "TiebaMonitor\PrettyBots.Visitors.csproj", "{29478543-B265-45B1-99BF-4EB4E2EDBCDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiebaMonitor.Interactive", "TiebaMonitor.Interactive\TiebaMonitor.Interactive.csproj", "{3E6A27F5-D1F6-44A5-94FC-B8B9619473F2}"
 EndProject
@@ -11,9 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaiduInteractive", "BaiduInteractive\BaiduInteractive.csproj", "{D8567B45-E972-4360-866E-5C85D392C927}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestApp", "TestApp\TestApp.fsproj", "{C5CA8F10-363F-4208-87F0-991B6C37A79C}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{3ED9677F-8B22-4B5C-8A7A-C339F1797346}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyBots.Strategies", "PrettyBots.Strategies\PrettyBots.Strategies.csproj", "{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PBRepositoryManager", "PBRepositoryManager\PBRepositoryManager.csproj", "{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +39,14 @@ Global
 		{D8567B45-E972-4360-866E-5C85D392C927}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8567B45-E972-4360-866E-5C85D392C927}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8567B45-E972-4360-866E-5C85D392C927}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5CA8F10-363F-4208-87F0-991B6C37A79C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

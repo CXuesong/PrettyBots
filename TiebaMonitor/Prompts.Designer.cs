@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PrettyBots.Monitor {
+namespace PrettyBots.Visitors {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace PrettyBots.Monitor {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PrettyBots.Monitor.Prompts", typeof(Prompts).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PrettyBots.Visitors.Prompts", typeof(Prompts).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

@@ -1,7 +1,7 @@
 ﻿using System;
 using HtmlAgilityPack;
 
-namespace PrettyBots.Monitor.Baidu
+namespace PrettyBots.Visitors.Baidu
 {
     /// <summary>
     /// 表示当前登录账户的信息。

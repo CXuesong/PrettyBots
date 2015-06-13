@@ -1,0 +1,48 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Repository="clr-namespace:PrettyBots.Strategies.Repository;assembly=PrettyBots.Strategies" mc:Ignorable="d" x:Class="PBRepositoryManager.MainWindow"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="ReposDataProvider" Grid.Row="1">
+            <Grid.DataContext>
+                <Repository:PrimaryRepositoryDbAdapter />
+            </Grid.DataContext>
+            <TabControl>
+                <TabItem Header="账户">
+                    <DataGrid ItemsSource="{Binding Accounts}" />
+                </TabItem>
+                <TabItem Header="日志">
+                    <DataGrid ItemsSource="{Binding Loggings}" />
+                </TabItem>
+                <TabItem Header="会话">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <DataGrid ItemsSource="{Binding Sessions}" />
+                        <StackPanel Grid.Column="1">
+                            <ListBox MinHeight="100" />
+                            <TextBlock Text="#" />
+                            <StackPanel Height="100">
+                                <Button Content="登录"/>
+                                <Button Content="注销"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <ToolBarTray>
+            <ToolBar>
+                <Button Content="打开数据库" Click="OpenDatabaseButton_Click" />
+                <Button Content="提交修改" Click="SubmitChangesButton_Click" />
+            </ToolBar>
+        </ToolBarTray>
+    </Grid>
+</Window>

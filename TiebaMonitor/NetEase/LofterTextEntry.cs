@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PrettyBots.Monitor.NetEase
+namespace PrettyBots.Visitors.NetEase
 {
     /// <summary>
     /// 表示 LOFTER 博客的一个文本条目。
