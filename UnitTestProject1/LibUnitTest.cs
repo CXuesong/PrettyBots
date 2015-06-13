@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace UnitTestProject1
 {
     [TestClass]
-    public class LibUnitTest2
+    public class LibUnitTest
     {
         //[TestMethod]
         public void TestMethod1()

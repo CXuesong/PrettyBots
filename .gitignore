@@ -188,6 +188,6 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 
-Tests/*
+_private/*
 _credentials.*
 TestApp/*
