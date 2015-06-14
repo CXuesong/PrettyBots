@@ -21,20 +21,20 @@ namespace PrettyBots.Strategies.Repository
         public void InsertAccount(Account account)
         {
             DataContext.Account.InsertOnSubmit(account);
-            DataContext.SubmitChanges();
+            Parent.SubmitChanges();
         }
 
         public void RemoveAccount(Account account)
         {
             DataContext.Account.DeleteOnSubmit(account);
-            DataContext.SubmitChanges();
+            Parent.SubmitChanges();
         }
 
         public void RemoveAccount(string domain, string userName)
         {
             DataContext.Account.DeleteAllOnSubmit(
                 DataContext.Account.Where(a => a.Domain == domain && a.UserName == userName));
-            DataContext.SubmitChanges();
+            Parent.SubmitChanges();
         }
 
         internal AccountRepository(PrimaryRepository parent)

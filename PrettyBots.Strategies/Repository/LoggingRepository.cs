@@ -10,7 +10,7 @@ namespace PrettyBots.Strategies.Repository
     {
         public IEnumerable<LogEntry> GetLogs()
         {
-            return Parent.DataContext.LogEntry;
+            return DataContext.LogEntry;
         }
 
         internal LoggingRepository(PrimaryRepository parent)

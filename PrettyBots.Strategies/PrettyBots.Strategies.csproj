@@ -73,6 +73,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Repository\SessionRepository.cs" />
     <Compile Include="Strategy.cs" />
     <Compile Include="TiebaNewbieDetector.cs" />
     <Compile Include="TiebaZhidaoRedirectionDetector.cs" />
