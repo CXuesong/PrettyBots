@@ -11,7 +11,7 @@ namespace PrettyBots.Strategies.Repository
     {
         public override string ToString()
         {
-            return string.Format("{0},{1},{2}", Domain, UserName, Password.GetHashCode());
+            return string.Format("{0},{1},{2}", Domain, UserName, Password == null ? 0 : Password.GetHashCode());
         }
     }
 
@@ -56,6 +56,11 @@ namespace PrettyBots.Strategies.Repository
                 session.SaveCookies(ms);
                 Cookies = new Binary(ms.ToArray());
             }
+        }
+
+        public void ClearCookies()
+        {
+            Cookies = null;
         }
 
         public override string ToString()

@@ -21,7 +21,7 @@ namespace UnitTestProject1
             {
                 var cred = XDocument.Load("../../../_credentials.xml");
                 var login = cred.Root.Element("lofterLogin");
-                v.Login((string)login.Attribute("username"), (string)login.Attribute("password"));
+                v.AccountInfo.Login((string)login.Attribute("username"), (string)login.Attribute("password"));
             }
             else
             {
@@ -35,7 +35,7 @@ namespace UnitTestProject1
         {
             var v = CreateVisitor();
             LoginVisitor(v, true);
-            v.Logout();
+            v.AccountInfo.Logout();
         }
 
         [TestMethod]
@@ -51,7 +51,7 @@ namespace UnitTestProject1
             Trace.WriteLine(v.NewText(blogName, new LofterTextEntry("测试日志",
                 "<strong>以下为测试内容</strong><br />" + DateTime.Now.ToString("F"),
                 EntryPrivacy.Public, "自动化", "测试")));
-            v.Logout();
+            v.AccountInfo.Logout();
         }
     }
 }

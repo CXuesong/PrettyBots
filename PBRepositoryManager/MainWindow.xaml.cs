@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using PrettyBots.Strategies.Repository;
+using PrettyBots.Visitors;
 
 namespace PBRepositoryManager
 {
@@ -22,55 +23,11 @@ namespace PBRepositoryManager
     /// </summary>
     public partial class MainWindow : Window
     {
-        private PrimaryRepository repos;
-        private PrimaryRepositoryDbAdapter adapter;
 
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void OpenDatabaseButton_Click(object sender, RoutedEventArgs e)
-        {
-            var ofd = new OpenFileDialog() { Filter = "*.mdf|*.mdf" };
-            if (ofd.ShowDialog() == true)
-            {
-                try
-                {
-                    var nr =
-                        new PrimaryRepository(
-                            string.Format(
-                                "Data Source=(LocalDB)\\v11.0;AttachDbFilename=\"{0}\";Integrated Security=True;Connect Timeout=30",
-                                ofd.FileName));
-                    var na = new PrimaryRepositoryDbAdapter(nr);
-                    if (!na.DatabaseExists)
-                    {
-                        MessageBox.Show("数据库不存在。");
-                        return;
-                    }
-                    if (repos != null) repos.Dispose();
-                    repos = nr;
-                    adapter = na;
-                    ReposDataProvider.DataContext = na;
-                }
-                catch (Exception ex)
-                {
-                    Utility.ReportException(ex);
-                }
-
-            }
-        }
-
-        private void SubmitChangesButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                adapter.SubmitChanges();
-            }
-            catch (Exception ex)
-            {
-                Utility.ReportException(ex);
-            }
+            this.DataContext = new MainWindowViewModel();
         }
     }
 }

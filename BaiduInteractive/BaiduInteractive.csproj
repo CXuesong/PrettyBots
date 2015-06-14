@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="AsciiArtGenerator.cs" />
     <Compile Include="EnumerableViewer.cs" />
+    <Compile Include="InteractiveVCodeRecognizer.cs" />
     <Compile Include="Program.cs">
       <SubType>
       </SubType>

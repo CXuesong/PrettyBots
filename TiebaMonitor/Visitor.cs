@@ -9,6 +9,19 @@ namespace PrettyBots.Visitors
     public interface IVisitor
     {
         WebSession Session { get; }
+
+        /// <summary>
+        /// 获取账户信息。
+        /// </summary>
+        IAccountInfo AccountInfo { get; }
+    }
+
+    /// <summary>
+    /// 表示此类型中的内容是可以更新的。
+    /// </summary>
+    public interface IUpdatable
+    {
+        void Update();
     }
 
     public abstract class Visitor : IVisitor
@@ -25,23 +38,11 @@ namespace PrettyBots.Visitors
             set { _Session = value; }
         }
 
-        /// <summary>
-        /// 登录帐号。
-        /// </summary>
-        public abstract bool Login(string userName, string password);
+        public IAccountInfo AccountInfo { get; protected set; }
 
-        /// <summary>
-        /// 注销当前用户。
-        /// </summary>
-        public abstract void Logout();
-
-        protected Visitor(WebSession session)
+        protected Visitor()
         {
-            _Session = session;
         }
-
-        protected Visitor() : this(null)
-        { }
     }
 
     public abstract class ChildVisitorBase : IVisitor
@@ -57,6 +58,16 @@ namespace PrettyBots.Visitors
         {
             if (parent == null) throw new ArgumentNullException("parent");
             Parent = parent;
+        }
+
+        WebSession IVisitor.Session
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        IAccountInfo IVisitor.AccountInfo
+        {
+            get { return ((IVisitor) Parent).AccountInfo; }
         }
     }
 

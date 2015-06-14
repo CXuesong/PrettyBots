@@ -70,6 +70,15 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 未登录 的本地化字符串。
+        /// </summary>
+        internal static string HasntLoggedIn {
+            get {
+                return ResourceManager.GetString("HasntLoggedIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 登录失败。 的本地化字符串。
         /// </summary>
         internal static string LoginException {

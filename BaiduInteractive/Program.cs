@@ -17,7 +17,7 @@ namespace BaiduInterop.Interactive
         {
             UI.Init();
             visitor = new BaiduVisitor();
-            visitor.Session.RequestingVerificationCode += session_RequestVerificationCode;
+            visitor.Session.VerificationCodeRecognizer = new InteractiveVCodeRecognizer();
             var isFirstLoop = true;
             while (true)
             {
@@ -52,17 +52,6 @@ namespace BaiduInterop.Interactive
             return 0;
         }
 
-        static void session_RequestVerificationCode(object sender, RequestingVerificationCodeEventArgs e)
-        {
-            byte[] data;
-            using (var client = new WebClient()) data = client.DownloadData(e.ImageUrl);
-            using (var s = new MemoryStream(data, false))
-            using (var bmp = new Bitmap(s))
-                UI.Print(AsciiArtGenerator.ConvertToAscii(bmp, Console.WindowWidth - 2));
-            var vc = UI.Input("键入验证码");
-            if (!string.IsNullOrEmpty(vc)) e.VerificationCode = vc;
-        }
-
         static void LoginRoutine()
         {
         BEGIN:
@@ -73,7 +62,7 @@ namespace BaiduInterop.Interactive
             var password = UI.InputPassword("密码");
             try
             {
-                if (!visitor.Login(userName, password)) goto BEGIN;
+                if (!visitor.AccountInfo.Login(userName, password)) goto BEGIN;
             }
             catch (Exception ex)
             {
@@ -103,7 +92,7 @@ namespace BaiduInterop.Interactive
                         {
                             if (UI.Confirm("确实要注销吗？"))
                             {
-                                visitor.Logout();
+                                visitor.AccountInfo.Logout();
                                 UI.Print("已注销。");
                             }
                         }

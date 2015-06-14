@@ -12,7 +12,10 @@ namespace PrettyBots.Visitors
     /// </summary>
     public class WebSession
     {
-        public event EventHandler<RequestingVerificationCodeEventArgs> RequestingVerificationCode;
+        /// <summary>
+        /// 获取/设置验证码的识别器。
+        /// </summary>
+        public VerificationCodeRecognizer VerificationCodeRecognizer{get; set; }
 
         public CookieContainer CookieContainer { get; set; }
 
@@ -32,6 +35,7 @@ namespace PrettyBots.Visitors
             return c;
         }
 
+        #region Cookies 支持
         internal void SetupCookies(HttpWebRequest request)
         {
             request.CookieContainer = CookieContainer;
@@ -82,20 +86,20 @@ namespace PrettyBots.Visitors
             }
         }
 
+        public void ClearCookies()
+        {
+            LoadCookies(new CookieContainer());
+        }
+
+        #endregion
+
         /// <summary>
         /// 根据指定的图片地址，请求用户识别并输入验证码。
         /// </summary>
         public string RequestVerificationCode(string imageUrl)
         {
-            var e = new RequestingVerificationCodeEventArgs(imageUrl);
-            OnRequestingVerificationCode(e);
-            return e.VerificationCode;
-        }
-
-        protected virtual void OnRequestingVerificationCode(RequestingVerificationCodeEventArgs e)
-        {
-            if (RequestingVerificationCode == null) return;
-            RequestingVerificationCode(this, e);
+            if (VerificationCodeRecognizer == null) return null;
+            return VerificationCodeRecognizer.Recognize(imageUrl, this);
         }
 
         public WebSession()
@@ -105,34 +109,6 @@ namespace PrettyBots.Visitors
             {
                 {"user-agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; InfoPath.3; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; Tablet PC 2.0; rv:11.0) like Gecko"}
             };
-        }
-    }
-
-    public class RequestingVerificationCodeEventArgs : EventArgs
-    {
-        private string _ImageUrl;
-        private string _VerificationCode;
-
-        /// <summary>
-        /// 验证码的图片地址。
-        /// </summary>
-        public string ImageUrl
-        {
-            get { return _ImageUrl; }
-        }
-
-        /// <summary>
-        /// 用于保存用户输入的验证码。如果用户未输入验证码，则为 <c>null</c>。
-        /// </summary>
-        public string VerificationCode
-        {
-            get { return _VerificationCode; }
-            set { _VerificationCode = value; }
-        }
-
-        public RequestingVerificationCodeEventArgs(string imageUrl)
-        {
-            _ImageUrl = imageUrl;
         }
     }
 }

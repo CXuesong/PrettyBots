@@ -13,13 +13,7 @@ namespace UnitTestProject1
         BaiduVisitor CreateVisitor()
         {
             var s = new BaiduVisitor();
-            s.Session.RequestingVerificationCode += (sender, e) =>
-            {
-                using (var ib = new VerificationCodeInputBox())
-                {
-                    e.VerificationCode = ib.ShowDialog(e.ImageUrl);
-                }
-            };
+            s.Session.VerificationCodeRecognizer = new InteractiveVCodeRecognizer();
             return s;
         }
 
@@ -29,7 +23,7 @@ namespace UnitTestProject1
             {
                 var cred = XDocument.Load("../../../_credentials.xml");
                 var login = cred.Root.Element("login");
-                v.Login((string) login.Attribute("username"), (string) login.Attribute("password"));
+                v.AccountInfo.Login((string) login.Attribute("username"), (string) login.Attribute("password"));
             }
             else
             {
@@ -47,7 +41,7 @@ namespace UnitTestProject1
             LoginVisitor(visitor, true);
             Assert.IsTrue(visitor.AccountInfo.IsLoggedIn);
             Trace.WriteLine(visitor.AccountInfo.UserName);
-            visitor.Logout();
+            visitor.AccountInfo.Logout();
             Assert.IsFalse(visitor.AccountInfo.IsLoggedIn);
         }
 
