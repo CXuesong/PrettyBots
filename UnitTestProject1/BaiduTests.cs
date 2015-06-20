@@ -17,20 +17,9 @@ namespace UnitTestProject1
             return s;
         }
 
-        void LoginVisitor(BaiduVisitor v, bool fromCredentials = false)
+        void LoginVisitor(BaiduVisitor v)
         {
-            if (fromCredentials)
-            {
-                var cred = XDocument.Load("../../../_credentials.xml");
-                var login = cred.Root.Element("login");
-                v.AccountInfo.Login((string) login.Attribute("username"), (string) login.Attribute("password"));
-            }
-            else
-            {
-                v.Session.LoadCookies("../../../BaiduInteractive/bin/Debug/BDICookies.bin");
-                v.AccountInfo.Update();
-                Trace.WriteLine(v.AccountInfo);
-            }
+            Utility.LoginAccount(v.AccountInfo);
             Assert.IsTrue(v.AccountInfo.IsLoggedIn);
         }
 
@@ -38,7 +27,7 @@ namespace UnitTestProject1
         public void LoginTest()
         {
             var visitor = CreateVisitor();
-            LoginVisitor(visitor, true);
+            LoginVisitor(visitor);
             Assert.IsTrue(visitor.AccountInfo.IsLoggedIn);
             Trace.WriteLine(visitor.AccountInfo.UserName);
             visitor.AccountInfo.Logout();
@@ -53,7 +42,7 @@ namespace UnitTestProject1
             var f = visitor.Tieba.Forum("化学");
             foreach (var t in f.Topics().Take(50))
                 Trace.WriteLine(t);
-            //visitor.Logout();
+            visitor.AccountInfo.Logout();
         }
 
         [TestMethod]
@@ -65,6 +54,7 @@ namespace UnitTestProject1
             Trace.WriteLine(visitor.Messages.Counter);
             visitor.Tieba.Messages.Update();
             Trace.WriteLine(visitor.Tieba.Messages.Counter);
+            visitor.AccountInfo.Logout();
         }
 
         [TestMethod]
@@ -75,7 +65,9 @@ namespace UnitTestProject1
             visitor.Tieba.Messages.ClearNotifications();
             visitor.Tieba.Messages.Update();
             Trace.WriteLine(visitor.Tieba.Messages.Counter);
+            visitor.AccountInfo.Logout();
         }
+
         //http://tieba.baidu.com/i/sys/jump?u=066c666f726573743933d100&type=replyme
         [TestMethod]
         public void TiebaSearchTest()
@@ -87,6 +79,7 @@ namespace UnitTestProject1
             {
                 Trace.WriteLine(p.Content);
             }
+            visitor.AccountInfo.Logout();
         }
     }
 }

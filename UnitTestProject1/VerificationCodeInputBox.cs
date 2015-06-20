@@ -19,6 +19,7 @@ namespace UnitTestProject1
 
         private void VerificationCodeInputBox_Load(object sender, EventArgs e)
         {
+            this.BringToFront();
         }
 
         public string ShowDialog(string imageUrl)

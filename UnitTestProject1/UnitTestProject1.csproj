@@ -78,6 +78,7 @@
     <Compile Include="VerificationCodeInputBox.Designer.cs">
       <DependentUpon>VerificationCodeInputBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="_credentials.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PrettyBots.Strategies\PrettyBots.Strategies.csproj">

@@ -19,7 +19,7 @@ namespace PrettyBots.Visitors
 
         public CookieContainer CookieContainer { get; set; }
 
-        public NameValueCollection Headers { get; set; }
+        public WebHeaderCollection Headers { get; set; }
 
         /// <summary>
         /// 根据当前的会话，建立一个网络客户端。
@@ -105,9 +105,9 @@ namespace PrettyBots.Visitors
         public WebSession()
         {
             CookieContainer = new CookieContainer();
-            Headers = new NameValueCollection
+            Headers = new WebHeaderCollection
             {
-                {"user-agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; InfoPath.3; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; Tablet PC 2.0; rv:11.0) like Gecko"}
+                {HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; InfoPath.3; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; Tablet PC 2.0; rv:11.0; PrettyBot/1.0; LMBot/1.0) like Gecko"}
             };
         }
     }

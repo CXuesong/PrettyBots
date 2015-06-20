@@ -126,7 +126,7 @@ namespace TiebaMonitor.Interactive {
         /// <summary>
         ///   查找类似 这是从百度知道上面转发过来的问题吗……
         ///我只是说有这种可能。
-        ///总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复了。 的本地化字符串。
+        ///总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复的。 的本地化字符串。
         /// </summary>
         internal static string TiebaZhidaoRedirectionReply {
             get {
@@ -138,7 +138,7 @@ namespace TiebaMonitor.Interactive {
         ///   查找类似 首先，请LZ注意前缀，例如 {1} 之类的，如果你能加上前缀的话，应该就不会有什么问题了。
         ///其次，这是从百度知道上面转发过来的问题吗……
         ///我只是说有这种可能。
-        ///总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复了。 的本地化字符串。
+        ///总之，如果你确定这个问题和[{0}]相关，那么就先留着这一层好了。相信不久就会有热心群众过来回复的。 的本地化字符串。
         /// </summary>
         internal static string TiebaZhidaoRedirectionReply_HasPrefix {
             get {

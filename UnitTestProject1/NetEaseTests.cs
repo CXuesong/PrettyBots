@@ -15,26 +15,17 @@ namespace UnitTestProject1
             return v;
         }
 
-        void LoginVisitor(LofterVisitor v, bool fromCredentials = false)
+        void LoginVisitor(LofterVisitor v)
         {
-            if (fromCredentials)
-            {
-                var cred = XDocument.Load("../../../_credentials.xml");
-                var login = cred.Root.Element("lofterLogin");
-                v.AccountInfo.Login((string)login.Attribute("username"), (string)login.Attribute("password"));
-            }
-            else
-            {
-                //v.Session.LoadCookies("../../../BaiduInteractive/bin/Debug/BDICookies.bin");
-                //Trace.WriteLine(v.AccountInfo);
-            }
+            Utility.LoginAccount(v.AccountInfo);
+            Assert.IsTrue(v.AccountInfo.IsLoggedIn);
         }
 
         //[TestMethod]
         public void LoginTest()
         {
             var v = CreateVisitor();
-            LoginVisitor(v, true);
+            LoginVisitor(v);
             v.AccountInfo.Logout();
         }
 
@@ -42,7 +33,7 @@ namespace UnitTestProject1
         public void NewTextTest()
         {
             var v = CreateVisitor();
-            LoginVisitor(v, true);
+            LoginVisitor(v);
             Assert.IsTrue(v.AccountInfo.IsLoggedIn);
             var blogName = v.AccountInfo.BlogDomainName;
             Trace.WriteLine(v.NewText(blogName, new LofterTextEntry("Test Entry",
