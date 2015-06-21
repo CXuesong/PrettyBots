@@ -141,6 +141,12 @@
   <data name="OperationFailedException_ErrorCode" xml:space="preserve">
     <value>操作失败。错误代码：{0}。</value>
   </data>
+  <data name="OperationFailedException_ErrorCodeMessage" xml:space="preserve">
+    <value>操作失败。错误代码：{0}，{1}。</value>
+  </data>
+  <data name="OperationsTooFrequentException" xml:space="preserve">
+    <value>操作过于密集。</value>
+  </data>
   <data name="UnexpectedDataException" xml:space="preserve">
     <value>接收到了预期之外格式的数据。</value>
   </data>

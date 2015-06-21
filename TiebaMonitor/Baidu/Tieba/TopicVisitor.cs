@@ -26,7 +26,10 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         //public string ForumName { get; private set; }
 
-        //public long ForumId { get; private set; }
+        public long ForumId
+        {
+            get { return _ForumId ?? Forum.Id; }
+        }
 
         private long? _ForumId;
 
@@ -48,7 +51,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public string LastReplyer { get; private set; }
 
-        public string LastReplyTime { get; private set; }
+        public DateTime? LastReplyTime { get; private set; }
 
         private string pageData_tbs = null;
 
@@ -320,6 +323,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 {
                     case 0:
                         return true;
+                    case 34:
+                        throw new InvalidOperationException(Prompts.OperationsTooFrequentException);
                     case 40:
                         //需要验证码。
                         return false;
@@ -345,7 +350,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         }
 
         internal TopicVisitor(long id, string title, bool isGood, bool isTop,
-            string author, string preview, int repliesCount, string lastReplyer, string lastReplyTime,
+            string author, string preview, int repliesCount, string lastReplyer, DateTime? lastReplyTime,
             ForumVisitor forum, BaiduVisitor parent)
             : base(parent)
         {

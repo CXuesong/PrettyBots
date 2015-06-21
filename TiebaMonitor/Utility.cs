@@ -27,6 +27,11 @@ namespace PrettyBots.Visitors
             return d.Ticks/10000 - 62135596800000L;
         }
 
+        public static long UnixNow()
+        {
+            return ToUnixDateTime(DateTime.Now);
+        }
+
         public static DateTime FromUnixDateTime(long d)
         {
             return new DateTime((d + 62135596800000L)*10000);
@@ -70,6 +75,15 @@ namespace PrettyBots.Visitors
             var forumDataMatcher = new Regex(Regex.Escape(lhs) + @"\s*=\s*((?<lb>\{).*?(?<-lb>}))\s*;");
             var result = forumDataMatcher.Match(source);
             if (result.Success) return JObject.Parse(result.Groups[1].Value);
+            if (noException) return null;
+            throw new UnexpectedDataException();
+        }
+        public static string FindStringAssignment(string source, string lhs, bool noException = false)
+        {
+            //TODO 检查字段内部是否可能出现 { 。
+            var forumDataMatcher = new Regex(Regex.Escape(lhs) + "\\s*=\\s*\"(.*?)\"\\s*;");
+            var result = forumDataMatcher.Match(source);
+            if (result.Success) return result.Groups[1].Value;
             if (noException) return null;
             throw new UnexpectedDataException();
         }

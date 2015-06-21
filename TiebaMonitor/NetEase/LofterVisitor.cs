@@ -73,10 +73,14 @@ valCode=
             }
         }
 
-        public LofterVisitor()
+        public LofterVisitor(WebSession session)
+            : base(session)
         {
             base.AccountInfo = new LofterAccountInfo(this);
         }
 
+        public LofterVisitor()
+            : base(null)
+        { }
     }
 }

@@ -36,6 +36,9 @@ namespace PrettyBots.Strategies.Repository
     partial void InsertLogEntry(LogEntry instance);
     partial void UpdateLogEntry(LogEntry instance);
     partial void DeleteLogEntry(LogEntry instance);
+    partial void InsertTiebaStatus(TiebaStatus instance);
+    partial void UpdateTiebaStatus(TiebaStatus instance);
+    partial void DeleteTiebaStatus(TiebaStatus instance);
     partial void InsertSession(Session instance);
     partial void UpdateSession(Session instance);
     partial void DeleteSession(Session instance);
@@ -84,6 +87,14 @@ namespace PrettyBots.Strategies.Repository
 			get
 			{
 				return this.GetTable<LogEntry>();
+			}
+		}
+		
+		public System.Data.Linq.Table<TiebaStatus> TiebaStatus
+		{
+			get
+			{
+				return this.GetTable<TiebaStatus>();
 			}
 		}
 		
@@ -386,6 +397,188 @@ namespace PrettyBots.Strategies.Repository
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.TiebaStatus")]
+	public partial class TiebaStatus : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _Id;
+		
+		private long _Forum;
+		
+		private System.Nullable<long> _Topic;
+		
+		private System.Nullable<long> _Post;
+		
+		private string _Key;
+		
+		private string _Value;
+		
+    #region 可扩展性方法定义
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(int value);
+    partial void OnIdChanged();
+    partial void OnForumChanging(long value);
+    partial void OnForumChanged();
+    partial void OnTopicChanging(System.Nullable<long> value);
+    partial void OnTopicChanged();
+    partial void OnPostChanging(System.Nullable<long> value);
+    partial void OnPostChanged();
+    partial void OnKeyChanging(string value);
+    partial void OnKeyChanged();
+    partial void OnValueChanging(string value);
+    partial void OnValueChanged();
+    #endregion
+		
+		public TiebaStatus()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Forum", DbType="BigInt NOT NULL")]
+		public long Forum
+		{
+			get
+			{
+				return this._Forum;
+			}
+			set
+			{
+				if ((this._Forum != value))
+				{
+					this.OnForumChanging(value);
+					this.SendPropertyChanging();
+					this._Forum = value;
+					this.SendPropertyChanged("Forum");
+					this.OnForumChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Topic", DbType="BigInt")]
+		public System.Nullable<long> Topic
+		{
+			get
+			{
+				return this._Topic;
+			}
+			set
+			{
+				if ((this._Topic != value))
+				{
+					this.OnTopicChanging(value);
+					this.SendPropertyChanging();
+					this._Topic = value;
+					this.SendPropertyChanged("Topic");
+					this.OnTopicChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Post", DbType="BigInt")]
+		public System.Nullable<long> Post
+		{
+			get
+			{
+				return this._Post;
+			}
+			set
+			{
+				if ((this._Post != value))
+				{
+					this.OnPostChanging(value);
+					this.SendPropertyChanging();
+					this._Post = value;
+					this.SendPropertyChanged("Post");
+					this.OnPostChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Name="[Key]", Storage="_Key", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string Key
+		{
+			get
+			{
+				return this._Key;
+			}
+			set
+			{
+				if ((this._Key != value))
+				{
+					this.OnKeyChanging(value);
+					this.SendPropertyChanging();
+					this._Key = value;
+					this.SendPropertyChanged("Key");
+					this.OnKeyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Value", DbType="NVarChar(MAX)")]
+		public string Value
+		{
+			get
+			{
+				return this._Value;
+			}
+			set
+			{
+				if ((this._Value != value))
+				{
+					this.OnValueChanging(value);
+					this.SendPropertyChanging();
+					this._Value = value;
+					this.SendPropertyChanged("Value");
+					this.OnValueChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Sessions")]
 	public partial class Session : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -415,7 +608,7 @@ namespace PrettyBots.Strategies.Repository
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
 		public int Id
 		{
 			get
@@ -455,7 +648,7 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cookies", DbType="VarBinary(MAX)", UpdateCheck=UpdateCheck.Never)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cookies", DbType="VarBinary(MAX)", CanBeNull=true, UpdateCheck=UpdateCheck.Never)]
 		public System.Data.Linq.Binary Cookies
 		{
 			get

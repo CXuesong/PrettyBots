@@ -10,7 +10,7 @@ namespace PrettyBots.Strategies
     /// <summary>
     /// 用于贴吧迎新。
     /// </summary>
-    public class TiebaNewbieDetector : Strategy<BaiduVisitor>
+    public class TiebaNewbieDetector : Strategy
     {
         /// <summary>
         /// 用于匹配的关键字。
@@ -22,7 +22,7 @@ namespace PrettyBots.Strategies
         /// </summary>
         public IList<string> ReplyKeywords { get; set; }
 
-        /// <summary>如果在整个主题中检测到了指定的文本，则忽略此帖。</summary>
+        /// <summary>[已废弃]如果在整个主题中检测到了指定的文本，则忽略此帖。</summary>
         public string AntiRecursionMagicString { get; set; }
 
         /// <summary>如果主题的回复数量超过此数目，则忽略此帖。</summary>
@@ -38,12 +38,14 @@ namespace PrettyBots.Strategies
             return test.IndexOf(match, StringComparison.CurrentCultureIgnoreCase) >= 0;
         }
 
-        public IEnumerable<TopicVisitor> CheckForum(string forumName, int maxCount = 20)
+        public IList<TopicVisitor> CheckForum(string forumName, int maxCount = 20)
         {
-            if (TopicKeywords == null && ReplyKeywords == null) yield break;
-            var f = Visitor.Tieba.Forum(forumName);
+            var suspects = new List<TopicVisitor>();
+            if (TopicKeywords == null && ReplyKeywords == null) return suspects;
+            var visitor = new BaiduVisitor(Context.Session);
+            var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new InvalidOperationException();
-            var thisUser = Visitor.AccountInfo.UserName;
+            var thisUser = visitor.AccountInfo.UserName;
             foreach (var t in f.Topics().Take(maxCount))
             {
                 if (t.IsTop || t.IsGood) continue;
@@ -56,8 +58,7 @@ namespace PrettyBots.Strategies
                     var top = posts.FirstOrDefault(p => p.Author.Name == t.AuthorName);
                     if (top == null) continue;
                     if (top.Author.Level == null || top.Author.Level > AuthorLevelLimit) continue;
-                    if (posts.Any(p => p.Author.Name == thisUser || InString(p.Content, AntiRecursionMagicString)))
-                        continue;
+                    if (IsRegistered(t.Id)) continue;
                     if (TopicKeywords != null)
                         weight += 0.2*TopicKeywords.Count(k => InString(t.Title, k));
                     if (ReplyKeywords != null)
@@ -67,13 +68,37 @@ namespace PrettyBots.Strategies
                                           p.Author.Name != t.AuthorName &&
                                           ReplyKeywords.Any(k => InString(p.Content, k)));
                     Debug.Print("{0},{1}", weight, t);
-                    if (weight > 1.0) yield return t;
+                    if (weight > 1.0) suspects.Add(t);
                 }
             }
+            return suspects;
         }
 
-        public TiebaNewbieDetector(BaiduVisitor visitor)
-            : base(visitor)
+
+        public const string StatusKey = "NewbieTopic";
+
+        /// <summary>
+        /// 注册指定的主题，将其记录为新人主题。
+        /// </summary>
+        public void RegisterTopic(TopicVisitor topic)
+        {
+            if (topic == null) throw new ArgumentNullException("topic");
+            Context.Repository.TiebaStatus.SetTopicStatus(topic.ForumId, topic.Id, StatusKey);
+        }
+
+        public void RegisterTopics(IEnumerable<TopicVisitor> topics)
+        {
+            if (topics == null) return;
+            foreach (var tp in topics.Where(t => t != null)) RegisterTopic(tp);
+        }
+
+        public bool IsRegistered(long topicId)
+        {
+            return Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).Any();
+        }
+
+        public TiebaNewbieDetector(StrategyContext context)
+            : base(context)
         {
             RepliesCountLimit = 40;
             AuthorLevelLimit = 7;

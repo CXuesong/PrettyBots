@@ -18,11 +18,14 @@ namespace PrettyBots.Strategies.Repository
 
         public SessionRepository Sessions { get; private set; }
 
+        public TiebaStatusRepository TiebaStatus { get; private set; }
+
         private void Initialize()
         {
             Accounts = new AccountRepository(this);
             Loggings = new LoggingRepository(this);
             Sessions = new SessionRepository(this);
+            TiebaStatus = new TiebaStatusRepository(this);
         }
 
         internal void SubmitChanges()

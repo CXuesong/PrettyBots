@@ -40,8 +40,9 @@ namespace PrettyBots.Visitors
 
         public IAccountInfo AccountInfo { get; protected set; }
 
-        protected Visitor()
+        protected Visitor(WebSession session)
         {
+            _Session = session;
         }
     }
 

@@ -24,7 +24,7 @@ namespace PrettyBots.Strategies.Repository
             var s = DataContext.Session.FirstOrDefault(sd => sd.Name == sessionName);
             if (s == null)
             {
-                s = new Session();
+                s = new Session() {Name = sessionName};
                 DataContext.Session.InsertOnSubmit(s);
             }
             s.SaveSession(session);

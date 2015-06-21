@@ -133,6 +133,24 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 操作失败。错误代码：{0}，{1}。 的本地化字符串。
+        /// </summary>
+        internal static string OperationFailedException_ErrorCodeMessage {
+            get {
+                return ResourceManager.GetString("OperationFailedException_ErrorCodeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 操作过于密集。 的本地化字符串。
+        /// </summary>
+        internal static string OperationsTooFrequentException {
+            get {
+                return ResourceManager.GetString("OperationsTooFrequentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 接收到了预期之外格式的数据。 的本地化字符串。
         /// </summary>
         internal static string UnexpectedDataException {

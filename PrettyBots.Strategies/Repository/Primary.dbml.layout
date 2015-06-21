@@ -14,10 +14,16 @@
         <elementListCompartment Id="9fe50fa7-9ed0-426e-bff6-927463fd4fa5" absoluteBounds="3.765, 1.21, 1.9700000000000002, 1.346893310546875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="3e256086-3334-4d28-a09b-cca1b965c21d" absoluteBounds="0.75, 2.625, 2, 1.3525109863281251">
+    <classShape Id="8adb912f-b5f7-44cb-a736-7750a30d7edd" absoluteBounds="4, 3.25, 2, 1.9068933105468751">
+      <DataClassMoniker Name="/PrimaryDataContext/TiebaStatus" />
+      <nestedChildShapes>
+        <elementListCompartment Id="1891d233-420d-4587-9885-f5d3d2eb3b8e" absoluteBounds="4.015, 3.71, 1.9700000000000002, 1.346893310546875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="17a3ed1b-69e1-4e68-8811-de0346b356ae" absoluteBounds="0.75, 3.375, 2, 1.3525109863281251">
       <DataClassMoniker Name="/PrimaryDataContext/Session" />
       <nestedChildShapes>
-        <elementListCompartment Id="8b5fe638-986d-46f3-981f-6dbac388b8ff" absoluteBounds="0.76500000000000012, 3.085, 1.9700000000000002, 0.792510986328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="0a6fbd3f-9cbf-46ae-88ff-41ec4ac4c082" absoluteBounds="0.765, 3.835, 1.9700000000000002, 0.792510986328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
   </nestedChildShapes>

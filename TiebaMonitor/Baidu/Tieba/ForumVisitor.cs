@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
+using System.Web;
 
 namespace PrettyBots.Visitors.Baidu.Tieba
 {
@@ -17,6 +21,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public bool IsExists { get; private set; }
 
+        /// <summary>
+        /// 请求贴吧发生错误时，返回的错误信息。
+        /// </summary>
         public string QueryResult { get; private set; }
 
         public long Id { get; private set; }
@@ -35,6 +42,18 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         public int TopicsCount { get; private set; }
 
         public int PostsCount { get; private set; }
+
+        private string PageData_Tbs { get; set; }
+
+        /// <summary>
+        /// 获取当前用户的签到位次。
+        /// </summary>
+        public int? SignInRank { get; set; }
+
+        /// <summary>
+        /// 获取一个值，指示用户是否已经签到。
+        /// </summary>
+        public bool HasSignedIn { get { return SignInRank != null; } }
 
         /// <summary>
         /// 在此论坛发帖时，建议的主题前缀。
@@ -82,14 +101,15 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     var threadTextNode = eachLi.SelectSingleNode(".//div[contains(@class,'threadlist_detail')]/div[contains(@class,'threadlist_text')]");
                     var preview = threadTextNode == null ? null : Utility.StringCollapse(HtmlEntity.DeEntitize(threadTextNode.InnerText.Trim()));
                     var threadDetailNode = eachLi.SelectSingleNode(".//div[contains(@class, 'threadlist_detail')]");
-                    string replyer = null, replyTime = null;
+                    string replyer = null;
+                    DateTime? replyTime = null;
                     if (threadDetailNode != null)
                     {
                         var replyerNode = threadDetailNode.SelectSingleNode(".//*[contains(@class,'j_replyer')]");
                         var replyTimeNode =
                             threadDetailNode.SelectSingleNode(".//*[contains(@class,'threadlist_reply_date')]");
                         if (replyerNode != null) replyer = replyerNode.InnerText.Trim();
-                        if (replyTimeNode != null) replyTime = replyTimeNode.InnerText.Trim();
+                        if (replyTimeNode != null) replyTime = DateTime.Parse(replyTimeNode.InnerText.Trim());
                     }
                     var dataFieldStr = HtmlEntity.DeEntitize(eachLi.GetAttributeValue("data-field", ""));
                     //Debug.Print(dataFieldStr);
@@ -124,7 +144,10 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             var doc = new HtmlDocument();
             using (var s = Parent.Session.CreateWebClient())
+            {
+                s.Headers[HttpRequestHeader.Referer] = TiebaVisitor.TiebaIndexUrl;
                 doc.LoadHtml(s.DownloadString(string.Format(ForumUrlFormat, QueryName)));
+            }
             var noResultTipNode =
                 doc.GetElementbyId("forum_not_exist")
                 ?? doc.DocumentNode.SelectSingleNode("//div[@class='search_noresult']")
@@ -147,8 +170,15 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             MembersCount = (int)forumData["member_num"];
             TopicsCount = (int)forumData["thread_num"];
             PostsCount = (int)forumData["post_num"];
+            var userSignInInfo = forumData["sign_in_info"]["user_info"];
+            if (userSignInInfo["is_sign_in"] == null)
+                SignInRank = null;  //一般表示用户尚未登录。
+            else
+                SignInRank = (int) userSignInInfo["is_sign_in"] != 0 ?
+                    (int?) userSignInInfo["user_sign_rank"] : null;
             IsExists = true;
-            //记录发帖信息。
+            PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
+            //记录发帖前缀信息。
             var prefixSettings = Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
             /*
 杂谈北京{
@@ -197,6 +227,67 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             cachedTopicMatchers.Clear();
         }
         #endregion
+
+        /// <summary>
+        /// 进行签到。
+        /// </summary>
+        public void SignIn()
+        {
+            //ie=utf-8&kw=%E7%8C%AB%E5%A4%B4%E9%B9%B0%E7%8E%8B%E5%9B%BD&tbs=2ac4c76dba9f5f9e1434877655
+            var siParams = new NameValueCollection()
+            {
+                {"ie", "utf-8"},
+                {"kw", Name},           //注意这里会由 WebClient 自动编码。
+                {"tbs", PageData_Tbs}
+            };
+            JObject result = null;
+            /*
+{
+    "no": 0,
+    "error": "",
+    "data": {
+        "errno": 0,
+        "errmsg": "success",
+        "sign_version": 2,
+        "is_block": 0,
+        "finfo": {
+            "forum_info": {
+                "forum_id": 656638,
+                "forum_name": "猫头鹰王国"
+            },
+            "current_rank_info": {
+                "sign_count": 115
+            }
+        },
+        "uinfo": {
+            "user_id": 13724678,
+            "is_sign_in": 1,
+            "user_sign_rank": 115,
+            "sign_time": 1434877722,
+            "cont_sign_num": 1,
+            "total_sign_num": 534,
+            "cout_total_sing_num": 534,
+            "hun_sign_num": 6,
+            "total_resign_num": 0,
+            "is_org_name": 0
+        }
+    }
+}             */
+            using (var client = Session.CreateWebClient())
+                result = JObject.Parse(client.UploadValuesAndDecode("http://tieba.baidu.com/sign/add", siParams));
+            switch ((int)result["no"])
+            {
+                case 0:
+                    var resultData = result["data"];
+                    SignInRank = (int) resultData["finfo"]["current_rank_info"]["sign_count"];
+                    return;
+                case 265:
+                    throw new InvalidOperationException(Prompts.NeedLogin);
+                default:
+                    throw new InvalidOperationException(string.Format(Prompts.OperationFailedException_ErrorCodeMessage,
+                        (int)result["no"], (string)result["error"]));
+            }
+        }
 
 
         public string GetTopicPrefix(int index)

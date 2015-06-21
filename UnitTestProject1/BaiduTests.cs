@@ -23,10 +23,19 @@ namespace UnitTestProject1
             Assert.IsTrue(v.AccountInfo.IsLoggedIn);
         }
 
+        void LoginVisitorFromFile(BaiduVisitor v)
+        {
+            v.Session.LoadCookies("../../../BaiduInteractive/bin/Debug/BDICookies.bin");
+            v.AccountInfo.Update();
+            Trace.WriteLine(v.AccountInfo);
+            Assert.IsTrue(v.AccountInfo.IsLoggedIn);
+        }
+
         [TestMethod]
         public void LoginTest()
         {
             var visitor = CreateVisitor();
+            //visitor.AccountInfo.Update();
             LoginVisitor(visitor);
             Assert.IsTrue(visitor.AccountInfo.IsLoggedIn);
             Trace.WriteLine(visitor.AccountInfo.UserName);
@@ -78,6 +87,25 @@ namespace UnitTestProject1
             foreach (var p in s.Posts())
             {
                 Trace.WriteLine(p.Content);
+            }
+            visitor.AccountInfo.Logout();
+        }
+        
+        [TestMethod]
+        public void SignInTest()
+        {
+            var visitor = CreateVisitor();
+            LoginVisitor(visitor);
+            var destList = new[] {"mark5ds", "化学", "化学2", "物理", "生物", "汉服"};
+            var f = destList.Select(fn => visitor.Tieba.Forum(fn))
+                .FirstOrDefault(f1 => !f1.HasSignedIn);
+            if (f == null)
+                Assert.Inconclusive();
+            else
+            {
+                Trace.WriteLine("Sign in : " + f.Name);
+                f.SignIn();
+                Assert.IsTrue(f.HasSignedIn);
             }
             visitor.AccountInfo.Logout();
         }

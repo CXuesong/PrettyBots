@@ -6,6 +6,9 @@ using System.Data.Linq.Mapping;
 
 namespace PrettyBots.Strategies.Repository
 {
+    partial class PrimaryDataContext
+    {
+    }
 
     partial class Account
     {

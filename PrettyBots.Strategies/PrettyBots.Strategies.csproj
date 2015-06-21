@@ -74,7 +74,9 @@
       <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Repository\SessionRepository.cs" />
+    <Compile Include="Repository\TiebaStatusRepository.cs" />
     <Compile Include="Strategy.cs" />
+    <Compile Include="StrategyContext.cs" />
     <Compile Include="TiebaNewbieDetector.cs" />
     <Compile Include="TiebaZhidaoRedirectionDetector.cs" />
     <Compile Include="Utility.cs" />

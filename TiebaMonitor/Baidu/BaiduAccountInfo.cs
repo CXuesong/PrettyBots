@@ -41,7 +41,13 @@ namespace PrettyBots.Visitors.Baidu
             //var doc = new HtmlDocument();
             string pageHtml;
             using (var s = Parent.Session.CreateWebClient())
+            {
+                //Workaround Update 之后再登录会失败。
+                //不能先访问贴吧再访问 passport.baidu.com 获取 token
+                var r = s.CreateHttpRequest("https://passport.baidu.com");
+                r.GetResponse().Dispose();
                 pageHtml = s.DownloadString("http://tieba.baidu.com/");
+            }
             var userInfo = Utility.FindJsonAssignment(pageHtml, "PageData.user");
             /*
              {
@@ -99,14 +105,22 @@ namespace PrettyBots.Visitors.Baidu
                 //此处使用相同的域名，防止出现
                 // the fisrt two args should be string type:0,1!
                 //的提示。
-                var tbsString = client.DownloadString("https://passport.baidu.com/");
+                {
+                    var r = client.CreateHttpRequest("https://passport.baidu.com");
+                    r.GetResponse().Dispose();
+                }
                 //Cookie
                 //  $Version=1; BAIDUID=9ABCFA4624E7F5023F52F611EC207798:FG=1; $Path=/; $Domain=.baidu.com
                 //Debug.Print(tbsString);
                 TraceCookies(client);
                 //STEP 2
+                //var apiString =
+                //    client.DownloadString("https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&class=login");
                 var apiString =
-                    client.DownloadString("https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&class=login");
+                    client.DownloadString(
+                        string.Format(
+                            "https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&tt={0}&class=login&logintype=basicLogin&callback=bd__cbs__8tl5km",
+                            Utility.UnixNow()));
                 /*
 {"errInfo":{ "no": "0" }, "data": { "rememberedUserName" : "", "codeString" : "", "token" : "3567aa6023153e7bbf7caea2c2e33338", "cookie" : "1", "usernametype":"", "spLogin" : "rate", "disable":"", "loginrecord":{ 'email':[ ], 'phone':[ ] } }}
              */
@@ -135,8 +149,7 @@ namespace PrettyBots.Visitors.Baidu
                     {"codestring", codestring},
                     {"verifycode", verifycode}
                 };
-                var loginResultData = client.UploadValues("https://passport.baidu.com/v2/api/?login", loginParams);
-                var loginResultStr = client.Encoding.GetString(loginResultData);
+                var loginResultStr = client.UploadValuesAndDecode("https://passport.baidu.com/v2/api/?login", loginParams);
                 /*
 <!DOCTYPE html>
 <html>

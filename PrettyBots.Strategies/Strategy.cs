@@ -5,22 +5,17 @@ namespace PrettyBots.Strategies
 {
     public interface IStrategy
     {
-        IVisitor Visitor { get; }
+        StrategyContext Context { get; }
     }
 
-    public class Strategy<TVisitor> : IStrategy where TVisitor : IVisitor
+    public class Strategy : IStrategy
     {
-        public TVisitor Visitor { get; private set; }
+        public StrategyContext Context { get; private set; }
 
-        IVisitor IStrategy.Visitor
+        public Strategy(StrategyContext context)
         {
-            get { return Visitor; }
-        }
-
-        public Strategy(TVisitor visitor)
-        {
-            if (visitor == null) throw new ArgumentNullException("visitor");
-            Visitor = visitor;
+            if (context == null) throw new ArgumentNullException("context");
+            Context = context;
         }
     }
 }

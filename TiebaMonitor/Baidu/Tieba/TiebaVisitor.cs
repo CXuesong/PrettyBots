@@ -5,6 +5,8 @@
     /// </summary>
     public class TiebaVisitor : ChildVisitor<BaiduVisitor>
     {
+        public const string TiebaIndexUrl = "http://tieba.baidu.com/";
+
         /// <summary>
         /// 管理当前用户的贴吧消息。
         /// </summary>

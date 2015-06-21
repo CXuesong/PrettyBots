@@ -38,10 +38,15 @@ namespace PrettyBots.Visitors.Baidu
             }
         }
 
-        public BaiduVisitor()
+        public BaiduVisitor(WebSession session)
+            : base(session)
         {
             base.AccountInfo = new BaiduAccountInfo(this);
             Messages = new MessagesVisitor(this);
         }
+
+        public BaiduVisitor()
+            : this(null)
+        { }
     }
 }

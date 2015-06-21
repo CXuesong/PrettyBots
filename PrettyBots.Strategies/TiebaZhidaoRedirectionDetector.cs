@@ -10,7 +10,7 @@ namespace PrettyBots.Strategies
     /// <summary>
     /// 用于检查由百度知道重定向而来的贴吧主题。
     /// </summary>
-    public class TiebaZhidaoRedirectionDetector : Strategy<BaiduVisitor>
+    public class TiebaZhidaoRedirectionDetector : Strategy
     {
         private IList<string> _WeakMatcher;
         private List<string> internalWeakMatcher = new List<string>();
@@ -51,7 +51,7 @@ namespace PrettyBots.Strategies
             }
         }
 
-        /// <summary>如果在整个主题中检测到了指定的文本，则忽略此帖。</summary>
+        /// <summary>（已停用）如果在整个主题中检测到了指定的文本，则忽略此帖。</summary>
         public string AntiRecursionMagicString { get; set; }
 
         /// <summary>如果主题的回复数量超过此数目，则忽略此帖。</summary>
@@ -66,10 +66,12 @@ namespace PrettyBots.Strategies
             return test.IndexOf(match, StringComparison.CurrentCulture) >= 0;
         }
 
-        public IEnumerable<TopicVisitor> CheckForum(string forumName, int checkCount = 20)
+        public IList<TopicVisitor> CheckForum(string forumName, int checkCount = 20)
         {
-            if (StrongMatcher == null || StrongMatcher.Count == 0) yield break;
-            var f = Visitor.Tieba.Forum(forumName);
+            var suspects = new List<TopicVisitor>();
+            if (StrongMatcher == null || StrongMatcher.Count == 0) return suspects;
+            var visitor = new BaiduVisitor(Context.Session);
+            var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new InvalidOperationException();
             var normalizedFn = Utility.NormalizeString(f.Name);
             foreach (var t in f.Topics().Take(checkCount))
@@ -110,14 +112,37 @@ namespace PrettyBots.Strategies
                 var authorPost = posts.FirstOrDefault(p => string.Compare(p.Author.Name, t.AuthorName, StringComparison.OrdinalIgnoreCase) == 0);
                 if (authorPost == null) continue;
                 if (authorPost.Author.Level == null || authorPost.Author.Level > AuthorLevelLimit) continue;
-                if (posts.Any(p => InString(p.Content, AntiRecursionMagicString))) continue;
+                if (IsRegistered(t.Id)) continue;
                 Debug.Print("\tMatched: {0}", t.Id);
-                yield return t;
+                suspects.Add(t);
             }
+            return suspects;
         }
 
-        public TiebaZhidaoRedirectionDetector(BaiduVisitor visitor)
-            : base(visitor)
+        public const string StatusKey = "ZhidaoRedirection";
+
+        /// <summary>
+        /// 注册指定的主题，将其记录为知道重定向主题。
+        /// </summary>
+        public void RegisterTopic(TopicVisitor topic)
+        {
+            if (topic == null) throw new ArgumentNullException("topic");
+            Context.Repository.TiebaStatus.SetTopicStatus(topic.ForumId, topic.Id, StatusKey);
+        }
+
+        public void RegisterTopics(IEnumerable<TopicVisitor> topics)
+        {
+            if (topics == null) return;
+            foreach (var tp in topics.Where(t => t != null)) RegisterTopic(tp);
+        }
+
+        public bool IsRegistered(long topicId)
+        {
+            return Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).Any();
+        }
+
+        public TiebaZhidaoRedirectionDetector(StrategyContext context)
+            : base(context)
         {
             RepliesCountLimit = 20;
             AuthorLevelLimit = 4;
