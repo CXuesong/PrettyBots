@@ -20,14 +20,15 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public bool IsExists { get; private set; }
 
-        public string ForumName { get; private set; }
+        private string _ForumName;
+        private long? _ForumId;
+
+        public string ForumName { get { return _ForumName ?? Forum.Name; } }
 
         public long ForumId
         {
             get { return _ForumId ?? Forum.Id; }
         }
-
-        private long? _ForumId;
 
         public ForumVisitor Forum { get; private set; }
 
@@ -84,7 +85,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             }
             var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
             _ForumId = (long)forumData["forum_id"];
-            ForumName = (string)forumData["forum_name"];
+            _ForumName = (string)forumData["forum_name"];
             var topicData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.thread");
             //PageData.thread = 
             //{ author: "来自草原的雪狼", thread_id: 3369574832, 
@@ -142,8 +143,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             using (var client = Parent.Session.CreateWebClient())
             {
                 EnsureInternal(client);
-                var baseTime = Utility.ToUnixDateTime(DateTime.Now);
-                var baseTimeStr = baseTime.ToString(CultureInfo.InvariantCulture);
+                var baseTime = DateTime.Now;
+                //var baseTimeStr = baseTime.ToString(CultureInfo.InvariantCulture);
                 var replyParams = new NameValueCollection
                 {
                     {"ie", "utf-8"},
@@ -159,10 +160,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     //{"sign_id", "4787987"},
                     {
                         "mouse_pwd",
-                        "46,44,32,52,41,45,41,47,33,17,41,52,40,52,41,52,40,52,41,52,40,17,43,42,46,47,40,17,41,43,46,46,52,47,46,32," +
-                        baseTimeStr
+                        BaiduUtility.GenerateMousePwd(baseTime)
                     },
-                    {"mouse_pwd_t", baseTimeStr},
+                    {"mouse_pwd_t", Convert.ToString(Utility.ToUnixDateTime(baseTime))},
                     {"mouse_pwd_isclick", "0"},
                     {"__type__", "reply"}
                 };
@@ -171,8 +171,10 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     replyParams["quote_id"] = pid.ToString();
                     replyParams["repostid"] = pid.ToString();
                 }
-                var result = await client.UploadValuesAndDecodeTaskAsync(ReplyUrl, replyParams);
-                var resultObj = JObject.Parse(result);
+                //var result = await client.UploadValuesAndDecodeTaskAsync(ReplyUrl, replyParams);
+                //var resultObj = JObject.Parse(result);
+                var result = client.UploadValues(ReplyUrl, replyParams);
+                var resultObj = JObject.Parse(client.Encoding.GetString(result));
                 /*
                  {
   "no": 40,
@@ -207,9 +209,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                         return false;
                     case 265:
                         throw new InvalidOperationException(Prompts.NeedLogin);
+                    case 274:
+                        throw new InvalidOperationException("POST数据错误。");
+                    case 2007:
+                        throw new InvalidOperationException(Prompts.InvalidContentException);
                     default:
-                        throw new InvalidOperationException(string.Format(Prompts.OperationFailedException_ErrorCode,
-                            (int)resultObj["no"]));
+                        throw new InvalidOperationException(string.Format(Prompts.OperationFailedException_ErrorCodeMessage,
+                            (int)resultObj["no"], (string)resultObj["error"]));
                 }
                 return true;
             }

@@ -118,7 +118,10 @@ namespace PrettyBots.Visitors
             var request = base.GetWebRequest(address);
             var webRequest = request as HttpWebRequest;
             if (webRequest != null)
+            {
+                webRequest.Timeout = 30 * 1000; //默认超时 30s。
                 webRequest.CookieContainer = this.CookieContainer;
+            }
             return request;
         }
     }

@@ -79,6 +79,15 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 内容不合法。 的本地化字符串。
+        /// </summary>
+        internal static string InvalidContentException {
+            get {
+                return ResourceManager.GetString("InvalidContentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 登录失败。 的本地化字符串。
         /// </summary>
         internal static string LoginException {
