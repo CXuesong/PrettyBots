@@ -144,7 +144,7 @@ namespace BaiduInterop.Interactive
                 {
                     case "L":
                         var viewer = new EnumerableViewer<TopicVisitor>(
-                            forum.Topics(), ForumViewer_OnViewItem, ForumViewer_OnItemSelected);
+                            forum.GetTopics().EnumerateToEnd(), ForumViewer_OnViewItem, ForumViewer_OnItemSelected);
                         viewer.Show();
                         break;
                     case "B":
@@ -181,7 +181,7 @@ namespace BaiduInterop.Interactive
                         "B", Prompts.Back))
                     {
                         case "L":
-                            var viewer = new EnumerableViewer<PostVisitor>(t.Posts(),
+                            var viewer = new EnumerableViewer<PostVisitor>(t.GetPosts().EnumerateToEnd(),
                                 TopicViewer_OnViewItem, TopicViewer_OnItemSelected);
                             viewer.Show();
                             break;

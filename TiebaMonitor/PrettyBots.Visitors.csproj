@@ -75,6 +75,7 @@
     <Compile Include="NetEase\LofterAccountInfo.cs" />
     <Compile Include="NetEase\LofterTextEntry.cs" />
     <Compile Include="NetEase\LofterVisitor.cs" />
+    <Compile Include="PageListView.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>

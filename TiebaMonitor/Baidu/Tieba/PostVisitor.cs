@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace PrettyBots.Visitors.Baidu.Tieba
 {
@@ -57,7 +58,14 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public bool Reply(string contentCode)
         {
-            return Topic.Reply(contentCode, Id);
+            var t = Topic.ReplyAsync(contentCode, Id);
+            t.Wait();
+            return t.Result;
+        }
+
+        public Task<bool> ReplyAsync(string contentCode)
+        {
+            return Topic.ReplyAsync(contentCode, Id);
         }
 
         internal PostVisitor(long id, TiebaUserStub author, string content, DateTime submissionTime, long topicId,

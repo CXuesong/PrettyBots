@@ -5,12 +5,12 @@ using System.Linq;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
 
-namespace PrettyBots.Strategies
+namespace PrettyBots.Strategies.Baidu.Tieba
 {
     /// <summary>
     /// 用于贴吧迎新。
     /// </summary>
-    public class TiebaNewbieDetector : Strategy
+    public class NewbieDetector : Strategy
     {
         /// <summary>
         /// 用于匹配的关键字。
@@ -46,7 +46,7 @@ namespace PrettyBots.Strategies
             var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new InvalidOperationException();
             var thisUser = visitor.AccountInfo.UserName;
-            foreach (var t in f.Topics().Take(maxCount))
+            foreach (var t in f.GetTopics().EnumerateToEnd().Take(maxCount))
             {
                 if (t.IsTop || t.IsGood) continue;
                 if (t.RepliesCount > RepliesCountLimit) continue;
@@ -54,7 +54,7 @@ namespace PrettyBots.Strategies
                 if (TopicKeywords != null && TopicKeywords.Any(k => InString(t.Title, k)))
                 {
                     var weight = 0.3;
-                    var posts = t.Posts().ToList();
+                    var posts = t.GetPosts().ToList();
                     var top = posts.FirstOrDefault(p => p.Author.Name == t.AuthorName);
                     if (top == null) continue;
                     if (top.Author.Level == null || top.Author.Level > AuthorLevelLimit) continue;
@@ -97,7 +97,7 @@ namespace PrettyBots.Strategies
             return Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).Any();
         }
 
-        public TiebaNewbieDetector(StrategyContext context)
+        public NewbieDetector(StrategyContext context)
             : base(context)
         {
             RepliesCountLimit = 40;

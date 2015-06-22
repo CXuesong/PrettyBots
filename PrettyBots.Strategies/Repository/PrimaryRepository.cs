@@ -28,7 +28,10 @@ namespace PrettyBots.Strategies.Repository
             TiebaStatus = new TiebaStatusRepository(this);
         }
 
-        internal void SubmitChanges()
+        /// <summary>
+        /// 提交对数据库的所有修改。
+        /// </summary>
+        public void SubmitChanges()
         {
             DataContext.SubmitChanges();
         }

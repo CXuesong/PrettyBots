@@ -5,12 +5,12 @@ using System.Linq;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
 
-namespace PrettyBots.Strategies
+namespace PrettyBots.Strategies.Baidu.Tieba
 {
     /// <summary>
     /// 用于检查由百度知道重定向而来的贴吧主题。
     /// </summary>
-    public class TiebaZhidaoRedirectionDetector : Strategy
+    public class ZhidaoRedirectionDetector : Strategy
     {
         private IList<string> _WeakMatcher;
         private List<string> internalWeakMatcher = new List<string>();
@@ -74,7 +74,7 @@ namespace PrettyBots.Strategies
             var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new InvalidOperationException();
             var normalizedFn = Utility.NormalizeString(f.Name);
-            foreach (var t in f.Topics().Take(checkCount))
+            foreach (var t in f.GetTopics().EnumerateToEnd().Take(checkCount))
             {
                 if (t.IsTop || t.IsGood) continue;
                 if (string.IsNullOrWhiteSpace(t.PreviewText)) continue;
@@ -108,7 +108,7 @@ namespace PrettyBots.Strategies
                 }
                 continue;
             CHECKTOPIC:
-                var posts = t.Posts().ToList();
+                var posts = t.GetPosts().ToList();
                 var authorPost = posts.FirstOrDefault(p => string.Compare(p.Author.Name, t.AuthorName, StringComparison.OrdinalIgnoreCase) == 0);
                 if (authorPost == null) continue;
                 if (authorPost.Author.Level == null || authorPost.Author.Level > AuthorLevelLimit) continue;
@@ -141,7 +141,7 @@ namespace PrettyBots.Strategies
             return Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).Any();
         }
 
-        public TiebaZhidaoRedirectionDetector(StrategyContext context)
+        public ZhidaoRedirectionDetector(StrategyContext context)
             : base(context)
         {
             RepliesCountLimit = 20;

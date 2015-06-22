@@ -63,7 +63,7 @@ namespace PrettyBots.Visitors
 
         WebSession IVisitor.Session
         {
-            get { throw new NotImplementedException(); }
+            get { return ((IVisitor) Parent).Session; }
         }
 
         IAccountInfo IVisitor.AccountInfo

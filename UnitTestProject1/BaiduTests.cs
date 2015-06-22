@@ -3,6 +3,8 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Xml.Linq;
+using PrettyBots.Strategies;
+using PrettyBots.Strategies.Baidu.Tieba;
 using PrettyBots.Visitors.Baidu;
 
 namespace UnitTestProject1
@@ -49,7 +51,7 @@ namespace UnitTestProject1
             var visitor = CreateVisitor();
             LoginVisitor(visitor);
             var f = visitor.Tieba.Forum("化学");
-            foreach (var t in f.Topics().Take(50))
+            foreach (var t in f.GetTopics().Take(50))
                 Trace.WriteLine(t);
             visitor.AccountInfo.Logout();
         }
@@ -96,18 +98,30 @@ namespace UnitTestProject1
         {
             var visitor = CreateVisitor();
             LoginVisitor(visitor);
+            //由于每天每贴吧只能签到一次，因此需要指定一个贴吧列表。
             var destList = new[] {"mark5ds", "化学", "化学2", "物理", "生物", "汉服"};
+            //抽取第一个没有签到的贴吧。
             var f = destList.Select(fn => visitor.Tieba.Forum(fn))
                 .FirstOrDefault(f1 => !f1.HasSignedIn);
             if (f == null)
                 Assert.Inconclusive();
             else
             {
+                //进行签到。
                 Trace.WriteLine("Sign in : " + f.Name);
                 f.SignIn();
                 Assert.IsTrue(f.HasSignedIn);
+                Trace.WriteLine("Rank : " + f.SignInRank);
             }
             visitor.AccountInfo.Logout();
+        }
+
+        [TestMethod]
+        public void CountdownTopicTest()
+        {
+            var context = new StrategyContext("primary");
+            var cd = new TopicCounterDown(context);
+            Trace.WriteLine(cd.GetCurrentCounter(3044971499L));
         }
     }
 }

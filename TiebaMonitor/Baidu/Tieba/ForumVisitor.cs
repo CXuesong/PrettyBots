@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using System.Web;
@@ -15,7 +16,6 @@ namespace PrettyBots.Visitors.Baidu.Tieba
     public class ForumVisitor : ChildVisitor<BaiduVisitor>
     {
         const string ForumUrlFormat = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search";
-        const string ForumUrlFormatPN = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search&pn={1}";
 
         public string QueryName { get; private set; }
 
@@ -64,77 +64,27 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         private List<Regex> cachedTopicMatchers = new List<Regex>();
 
-        private static IList<string> emptyStringList = new string[] {};
+        private static IList<string> emptyStringList = new string[] { };
 
         #region 数据采集
         /// <summary>
         /// 枚举主题列表。
         /// </summary>
-        public IEnumerable<TopicVisitor> Topics()
+        public TopicListView GetTopics()
         {
-            using (var s = Parent.Session.CreateWebClient())
-            {
-                var currentUrl = string.Format(ForumUrlFormat, QueryName);
-                var doc = new HtmlDocument();
-            PARSE_PAGE:
-                doc.LoadHtml(s.DownloadString(currentUrl));
-                var topicQuery = Enumerable.Empty<HtmlNode>();
-                Action<string> collectTopics = id =>
-                {
-                    var container = doc.GetElementbyId(id);
-                    if (container == null) return;
-                    //Debug.Print(container.InnerHtml);
-                    var nc = container.SelectNodes("./li[@data-field]");
-                    if (nc == null) return;
-                    topicQuery = topicQuery.Concat(nc);
-                };
-                collectTopics("thread_top_list");
-                collectTopics("thread_list");
-                string href;
-                foreach (var eachLi in topicQuery)
-                {
-                    var linkNode = eachLi.SelectSingleNode(".//a[@class='j_th_tit']");
-                    if (linkNode == null) continue;
-                    var title = HtmlEntity.DeEntitize(linkNode.GetAttributeValue("title", ""));
-                    href = linkNode.GetAttributeValue("href", "");
-                    if (string.IsNullOrEmpty(href)) continue;
-                    var threadTextNode = eachLi.SelectSingleNode(".//div[contains(@class,'threadlist_detail')]/div[contains(@class,'threadlist_text')]");
-                    var preview = threadTextNode == null ? null : Utility.StringCollapse(HtmlEntity.DeEntitize(threadTextNode.InnerText.Trim()));
-                    var threadDetailNode = eachLi.SelectSingleNode(".//div[contains(@class, 'threadlist_detail')]");
-                    string replyer = null;
-                    DateTime? replyTime = null;
-                    if (threadDetailNode != null)
-                    {
-                        var replyerNode = threadDetailNode.SelectSingleNode(".//*[contains(@class,'j_replyer')]");
-                        var replyTimeNode =
-                            threadDetailNode.SelectSingleNode(".//*[contains(@class,'threadlist_reply_date')]");
-                        if (replyerNode != null) replyer = replyerNode.InnerText.Trim();
-                        if (replyTimeNode != null) replyTime = DateTime.Parse(replyTimeNode.InnerText.Trim());
-                    }
-                    var dataFieldStr = HtmlEntity.DeEntitize(eachLi.GetAttributeValue("data-field", ""));
-                    //Debug.Print(dataFieldStr);
-                    //{"author_name":"Mark5ds","id":3540683824,"first_post_id":63285795913,
-                    //"reply_num":1,"is_bakan":0,"vid":"","is_good":0,"is_top":0,"is_protal":0}
-                    var jo = JObject.Parse(dataFieldStr);
-                    yield return new TopicVisitor((long)jo["id"], title,
-                        (int)jo["is_good"] != 0, (int)jo["is_top"] != 0,
-                        (string)jo["author_name"], preview, (int)jo["reply_num"],
-                        replyer, replyTime, this, Parent);
-                }
-                //解析下一页
-                var pagerNode = doc.GetElementbyId("frs_list_pager");
-                if (pagerNode == null) yield break;
-                var nextPageNode = pagerNode.SelectSingleNode("./a[@class='next']");
-                if (nextPageNode == null) yield break;
-                href = nextPageNode.GetAttributeValue("href", "");
-                if (string.IsNullOrWhiteSpace(href)) yield break;
-                var pnMatcher = new Regex(@"pn=(\d*)");
-                var matchResult = pnMatcher.Match(href);
-                if (!matchResult.Success) throw new UnexpectedDataException();
-                currentUrl = string.Format(ForumUrlFormatPN, QueryName, matchResult.Groups[1].Value);
-                Debug.Print("Forum: {0}, Page: {1}", Name, matchResult.Groups[1].Value);
-                goto PARSE_PAGE;
-            }
+            var v = new TopicListView(this, string.Format(ForumUrlFormat, QueryName));
+            v.Update();
+            return v;
+        }
+
+        /// <summary>
+        /// 异步枚举主题列表。
+        /// </summary>
+        public async Task<TopicListView> GetTopicsAsync()
+        {
+            var v = new TopicListView(this, string.Format(ForumUrlFormat, QueryName));
+            await v.UpdateAsync();
+            return v;
         }
 
         /// <summary>
@@ -171,11 +121,11 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             TopicsCount = (int)forumData["thread_num"];
             PostsCount = (int)forumData["post_num"];
             var userSignInInfo = forumData["sign_in_info"]["user_info"];
-            if (userSignInInfo["is_sign_in"] == null)
+            if ((int?) userSignInInfo["is_sign_in"] == null)
                 SignInRank = null;  //一般表示用户尚未登录。
             else
-                SignInRank = (int) userSignInInfo["is_sign_in"] != 0 ?
-                    (int?) userSignInInfo["user_sign_rank"] : null;
+                SignInRank = (int)userSignInInfo["is_sign_in"] != 0 ?
+                    (int?)userSignInInfo["user_sign_rank"] : null;
             IsExists = true;
             PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
             //记录发帖前缀信息。
@@ -211,7 +161,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 if (prefixSettings["type"].Type == JTokenType.Array)
                 {
                     TopicPrefix =
-                        prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string) type)).ToArray();
+                        prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string)type)).ToArray();
                 }
                 else
                 {
@@ -220,7 +170,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 }
                 JToken jt;
                 if (prefixSettings.TryGetValue("time", out jt))
-                    topicPrefixTime = (string) jt;
+                    topicPrefixTime = (string)jt;
                 else
                     topicPrefixTime = null;
             }
@@ -279,7 +229,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             {
                 case 0:
                     var resultData = result["data"];
-                    SignInRank = (int) resultData["finfo"]["current_rank_info"]["sign_count"];
+                    SignInRank = (int)resultData["finfo"]["current_rank_info"]["sign_count"];
                     return;
                 case 265:
                     throw new InvalidOperationException(Prompts.NeedLogin);
@@ -307,7 +257,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     cachedTopicMatchers.Add(new Regex(exp));
                 }
             }
-            for(var i = 0;i < cachedTopicMatchers.Count;i++)
+            for (var i = 0; i < cachedTopicMatchers.Count; i++)
                 if (cachedTopicMatchers[i].IsMatch(topicTitle)) return TopicPrefix[i];
             return null;
         }
@@ -330,5 +280,117 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             QueryName = queryName;
         }
+    }
+
+    public class TopicListView : VisitorPageListView<TopicVisitor>
+    {
+        const string ForumUrlFormatPN = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search&pn={1}";
+
+        protected override async Task OnRefreshPageAsync()
+        {
+            var doc = new HtmlDocument();
+            using (var client = Parent.Session.CreateWebClient())
+                doc.LoadHtml(await client.DownloadStringTaskAsync(PageUrl));
+            var topicQuery = Enumerable.Empty<HtmlNode>();
+            Action<string> collectTopics = id =>
+            {
+                var container = doc.GetElementbyId(id);
+                if (container == null) return;
+                //Debug.Print(container.InnerHtml);
+                var nc = container.SelectNodes("./li[@data-field]");
+                if (nc == null) return;
+                topicQuery = topicQuery.Concat(nc);
+            };
+            collectTopics("thread_top_list");
+            collectTopics("thread_list");
+            string href;
+            foreach (var eachLi in topicQuery)
+            {
+                var linkNode = eachLi.SelectSingleNode(".//a[@class='j_th_tit']");
+                if (linkNode == null) continue;
+                var title = HtmlEntity.DeEntitize(linkNode.GetAttributeValue("title", ""));
+                href = linkNode.GetAttributeValue("href", "");
+                if (string.IsNullOrEmpty(href)) continue;
+                var threadTextNode = eachLi.SelectSingleNode(".//div[contains(@class,'threadlist_detail')]/div[contains(@class,'threadlist_text')]");
+                var preview = threadTextNode == null ? null : Utility.StringCollapse(HtmlEntity.DeEntitize(threadTextNode.InnerText.Trim()));
+                var threadDetailNode = eachLi.SelectSingleNode(".//div[contains(@class, 'threadlist_detail')]");
+                string replyer = null;
+                DateTime? replyTime = null;
+                if (threadDetailNode != null)
+                {
+                    var replyerNode = threadDetailNode.SelectSingleNode(".//*[contains(@class,'j_replyer')]");
+                    var replyTimeNode =
+                        threadDetailNode.SelectSingleNode(".//*[contains(@class,'threadlist_reply_date')]");
+                    if (replyerNode != null) replyer = replyerNode.InnerText.Trim();
+                    if (replyTimeNode != null) replyTime = DateTime.Parse(replyTimeNode.InnerText.Trim());
+                }
+                var dataFieldStr = HtmlEntity.DeEntitize(eachLi.GetAttributeValue("data-field", ""));
+                //Debug.Print(dataFieldStr);
+                //{"author_name":"Mark5ds","id":3540683824,"first_post_id":63285795913,
+                //"reply_num":1,"is_bakan":0,"vid":"","is_good":0,"is_top":0,"is_protal":0}
+                var jo = JObject.Parse(dataFieldStr);
+                RegisterNewItem(new TopicVisitor((long) jo["id"], title,
+                    (int) jo["is_good"] != 0, (int) jo["is_top"] != 0,
+                    (string) jo["author_name"], preview, (int) jo["reply_num"],
+                    replyer, replyTime, (ForumVisitor)Parent, ((ForumVisitor)Parent).Parent));
+            }
+            //解析其它页面地址。
+            var pagerNode = doc.GetElementbyId("frs_list_pager");
+            if (pagerNode == null) {
+                PageIndex = 0; 
+                return;
+            }
+            var n = pagerNode.SelectSingleNode("./span[@class='cur']");
+            if (n == null)
+            {
+                PageIndex = 0;
+                return;
+            }
+            PageIndex = Convert.ToInt32(n.InnerText) - 1;   //以 0 为下标。
+            PageCount = -1;
+            var linkNodes = pagerNode.SelectNodes("./a[@href]");
+            string lastPageUrl = null;
+            string lastNumNavigatorUrl = null;
+            var lastNumNavigator = -1;
+            foreach (var linkNode in linkNodes)
+            {
+                href = linkNode.GetAttributeValue("href", "");
+                var thisUrl = TiebaVisitor.TiebaIndexUrl + href;
+                switch (linkNode.GetAttributeValue("class", ""))
+                {
+                    case "first":
+                        RegisterNavigationLocation(PageRelativeLocation.First, thisUrl);
+                        break;
+                    case "pre":
+                        RegisterNavigationLocation(PageRelativeLocation.Previous, thisUrl);
+                        break;
+                    case "next":
+                        RegisterNavigationLocation(PageRelativeLocation.Next, thisUrl);
+                        break;
+                    case "last":
+                        RegisterNavigationLocation(PageRelativeLocation.Last, thisUrl);
+                        lastPageUrl = thisUrl;
+                        break;
+                    default:
+                        lastNumNavigatorUrl = thisUrl;
+                        lastNumNavigator = Convert.ToInt32(linkNode.InnerText) - 1;
+                        RegisterNavigationLocation(lastNumNavigator, thisUrl);
+                        break;
+                }
+                // 没有“尾页”按钮，表明已经到达最后。
+                if (lastPageUrl == null) PageCount = PageIndex + 1;
+                // 接近最后了，最后一个数字和“尾页”按钮指向的 Url 相同。
+                if (lastPageUrl == lastNumNavigatorUrl) PageCount = lastNumNavigator + 1;
+            }
+        }
+
+        protected override VisitorPageListView<TopicVisitor> PageFactory(string url)
+        {
+            return new TopicListView((ForumVisitor)Parent, url);
+        }
+
+        internal TopicListView(ForumVisitor parent, string pageUrl)
+            : base(parent, pageUrl)
+        { }
     }
 }

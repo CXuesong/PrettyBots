@@ -5,7 +5,7 @@
     /// </summary>
     public class TiebaVisitor : ChildVisitor<BaiduVisitor>
     {
-        public const string TiebaIndexUrl = "http://tieba.baidu.com/";
+        public const string TiebaIndexUrl = "http://tieba.baidu.com";
 
         /// <summary>
         /// 管理当前用户的贴吧消息。
@@ -20,6 +20,16 @@
             var f = new ForumVisitor(name, Parent);
             f.Update();
             return f;
+        }
+
+        /// <summary>
+        /// 直接访问指定 Id 的主题。
+        /// </summary>
+        public TopicVisitor Topic(long topicId)
+        {
+            var v = new TopicVisitor(topicId, Parent);
+            v.Update();
+            return v;
         }
 
         /// <summary>

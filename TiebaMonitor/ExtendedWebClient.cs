@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace PrettyBots.Visitors
@@ -51,6 +52,26 @@ namespace PrettyBots.Visitors
         public string UploadValuesAndDecode(string address, NameValueCollection data)
         {
             return UploadValuesAndDecode(address, null, data);
+        }
+
+        /// <summary>
+        /// 使用指定的方法上载数据，并获取返回的字符串。
+        /// </summary>
+        public async Task<string> UploadValuesAndDecodeTaskAsync(string address, string method, NameValueCollection data)
+        {
+            if (data == null) throw new ArgumentNullException("data");
+            var bytes = UploadValuesInternal(data);
+            var result = await base.UploadDataTaskAsync(address, bytes);
+            var resultStr = Encoding.GetString(result);
+            return resultStr;
+        }
+
+        /// <summary>
+        /// 使用 POST 方法上载数据，并获取返回的字符串。
+        /// </summary>
+        public Task<string> UploadValuesAndDecodeTaskAsync(string address, NameValueCollection data)
+        {
+            return UploadValuesAndDecodeTaskAsync(address, null, data);
         }
 
         private byte[] UploadValuesInternal(NameValueCollection data)

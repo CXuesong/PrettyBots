@@ -2,6 +2,7 @@
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace UnitTestProject1
 {
@@ -17,6 +18,14 @@ namespace UnitTestProject1
             Trace.WriteLine(body);
             body.Attributes.Append("attr", "asas\"dfsd'jhj");
             Trace.WriteLine(body.OuterHtml);
+        }
+
+        [TestMethod]
+        public void TestMethod2()
+        {
+            var obj = JsonConvert.DeserializeObject("");
+            Trace.WriteLine(JsonConvert.SerializeObject(null));
+            Trace.WriteLine(obj == null);
         }
     }
 }

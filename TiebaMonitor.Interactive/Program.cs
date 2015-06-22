@@ -9,6 +9,7 @@ using System.Net;
 using System.IO;
 using System.Threading;
 using PrettyBots.Strategies;
+using PrettyBots.Strategies.Baidu.Tieba;
 using PrettyBots.Visitors.Baidu;
 
 namespace TiebaMonitor.Interactive
@@ -97,7 +98,7 @@ namespace TiebaMonitor.Interactive
             if (string.IsNullOrWhiteSpace(fn)) return;
             var f = visitor.Tieba.Forum(fn);
             if (!f.IsExists) return;
-            var suspectedTopics = f.Topics().Take(20).Where(t => !f.IsTopicPrefixMatch(t.Title)).ToList();
+            var suspectedTopics = f.GetTopics().Take(20).Where(t => !f.IsTopicPrefixMatch(t.Title)).ToList();
             if (suspectedTopics.Count > 0)
             {
                 foreach (var t in suspectedTopics)
@@ -114,7 +115,7 @@ namespace TiebaMonitor.Interactive
             if (string.IsNullOrWhiteSpace(fn)) return;
             var f = visitor.Tieba.Forum(fn);
             if (!f.IsExists) return;
-            var checker = new TiebaZhidaoRedirectionDetector(visitor)
+            var checker = new ZhidaoRedirectionDetector(visitor)
             {
                 StrongMatcher = new[]
                 {
@@ -193,7 +194,7 @@ namespace TiebaMonitor.Interactive
             if (string.IsNullOrWhiteSpace(fn)) return;
             var f = visitor.Tieba.Forum(fn);
             if (!f.IsExists) return;
-            var checker = new TiebaNewbieDetector(visitor)
+            var checker = new NewbieDetector(visitor)
             {
                 TopicKeywords = new []{"新人", "报道"},
                 ReplyKeywords = new []{"你好", "欢迎", "这里", "介里", "大家好", "求昵称"},

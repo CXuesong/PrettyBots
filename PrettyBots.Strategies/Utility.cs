@@ -8,7 +8,6 @@ namespace PrettyBots.Strategies
 {
     internal static class Utility
     {
-
         /// <summary>
         /// 移除字符串中的符号和空白等内容，并使得大小写一致，便于比对。
         /// </summary>
