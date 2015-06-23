@@ -5,7 +5,9 @@ using System.Linq;
 using System.Xml.Linq;
 using PrettyBots.Strategies;
 using PrettyBots.Strategies.Baidu.Tieba;
+using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
+using PrettyBots.Visitors.Baidu.Tieba;
 
 namespace UnitTestProject1
 {
@@ -46,14 +48,24 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
-        public void ForumVisitTest()
+        public void BlockUserTest()
         {
             var visitor = CreateVisitor();
             LoginVisitor(visitor);
-            var f = visitor.Tieba.Forum("化学");
-            foreach (var t in f.GetTopics().Take(50))
-                Trace.WriteLine(t);
+            var post = visitor.Tieba.GetPost(932580115, 52671043153);
+            post.BlockAuthor();
             visitor.AccountInfo.Logout();
+        }
+
+        [TestMethod]
+        public void ForumVisitTest()
+        {
+            var visitor = CreateVisitor();
+            //LoginVisitor(visitor);
+            var f = visitor.Tieba.Forum("化学");
+            foreach (var t in f.Topics.Take(50))
+                Trace.WriteLine(t);
+            //visitor.AccountInfo.Logout();
         }
 
         [TestMethod]
@@ -84,13 +96,29 @@ namespace UnitTestProject1
         public void TiebaSearchTest()
         {
             var visitor = CreateVisitor();
-            LoginVisitor(visitor);
-            var s = visitor.Tieba.Search("滴定", "化学");
-            foreach (var p in s.Posts())
+            var s = visitor.Tieba.Search(userName: "狐の笑");
+            Trace.WriteLine(s.Result.PageUrl);
+            VisitorPageListView<SearchResultEntry> r = s.Result;
+            var loopCount = 0;
+            var r1 = r.FirstOrDefault();
+            if (r1 != null)
             {
-                Trace.WriteLine(p.Content);
+                var p = r1.GetPost();
+                Trace.WriteLine(p);
             }
-            visitor.AccountInfo.Logout();
+            while (r != null)
+            {
+                Trace.WriteLine(string.Format("Page {0}/{1}", r.PageIndex, r.PageCount));
+                foreach (var p in r)
+                {
+                    Trace.WriteLine(string.Format("{0}\t{1}\t{2}\t{3}\t{4}",
+                        p.SubmissionTime, p.ForumName,
+                        p.Title, p.AuthorName, p.Content));
+                }
+                r = r.Navigate(PageRelativeLocation.Next);
+                loopCount += 1;
+                if (loopCount >= 12) break;
+            }
         }
         
         [TestMethod]

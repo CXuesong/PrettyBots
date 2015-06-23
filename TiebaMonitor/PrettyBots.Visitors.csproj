@@ -70,7 +70,9 @@
     <Compile Include="Baidu\BaiduUtility.cs" />
     <Compile Include="Baidu\MessagesVisitor.cs" />
     <Compile Include="Baidu\Tieba\BaiduUserStubs.cs" />
-    <Compile Include="Baidu\Tieba\PostComment.cs" />
+    <Compile Include="Baidu\Tieba\SubPostVisitor.cs" />
+    <Compile Include="Baidu\Tieba\PostVisitorBase.cs" />
+    <Compile Include="CacheDictionary.cs" />
     <Compile Include="ITextMessageVisitor.cs" />
     <Compile Include="NetEase\LofterAccountInfo.cs" />
     <Compile Include="NetEase\LofterTextEntry.cs" />

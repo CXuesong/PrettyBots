@@ -14,25 +14,50 @@ namespace PrettyBots.Visitors.Baidu.Tieba
     {
         public const string TopicUrlFormat = "http://tieba.baidu.com/p/{0}?ie=utf-8";
 
+        public const string TopicUrlFormatPost = "http://tieba.baidu.com/p/{0}?pid={1}&ie=utf-8";
+
         public const string ReplyUrl = "http://tieba.baidu.com/f/commit/post/add";
 
-        public const int MaxCommentLimit = 2000;
+        private ForumVisitor _Forum;
+        private string _ForumName;
+        private long? _ForumId;
+        private PostListView posts;
+        private string pageData_tbs = null;
 
         public bool IsExists { get; private set; }
 
-        private string _ForumName;
-        private long? _ForumId;
 
-        public string ForumName { get { return _ForumName ?? Forum.Name; } }
+        public string ForumName
+        {
+            get { return _ForumName ?? Forum.Name; }
+        }
 
         public long ForumId
         {
             get { return _ForumId ?? Forum.Id; }
         }
 
-        public ForumVisitor Forum { get; private set; }
+        public ForumVisitor Forum
+        {
+            get
+            {
+                if (_Forum == null)
+                {
+                    //获取 Forum。
+                    Debug.Assert(!NeedRefetch);
+                    Debug.Assert(!string.IsNullOrWhiteSpace(_ForumName));
+                    _Forum = Root.Tieba.Forum(_ForumName);
+                }
+                return _Forum;
+            }
+        }
 
         public long Id { get; private set; }
+
+        /// <summary>
+        /// 获取用于在当前页面定位的帖子。
+        /// </summary>
+        public long? AnchorPostId { get; private set; }
 
         public string Title { get; private set; }
 
@@ -49,33 +74,17 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         public string LastReplyer { get; private set; }
 
         public DateTime? LastReplyTime { get; private set; }
-
-        private string pageData_tbs = null;
-
-        private bool internalUpdated = false;
-
-        private void UpdateInternal(HtmlDocument doc)
-        {
-            var pageData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData");
-            pageData_tbs = (string)pageData["tbs"];
-            internalUpdated = true;
-        }
-
-        private void EnsureInternal(ExtendedWebClient client)
-        {
-            if (!internalUpdated)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(client.DownloadString(string.Format(TopicUrlFormat, Id)));
-                UpdateInternal(doc);
-            }
-        }
-
-        public void Update()
+ 
+        protected override async Task OnFetchDataAsync()
         {
             var doc = new HtmlDocument();
-            using (var s = Parent.Session.CreateWebClient())
-                doc.LoadHtml(s.DownloadString(string.Format(TopicUrlFormat, Id)));
+            using (var s = Root.Session.CreateWebClient())
+            {
+                var pageHtml = await s.DownloadStringTaskAsync(posts.PageUrl);
+                doc.LoadHtml(pageHtml);
+                //下载页面时，将页面内容缓存至帖子列表视图中。
+                posts.SetTopicPageCache(pageHtml);
+            }
             var errorTextNode = doc.GetElementbyId("errorText");
             if (errorTextNode != null)
             {
@@ -97,21 +106,106 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             Id = (long)topicData["thread_id"];
             Title = (string)topicData["title"];
             RepliesCount = (int)topicData["reply_num"];
+            //状态信息
+            var pageData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData");
+            /*
+{
+    "tbs": "18b27684b96ef3da1435071926",
+    "charset": "UTF-8",
+    "product": "pb",
+    "page": "pb_bright",
+    "user": {
+        "is_login": true,
+        "user_id": 1733233632,
+        "user_name": "La_Mobile",
+        "no_un": false,
+        "mobilephone": "",
+        "email": "xxx***@xxx.xxx",
+        "urank": {
+            "uid": 1733233632,
+            "score": "24",
+            "rank": 408,
+            "change": 0,
+            "status": 0
+        },
+        "userhide": 0,
+        "need_black_pop": 0,
+        "black_pop_level": 0,
+        "forbidden": [
+            
+        ],
+        "tips": [
+            {
+                "tip_id": 2,
+                "tip_info": "{&quot;id1&quot;:3}"
+            }
+        ],
+        "user_sex": 1,
+        "user_status": 1,
+        "card": "a:6:{s:8:&quot;post_num&quot;;i:46;s:8:&quot;good_num&quot;;i:0;s:12:&quot;manager_info&quot;;a:2:{s:7:&quot;manager&quot;;a:2:{s:10:&quot;forum_list&quot;;a:0:{}s:5:&quot;count&quot;;i:0;}s:6:&quot;assist&quot;;a:2:{s:10:&quot;forum_list&quot;;a:1:{i:0;s:10:&quot;\u5b88\u536b\u8005\u4f20\u5947&quot;;}s:5:&quot;count&quot;;i:1;}}s:10:&quot;like_forum&quot;;a:0:{}s:9:&quot;is_novice&quot;;i:0;s:7:&quot;op_time&quot;;i:1435069193;}",
+        "portrait_time": "1433862313",
+        "tbscore_repeate_finish_time": "1433860103",
+        "use_sig": 0,
+        "notice_mask": {
+            "2": 0,
+            "3": 0,
+            "5": 0,
+            "6": 0,
+            "9": 0,
+            "1000": 0
+        },
+        "priv_sets": {
+            "like": "2",
+            "post": "2",
+            "group": "2"
+        },
+        "user_type": 0,
+        "meizhi_level": 0,
+        "global": {
+            "tbmall_newprops": 0
+        },
+        "new_iconinfo": {
+            "1": [
+                
+            ]
+        },
+        "level_id": 3,
+        "level_name": "\u906d\u9047\u7ed1\u67b6",
+        "is_like": 1,
+        "is_black": 0,
+        "cur_score": 24,
+        "score_left": 6,
+        "portrait": "e00b4c615f4d6f62696c654f67"
+    },
+    "fromPlatformUi": true
+};PageData.user.name_url="&ie=utf-8";varEnv={
+    server_time: 1435071926000
+};varTbs={
+    "forward": "594d4632b9fbc420",
+    "follow": "db32022d704708c3",
+    "upload_img": "be03c91d6a16b6da014350719260125500_1",
+    "common": "18b27684b96ef3da1435071926",
+    "rp": "3114281efdb7587e0c9ad0b5"
+}
+             */
+            pageData_tbs = (string)pageData["tbs"];
+            if (string.IsNullOrEmpty(pageData_tbs)) Debug.Print("TBS == null, Url:{0}", posts.PageUrl);
             IsExists = true;
+            //顺带着更新一下。注意，要载入主题信息后，才能刷新列表内容。
+            await posts.RefreshAsync();
         }
 
-        public PostListView GetPosts()
+        /// <summary>
+        /// 获取当前页面的帖子视图。
+        /// </summary>
+        public PostListView Posts
         {
-            var v = new PostListView(this, string.Format(TopicUrlFormat, Id));
-            v.Update();
-            return v;
-        }
-
-        public async Task<PostListView> GetPostsAsync()
-        {
-            var v = new PostListView(this, string.Format(TopicUrlFormat, Id));
-            await v.UpdateAsync();
-            return v;
+            get
+            {
+                //更新自身的同时可以更新当前页面的帖子列表。
+                Update();
+                return posts;
+            }
         }
 
         /// <summary>
@@ -139,10 +233,11 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             //TIP
             //"@La_Mobile&nbsp;....[br][url]http://tieba.baidu.com/[/url]"
             if (string.IsNullOrWhiteSpace(contentCode)) return false;
+            await UpdateAsync();
+            if (!IsExists) throw new InvalidOperationException(Prompts.PageNotExists);
             Debug.Assert(_ForumId == null || Forum == null || Forum.Id == _ForumId);
-            using (var client = Parent.Session.CreateWebClient())
+            using (var client = Root.Session.CreateWebClient())
             {
-                EnsureInternal(client);
                 var baseTime = DateTime.Now;
                 //var baseTimeStr = baseTime.ToString(CultureInfo.InvariantCulture);
                 var replyParams = new NameValueCollection
@@ -171,10 +266,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     replyParams["quote_id"] = pid.ToString();
                     replyParams["repostid"] = pid.ToString();
                 }
-                //var result = await client.UploadValuesAndDecodeTaskAsync(ReplyUrl, replyParams);
-                //var resultObj = JObject.Parse(result);
-                var result = client.UploadValues(ReplyUrl, replyParams);
-                var resultObj = JObject.Parse(client.Encoding.GetString(result));
+                var result = await client.UploadValuesAndDecodeTaskAsync(ReplyUrl, replyParams);
+                var resultObj = JObject.Parse(result);
                 /*
                  {
   "no": 40,
@@ -198,46 +291,82 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 }
                  */
                 //Debug.Print(resultObj.ToString());
-                switch ((int)resultObj["no"])
+                var errNumer = (int)resultObj["no"];
+                switch (errNumer)
                 {
                     case 0:
                         return true;
+                    case 12:
+                        throw new OperationFailedException(errNumer, Prompts.AccountHasBeenBlocked);
                     case 34:
-                        throw new InvalidOperationException(Prompts.OperationsTooFrequentException);
+                        throw new OperationFailedException(errNumer, Prompts.OperationsTooFrequentException);
                     case 40:
                         //需要验证码。
                         return false;
                     case 265:
-                        throw new InvalidOperationException(Prompts.NeedLogin);
+                        throw new OperationFailedException(errNumer, Prompts.NeedLogin);
                     case 274:
-                        throw new InvalidOperationException("POST数据错误。");
+                        throw new OperationFailedException(errNumer, "POST数据错误。");
                     case 2007:
-                        throw new InvalidOperationException(Prompts.InvalidContentException);
+                        throw new OperationFailedException(errNumer, Prompts.InvalidContentException);
                     default:
-                        throw new InvalidOperationException(string.Format(Prompts.OperationFailedException_ErrorCodeMessage,
-                            (int)resultObj["no"], (string)resultObj["error"]));
+                        throw new OperationFailedException(errNumer, (string)resultObj["error"]);
                 }
                 return true;
             }
         }
+
+        #region 权限
+
+        /// <summary>
+        /// 封禁此主题内某帖子的作者。
+        /// </summary>
+        public void BlockUser(BlockUserParams p)
+        {
+            BlockUser(p, null);
+        }
+
+        /// <summary>
+        /// 封禁此主题内某帖子的作者。
+        /// </summary>
+        public void BlockUser(BlockUserParams p, string reason)
+        {
+            const string postUrl = "http://tieba.baidu.com/pmc/blockid";
+
+            if (p.PostId <= 0 || string.IsNullOrWhiteSpace(p.UserName))
+                throw new ArgumentException();
+            if (string.IsNullOrWhiteSpace(reason)) reason = Prompts.BlockUserDefaultMessage;
+            Update();
+            var buParams = new NameValueCollection()
+            {
+                {"day", "1"},
+                {"fid", Convert.ToString(ForumId)},
+                {"tbs", pageData_tbs},
+                {"ie", "utf-8"},
+                {"user_name[]", p.UserName},
+                {"pid[]", Convert.ToString(p.PostId)},
+                {"reason", reason}
+            };
+            JObject result;
+            using (var client = Session.CreateWebClient())
+                result = JObject.Parse(client.UploadValuesAndDecode(postUrl, buParams));
+            /*{"errno":0,"errmsg":"\u6210\u529f"}*/
+            if ((int)result["errno"] == 0) return;
+            throw new OperationFailedException((int)result["errno"], (string)result["errmsg"]);
+        }
+        #endregion
 
         public override string ToString()
         {
             return string.Format("[{0}]{1}[A={2}][R={3}][{4}]", Id, Title, AuthorName, RepliesCount, PreviewText);
         }
 
-        internal TopicVisitor(long id, BaiduVisitor parent)
-            : base(parent)
-        {
-            Id = id;
-        }
-
+        // 由 Forum -> TopicListView 创建
         internal TopicVisitor(long id, string title, bool isGood, bool isTop,
             string author, string preview, int repliesCount, string lastReplyer, DateTime? lastReplyTime,
-            ForumVisitor forum, BaiduVisitor parent)
-            : base(parent)
+            ForumVisitor forum)
+            : this(id, forum.Root)
         {
-            Id = id;
             Title = title;
             IsGood = isGood;
             IsTop = isTop;
@@ -246,18 +375,44 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             RepliesCount = repliesCount;
             LastReplyer = lastReplyer;
             LastReplyTime = lastReplyTime;
-            Forum = forum;
+            _Forum = forum;
             //默认表示帖子肯定是存在的。
             IsExists = true;
         }
+
+        // 由 Tieba -> Topic 创建
+        internal TopicVisitor(long id, BaiduVisitor root)
+            : base(root)
+        {
+            Id = id;
+            posts = new PostListView(this, string.Format(TopicUrlFormat, id));
+        }
+
+        // 由 Tieba -> Topic 创建
+        // 由搜索结果创建
+        internal TopicVisitor(long id, long anchorPid, BaiduVisitor root)
+            : base(root)
+        {
+            Id = id;
+            AnchorPostId = anchorPid;
+            posts = new PostListView(this, string.Format(TopicUrlFormatPost, id, anchorPid));
+        }
     }
 
-    public class PostListView : VisitorPageListView<PostVisitor>
+    public class PostListView : VisitorPageListView<TopicVisitor, PostVisitor>
     {
         public const string TopicUrlFormatPN = "http://tieba.baidu.com/p/{0}?pn={1}&ie=utf-8";
 
         public const string OverallCommentUrlFormat =
             "http://tieba.baidu.com/p/totalComment?t={0}&tid={1}&fid={2}&pn={3}&see_lz=0";
+
+        private string _TopicPageCache;
+
+        // 调用方：TopicVisitor
+        internal void SetTopicPageCache(string pageHtml)
+        {
+            _TopicPageCache = pageHtml;
+        }
 
         protected new TopicVisitor Parent
         {
@@ -290,7 +445,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             }
             if (newIndex < 0 || newIndex >= PageCount) return null;
             var newPage = new PostListView(Parent, GetPageUrl(newIndex + 1));
-            await newPage.UpdateAsync();
+            await newPage.RefreshAsync();
             return newPage;
         }
 
@@ -300,7 +455,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             JObject commentData;
             using (var client = Parent.Session.CreateWebClient())
             {
-                doc.LoadHtml(await client.DownloadStringTaskAsync(PageUrl));
+                if (_TopicPageCache == null) _TopicPageCache = await client.DownloadStringTaskAsync(PageUrl);
+                doc.LoadHtml(_TopicPageCache);
+                _TopicPageCache = null;
                 //解析分页信息。
                 var pagerData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.pager", true);
                 if (pagerData != null)
@@ -309,7 +466,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     PageIndex = (int)pagerData["cur_page"] - 1;
                     PageCount = (int)pagerData["total_page"];
                 }
-                //解析每层前10楼中楼
+                //下载每层前10楼中楼
+                //将在 SubPostListView 中解析。
                 var dateTimeBase = Utility.ToUnixDateTime(DateTime.Now);
                 commentData =
                     JObject.Parse(await client.DownloadStringTaskAsync(
@@ -324,13 +482,41 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             }
             //帖子列表。
             var postListNode = doc.GetElementbyId("j_p_postlist");
-            if (postListNode == null) return;
+            if (postListNode == null)
+            {
+                ClaimExistence(false);
+                return;
+            }
             foreach (var eachNode in postListNode.SelectNodes("./div[@data-field]"))
             {
+                //Normal
                 //{"author":{"user_id":355004908,"user_name":"hellodrf","props":null},
                 //"content":{"post_id":64616765755,"is_anonym":false,"forum_id":656638,
                 //"thread_id":1747016486,"content":"\u5347\u7ea7\uff01\uff01",
                 //"post_no":966,"type":"0","comment_num":2,"props":null,"post_index":1}}
+                //IP党
+                /*
+{
+    "author": {
+        "user_name": "180.110.125.*"
+    },
+    "content": {
+        "post_id": 10234026513,
+        "is_anonym": 1,
+        "open_id": "",
+        "open_type": "",
+        "date": "2010-11-12 21:59",
+        "vote_crypt": "",
+        "post_no": 2,
+        "type": "0",
+        "comment_num": 2,
+        "ptype": "",
+        "is_saveface": false,
+        "props": null,
+        "post_index": 1
+    }
+}
+                 */
                 var pd = JObject.Parse(HtmlEntity.DeEntitize(eachNode.GetAttributeValue("data-field", "")));
                 var pdc = pd["content"];
                 var pid = (long)pdc["post_id"];
@@ -350,84 +536,17 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     content = contentNode.InnerHtml.Trim();
                 }
                 var badageNode = eachNode.SelectSingleNode(".//div[@class='d_badge_lv']");
-                var author = new TiebaUserStub((long)pd["author"]["user_id"],
-                    (string)pd["author"]["user_name"], Convert.ToInt32(badageNode.InnerText));
-                //楼中楼
-                /*
-                 {
-"errno": 0,
-"errmsg": "success",
-"data": {
-    "comment_list": {
-        "65718232016": {
-            "comment_num": 1,
-            "comment_list_num": 1,
-            "comment_info": [
-                {
-                    "thread_id": "3636549985",
-                    "post_id": "65718232016",
-                    "comment_id": "65718247989",
-                    "username": "双鱼满月",
-                    "user_id": "1038711401",
-                    "now_time": 1426567930,
-                    "content": "p.s. Lz注意前缀<img class=\"BDE_Smiley\" pic_type=\"1\" width=\"30\" height=\"30\" src=\"http://tb2.bdstatic.com/tb/editor/images/face/i_f01.png?t=20140803\" >",
-                    "ptype": 0,
-                    "during_time": 0
-                }
-            ]
-        }
-    },
-    "user_list": {
-        "1038711401": {
-            "user_id": 1038711401,
-            "user_name": "双鱼满月",
-            "user_sex": 2,
-            "user_status": 0,
-            "bg_id": "1012",
-            "card": "a:6:{s:8:\"post_num\";i:4175;s:8:\"good_num\";i:3;s:12:\"manager_info\";a:2:{s:7:\"manager\";a:2:{s:10:\"forum_list\";a:0:{}s:5:\"count\";i:0;}s:6:\"assist\";a:2:{s:10:\"forum_list\";a:3:{i:0;s:10:\"猫头鹰王国\";i:1;s:8:\"夜煞无牙\";i:2;s:6:\"邱吴洪\";}s:5:\"count\";i:3;}}s:10:\"like_forum\";a:3:{i:10;a:2:{s:10:\"forum_list\";a:1:{i:0;s:10:\"猫头鹰王国\";}s:5:\"count\";i:1;}i:8;a:2:{s:10:\"forum_list\";a:2:{i:0;s:10:\"守卫者传奇\";i:1;s:9:\"aea工作室\";}s:5:\"count\";i:2;}i:7;a:2:{s:10:\"forum_list\";a:2:{i:0;s:8:\"夜煞无牙\";i:1;s:8:\"绝境狼王\";}s:5:\"count\";i:4;}}s:9:\"is_novice\";i:0;s:7:\"op_time\";i:1433760933;}",
-            "portrait_time": "1393118701",
-            "mParr_props": [],
-            "tbscore_repeate_finish_time": "1433562554",
-            "use_sig": 0,
-            "notice_mask": {
-                "2": 0,
-                "3": 0,
-                "5": 0,
-                "6": 0,
-                "9": 0,
-                "1000": 0
-            },
-            "user_type": 0,
-            "meizhi_level": 0,
-            "new_iconinfo": {
-                "1": []
-            },
-            "portrait": "697ae58f8ce9b1bce6bba1e69c88e93d",
-            "nickname": "双鱼满月"
-        }
-    }
-}
-}
-                 */
-                IList<PostComment> comments = null;
-                if (commentData != null)
-                {
-                    var thisComments = commentData["data"]["comment_list"];
-                    //可能没有回复可用。
-                    thisComments = thisComments.SelectToken(pid.ToString(CultureInfo.InvariantCulture), false);
-                    if (thisComments != null)
-                    {
-                        comments =
-                            thisComments["comment_info"].Select(et =>
-                                new PostComment((long)et["comment_id"], (string)et["username"],
-                                    (long)et["user_id"], Utility.FromUnixDateTime((long)et["now_time"] * 1000),
-                                    (string)et["content"])).ToList();
-                    }
-                }
-                RegisterNewItem(new PostVisitor(pid, (int)pdc["post_no"],
+                var badageValue = badageNode.InnerText;
+                var author = new TiebaUserStub((long?) pd["author"]["user_id"],
+                    (string) pd["author"]["user_name"],
+                    string.IsNullOrWhiteSpace(badageValue)
+                        ? null
+                        : (int?) Convert.ToInt32(badageNode.InnerText));
+                RegisterNewItem(new PostVisitor(pid, (int) pdc["post_no"],
                     author, content, submissionTime.Value,
-                    (int)pdc["comment_num"], comments, Parent, Parent.Parent));
+                    (int) pdc["comment_num"], commentData, this));
             }
+            ClaimExistence(true);
         }
 
         protected override VisitorPageListView<PostVisitor> PageFactory(string url)

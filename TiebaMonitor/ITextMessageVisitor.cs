@@ -4,6 +4,8 @@
     {
         void Update();
 
+        string Title { get; }
+
         string Content { get; }
         
         string AuthorName { get; }

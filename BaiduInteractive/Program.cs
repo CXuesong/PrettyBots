@@ -143,8 +143,12 @@ namespace BaiduInterop.Interactive
                     "B", Prompts.Back))
                 {
                     case "L":
+                        UI.PushCursor();
+                        UI.Print(Prompts.PleaseWait);
+                        forum.Update(true);
+                        UI.PopCursor();
                         var viewer = new EnumerableViewer<TopicVisitor>(
-                            forum.GetTopics().EnumerateToEnd(), ForumViewer_OnViewItem, ForumViewer_OnItemSelected);
+                            forum.Topics.EnumerateToEnd(), ForumViewer_OnViewItem, ForumViewer_OnItemSelected);
                         viewer.Show();
                         break;
                     case "B":
@@ -181,7 +185,11 @@ namespace BaiduInterop.Interactive
                         "B", Prompts.Back))
                     {
                         case "L":
-                            var viewer = new EnumerableViewer<PostVisitor>(t.GetPosts().EnumerateToEnd(),
+                            UI.PushCursor();
+                            UI.Print(Prompts.PleaseWait);
+                            t.Posts.Refresh();
+                            UI.PopCursor();
+                            var viewer = new EnumerableViewer<PostVisitor>(t.Posts.EnumerateToEnd(),
                                 TopicViewer_OnViewItem, TopicViewer_OnItemSelected);
                             viewer.Show();
                             break;
@@ -225,14 +233,15 @@ namespace BaiduInterop.Interactive
                         switch (UI.Input(Prompts.SelectAnOperation, "L",
                             "L", "查看楼中楼[" + p.CommentsCount + "]",
                             "R", "回复",
+                            "K", "封禁",
                             "B", Prompts.Back))
                         {
                             case "L":
-                                var viewer = new EnumerableViewer<PostComment>(p.Comments(),
-                                    (index, c) =>
+                                var viewer = new EnumerableViewer<SubPostVisitor>(p.SubPosts,
+                                    (index, sp) =>
                                     {
-                                        UI.Print("{0}\tBy {1}\t@ {2}", index, c.AuthorName, c.SubmissionTime);
-                                        UI.Print(Utility.PrettyParseHtml(c.Content, pphOptions));
+                                        UI.Print("{0}\tBy {1}\t@ {2}", index, sp.Author, sp.SubmissionTime);
+                                        UI.Print(Utility.PrettyParseHtml(sp.Content, pphOptions));
                                     }, null);
                                 viewer.Show();
                                 break;
@@ -240,6 +249,14 @@ namespace BaiduInterop.Interactive
                                 var content = UI.InputMultiline(Prompts.InputReplyContent);
                                 if (!string.IsNullOrWhiteSpace(content))
                                     p.Reply(BaiduUtility.TiebaEscape(content));
+                                break;
+                            case "K":
+                                var reason = UI.Input("封禁理由");
+                                if (UI.Confirm("是否继续？"))
+                                {
+                                    p.BlockAuthor(reason);
+                                    UI.Print("用户已封禁：{0}。", p.Author);
+                                }
                                 break;
                             case "B":
                                 return;

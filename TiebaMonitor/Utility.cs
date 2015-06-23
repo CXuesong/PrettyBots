@@ -164,5 +164,13 @@ namespace PrettyBots.Visitors
             //<meta http-equiv="refresh" content="5; url=....." />
             return ExtractMetaRedirectionUrl(redirectionNode.GetAttributeValue("content", ""));
         }
+
+        public static string StringElipsis(string source, int maxLength)
+        {
+            if (maxLength < 3) throw new ArgumentOutOfRangeException("maxLength");
+            if (string.IsNullOrEmpty(source)) return string.Empty;
+            if (source.Length <= maxLength) return source;
+            return source.Substring(0, maxLength - 3) + "...";
+        }
     }
 }

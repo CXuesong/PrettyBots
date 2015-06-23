@@ -46,7 +46,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new InvalidOperationException();
             var thisUser = visitor.AccountInfo.UserName;
-            foreach (var t in f.GetTopics().EnumerateToEnd().Take(maxCount))
+            foreach (var t in f.Topics.EnumerateToEnd().Take(maxCount))
             {
                 if (t.IsTop || t.IsGood) continue;
                 if (t.RepliesCount > RepliesCountLimit) continue;
@@ -54,7 +54,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                 if (TopicKeywords != null && TopicKeywords.Any(k => InString(t.Title, k)))
                 {
                     var weight = 0.3;
-                    var posts = t.GetPosts().ToList();
+                    var posts = t.Posts.ToList();
                     var top = posts.FirstOrDefault(p => p.Author.Name == t.AuthorName);
                     if (top == null) continue;
                     if (top.Author.Level == null || top.Author.Level > AuthorLevelLimit) continue;

@@ -20,12 +20,12 @@ namespace PrettyBots.Visitors.Baidu
 
         private static Regex messageCounterMatcher = new Regex(@"\(\s*({.*})\s*\)");
 
-        public void Update()
+        protected override async Task OnFetchDataAsync()
         {
             using (var c = Session.CreateWebClient())
             {
                 //({'sysMsgNum':'0','actMsgNum':'0','mailMsgNum':'0','myFRDNum':'0','mySTRNum':'0'});
-                var pageContent = c.DownloadString(MessageCounterUrl);
+                var pageContent = await c.DownloadStringTaskAsync(MessageCounterUrl);
                 var match = messageCounterMatcher.Match(pageContent);
                 if (!match.Success) throw new UnexpectedDataException();
                 var ct = JObject.Parse(match.Groups[1].Value);
@@ -41,8 +41,8 @@ namespace PrettyBots.Visitors.Baidu
             }
         }
 
-        internal MessagesVisitor(BaiduVisitor parent)
-            : base(parent)
+        internal MessagesVisitor(BaiduVisitor root)
+            : base(root)
         { }
     }
 

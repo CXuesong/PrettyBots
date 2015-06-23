@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace PrettyBots.Visitors.Baidu.Tieba
@@ -24,13 +25,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         private static Regex countersMatcher = new Regex(@"\[.*\]");
 
-        public void Update()
+        protected override async Task OnFetchDataAsync()
         {
             //initItiebaMessage([0,0,0,4,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
             using (var c = Session.CreateWebClient())
             {
-                var pageText =
-                    c.DownloadString(string.Format(NotifierCounterUrlFormat, Parent.AccountInfo.Portrait));
+                var pageText = await
+                    c.DownloadStringTaskAsync(string.Format(NotifierCounterUrlFormat, Root.AccountInfo.Portrait));
                 Debug.Print(pageText);
                 var match = countersMatcher.Match(pageText);
                 if (!match.Success) throw new UnexpectedDataException();
@@ -40,13 +41,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public void ClearNotifications(params MessageCounter[] counter)
         {
-            Parent.AccountInfo.CheckPortrait();
+            Root.AccountInfo.CheckPortrait();
             using (var c = Session.CreateWebClient())
             {
                 foreach (var ct in counter)
                 {
                     var result = c.DownloadString(string.Format(ClearNotificationsUrlFormat,
-                        (int)ct, Parent.AccountInfo.Portrait, Utility.ToUnixDateTime(DateTime.Now)));
+                        (int)ct, Root.AccountInfo.Portrait, Utility.ToUnixDateTime(DateTime.Now)));
                     Debug.Print("Counter:{0}, Result:{1}", ct, result);
                 }
             }
@@ -62,8 +63,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 MessageCounter.PostsRecycled);
         }
 
-        internal MessagesVisitor(BaiduVisitor parent)
-            : base(parent)
+        internal MessagesVisitor(BaiduVisitor root)
+            : base(root)
         { }
     }
 

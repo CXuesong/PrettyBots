@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 namespace PrettyBots.Visitors.Baidu
@@ -36,17 +37,16 @@ namespace PrettyBots.Visitors.Baidu
                 throw new InvalidOperationException(Prompts.Exception_PortraitIsNull);
         }
 
-        public void Update()
+        protected override async Task OnFetchDataAsync()
         {
-            //var doc = new HtmlDocument();
             string pageHtml;
-            using (var s = Parent.Session.CreateWebClient())
+            using (var s = Root.Session.CreateWebClient())
             {
                 //Workaround Update 之后再登录会失败。
                 //不能先访问贴吧再访问 passport.baidu.com 获取 token
                 var r = s.CreateHttpRequest("https://passport.baidu.com");
-                r.GetResponse().Dispose();
-                pageHtml = s.DownloadString("http://tieba.baidu.com/");
+                (await r.GetResponseAsync()).Dispose();
+                pageHtml = await s.DownloadStringTaskAsync("http://tieba.baidu.com/");
             }
             var userInfo = Utility.FindJsonAssignment(pageHtml, "PageData.user");
             /*
@@ -189,13 +189,13 @@ window.location.replace(url);
                         return true;
                     case 1:
                     case 2:
-                        throw new LoginException(Prompts.LoginException_UserName);
+                        throw new OperationFailedException(loginResultCode, Prompts.LoginException_UserName);
                     case 4:
                     case 9:
-                        throw new LoginException(Prompts.LoginException_Password);
+                        throw new OperationFailedException(loginResultCode, Prompts.LoginException_Password);
                     case 257:
                         if (string.IsNullOrWhiteSpace(userName))
-                            throw new LoginException(Prompts.LoginException_UserName);
+                            throw new OperationFailedException(loginResultCode, Prompts.LoginException_UserName);
                         goto default;
                     default:
                         if (!string.IsNullOrEmpty(loginResult["codestring"]))
@@ -207,7 +207,7 @@ window.location.replace(url);
                             if (verifycode == null) return false;
                             goto LOGIN_ATTEMPT;
                         }
-                        throw new LoginException(string.Format(Prompts.LoginException_ErrorCode, loginResultCode));
+                        throw new OperationFailedException(loginResultCode);
                 }
                 //Debug.Print(client.DownloadString(redirect));
             }
@@ -233,8 +233,8 @@ window.location.replace(url);
                 return Prompts.HasntLoggedIn;
         }
 
-        internal BaiduAccountInfo(BaiduVisitor parent)
-            : base(parent)
+        internal BaiduAccountInfo(BaiduVisitor root)
+            : base(root)
         {
             IsLoggedIn = false;
             UserName = null;

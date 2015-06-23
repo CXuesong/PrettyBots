@@ -15,7 +15,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class ForumVisitor : ChildVisitor<BaiduVisitor>
     {
-        const string ForumUrlFormat = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search";
+        private const string ForumUrlFormat = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search";
+
+        private TopicListView _Topics;
 
         public string QueryName { get; private set; }
 
@@ -67,36 +69,32 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         private static IList<string> emptyStringList = new string[] { };
 
         #region 数据采集
+
         /// <summary>
         /// 枚举主题列表。
         /// </summary>
-        public TopicListView GetTopics()
+        public TopicListView Topics
         {
-            var v = new TopicListView(this, string.Format(ForumUrlFormat, QueryName));
-            v.Update();
-            return v;
-        }
-
-        /// <summary>
-        /// 异步枚举主题列表。
-        /// </summary>
-        public async Task<TopicListView> GetTopicsAsync()
-        {
-            var v = new TopicListView(this, string.Format(ForumUrlFormat, QueryName));
-            await v.UpdateAsync();
-            return v;
+            get
+            {
+                _Topics.Refresh();
+                return _Topics;
+            }
         }
 
         /// <summary>
         /// 更新论坛的当前状态。
         /// </summary>
-        public void Update()
+        protected override async Task OnFetchDataAsync()
         {
             var doc = new HtmlDocument();
-            using (var s = Parent.Session.CreateWebClient())
+            using (var s = Root.Session.CreateWebClient())
             {
                 s.Headers[HttpRequestHeader.Referer] = TiebaVisitor.TiebaIndexUrl;
-                doc.LoadHtml(s.DownloadString(string.Format(ForumUrlFormat, QueryName)));
+                var content = await s.DownloadStringTaskAsync(string.Format(ForumUrlFormat, QueryName));
+                //顺带刷新主题列表。
+                _Topics.SetPageHtmlCache(content);
+                doc.LoadHtml(content);
             }
             var noResultTipNode =
                 doc.GetElementbyId("forum_not_exist")
@@ -166,7 +164,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 else
                 {
                     //type == ""
-                    TopicPrefix = new string[] { prefixFormat };
+                    TopicPrefix = new [] { prefixFormat };
                 }
                 JToken jt;
                 if (prefixSettings.TryGetValue("time", out jt))
@@ -175,6 +173,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     topicPrefixTime = null;
             }
             cachedTopicMatchers.Clear();
+            //
+            await _Topics.RefreshAsync();
         }
         #endregion
 
@@ -184,13 +184,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         public void SignIn()
         {
             //ie=utf-8&kw=%E7%8C%AB%E5%A4%B4%E9%B9%B0%E7%8E%8B%E5%9B%BD&tbs=2ac4c76dba9f5f9e1434877655
-            var siParams = new NameValueCollection()
+            var siParams = new NameValueCollection
             {
                 {"ie", "utf-8"},
                 {"kw", Name},           //注意这里会由 WebClient 自动编码。
                 {"tbs", PageData_Tbs}
             };
-            JObject result = null;
+            JObject result;
             /*
 {
     "no": 0,
@@ -275,22 +275,34 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             return QueryName;
         }
 
-        internal ForumVisitor(string queryName, BaiduVisitor parent)
-            : base(parent)
+        internal ForumVisitor(string queryName, BaiduVisitor root)
+            : base(root)
         {
             QueryName = queryName;
+            _Topics = new TopicListView(this, string.Format(ForumUrlFormat, QueryName));
         }
     }
 
-    public class TopicListView : VisitorPageListView<TopicVisitor>
+    public class TopicListView : VisitorPageListView<ForumVisitor, TopicVisitor>
     {
-        const string ForumUrlFormatPN = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search&pn={1}";
+        //const string ForumUrlFormatPN = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search&pn={1}";
+
+        private string _PageHtmlCache;
+
+        // 调用方：ForumVisitor
+        internal void SetPageHtmlCache(string pageHtml)
+        {
+            _PageHtmlCache = pageHtml;
+        }
 
         protected override async Task OnRefreshPageAsync()
         {
             var doc = new HtmlDocument();
-            using (var client = Parent.Session.CreateWebClient())
-                doc.LoadHtml(await client.DownloadStringTaskAsync(PageUrl));
+            if (_PageHtmlCache == null)
+                using (var client = Parent.Session.CreateWebClient())
+                    _PageHtmlCache = await client.DownloadStringTaskAsync(PageUrl);
+            doc.LoadHtml(_PageHtmlCache);
+            _PageHtmlCache = null;
             var topicQuery = Enumerable.Empty<HtmlNode>();
             Action<string> collectTopics = id =>
             {
@@ -332,8 +344,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 RegisterNewItem(new TopicVisitor((long) jo["id"], title,
                     (int) jo["is_good"] != 0, (int) jo["is_top"] != 0,
                     (string) jo["author_name"], preview, (int) jo["reply_num"],
-                    replyer, replyTime, (ForumVisitor)Parent, ((ForumVisitor)Parent).Parent));
+                    replyer, replyTime, Parent));
             }
+            ClaimExistence(true);
             //解析其它页面地址。
             var pagerNode = doc.GetElementbyId("frs_list_pager");
             if (pagerNode == null) {
@@ -377,20 +390,43 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                         RegisterNavigationLocation(lastNumNavigator, thisUrl);
                         break;
                 }
-                // 没有“尾页”按钮，表明已经到达最后。
-                if (lastPageUrl == null) PageCount = PageIndex + 1;
-                // 接近最后了，最后一个数字和“尾页”按钮指向的 Url 相同。
-                if (lastPageUrl == lastNumNavigatorUrl) PageCount = lastNumNavigator + 1;
             }
+            // 没有“尾页”按钮，表明已经到达最后。
+            if (lastPageUrl == null) PageCount = PageIndex + 1;
+            // 接近最后了，最后一个数字和“尾页”按钮指向的 Url 相同。
+            if (lastPageUrl == lastNumNavigatorUrl) PageCount = lastNumNavigator + 1;
         }
 
         protected override VisitorPageListView<TopicVisitor> PageFactory(string url)
         {
-            return new TopicListView((ForumVisitor)Parent, url);
+            return new TopicListView(Parent, url);
         }
 
         internal TopicListView(ForumVisitor parent, string pageUrl)
             : base(parent, pageUrl)
         { }
+    }
+
+    /// <summary>
+    /// 用于封禁用户时提供必要的参数。
+    /// </summary>
+    public struct BlockUserParams
+    {
+        /// <summary>
+        /// 用户名。
+        /// </summary>
+        public string UserName { get; private set;}
+
+        /// <summary>
+        /// 帖子 Id。
+        /// </summary>
+        public long PostId { get; private set;}
+
+        public BlockUserParams(string userName, long postId)
+            : this()
+        {
+            UserName = userName;
+            PostId = postId;
+        }
     }
 }

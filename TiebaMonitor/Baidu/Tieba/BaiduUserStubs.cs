@@ -47,7 +47,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             return string.CompareOrdinal(x.Name, y.Name) != 0;
         }
 
-        internal TiebaUserStub(string name) : this(null, name, null)
+        internal TiebaUserStub(long id, string name)
+            : this(id, name, null)
         { }
 
         internal TiebaUserStub(long? id, string name, int? level) : this()

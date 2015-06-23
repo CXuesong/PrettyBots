@@ -152,22 +152,67 @@ namespace PrettyBots.Visitors
         }
     }
 
-    public abstract class VisitorPageListView<T> : PageListView<T>, IVisitor
+    /// <summary>
+    /// 表示一个支持从网页抓取信息的分页列表视图。
+    /// </summary>
+    public abstract class VisitorPageListView<TChild> : PageListView<TChild>, IVisitor
     {
         private Dictionary<int, string> navigationUrlDict = new Dictionary<int, string>();
-
-        private List<T> _Items = new List<T>();
-
+        private List<TChild> _Items = new List<TChild>();
+        private bool _IsExists;
         public IVisitor Parent { get; private set; }
-        protected override IList<T> Items
+
+        IVisitor IVisitor.Parent {
+            get { return this.Parent; }
+        }
+
+        /// <summary>
+        /// 获取一个 List，包含了当前页面的项目。
+        /// </summary>
+        protected override IList<TChild> Items
         {
             get { return _Items; }
         }
 
         /// <summary>
+        /// 获取一个值，指示了页面内容是否存在。
+        /// </summary>
+        public bool IsExists
+        {
+            get { return _IsExists; }
+        }
+
+        /// <summary>
         /// 当前页面的 Url。
         /// </summary>
-        protected string PageUrl { get; private set; }
+        public string PageUrl { get; private set; }
+
+        public WebSession Session
+        {
+            get { return Parent.Session; }
+        }
+
+        public IAccountInfo AccountInfo
+        {
+            get { return Parent.AccountInfo; }
+        }
+
+        protected VisitorPageListView(IVisitor parent, string pageUrl)
+        {
+            if (parent == null) throw new ArgumentNullException("parent");
+            if (string.IsNullOrEmpty(pageUrl)) throw new ArgumentNullException("pageUrl");
+            Parent = parent;
+            PageUrl = pageUrl;
+        }
+
+        /// <summary>
+        /// 声明页面内容的存在性。
+        /// </summary>
+        /// <param name="value"></param>
+        protected void ClaimExistence(bool value)
+        {
+            _IsExists = value; 
+        }
 
         protected void RegisterNavigationLocation(PageRelativeLocation location, string url)
         {
@@ -182,73 +227,78 @@ namespace PrettyBots.Visitors
             navigationUrlDict[pageIndex] = url;
         }
 
-        protected void RegisterNewItem(T newItem)
+        protected void RegisterNewItem(TChild newItem)
         {
             _Items.Add(newItem);
+        }
+        protected void RegisterNewItem(IEnumerable<TChild> newItems)
+        {
+            _Items.AddRange(newItems);
         }
 
         /// <summary>
         /// 当需要根据 <see cref="PageUrl"/> 更新 Items 以及其它项目时引发。
         /// </summary>
+        /// <returns>当无需异步操作时，此函数返回<c>null</c>。</returns>
         protected abstract Task OnRefreshPageAsync();
 
-        public async Task UpdateAsync()
+        public async Task RefreshAsync()
         {
+            _IsExists = false;
             navigationUrlDict.Clear();
             _Items.Clear();
-            await OnRefreshPageAsync();
+            var t = OnRefreshPageAsync();
+            if (t != null) await t;
         }
 
-        public void Update()
+        public void Refresh()
         {
-            UpdateAsync().Wait();
+            RefreshAsync().Wait();
         }
 
         /// <summary>
         /// 定位到指定的相对位置处。
         /// </summary>
-        public new VisitorPageListView<T> Navigate(PageRelativeLocation relativeLocation)
+        public new VisitorPageListView<TChild> Navigate(PageRelativeLocation relativeLocation)
         {
-            return (VisitorPageListView<T>)base.Navigate(relativeLocation);
+            return (VisitorPageListView<TChild>)base.Navigate(relativeLocation);
         }
 
         /// <summary>
         /// 异步定位到指定的相对位置处。
         /// </summary>
-        public new async Task<VisitorPageListView<T>> NavigateAsync(PageRelativeLocation relativeLocation)
+        public new async Task<VisitorPageListView<TChild>> NavigateAsync(PageRelativeLocation relativeLocation)
         {
-            return (VisitorPageListView<T>) await base.NavigateAsync(relativeLocation);
+            return (VisitorPageListView<TChild>) await base.NavigateAsync(relativeLocation);
         }
 
-        protected async override Task<PageListView<T>> OnNavigateAsync(PageRelativeLocation location)
+        protected async override Task<PageListView<TChild>> OnNavigateAsync(PageRelativeLocation location)
         {
             var key = -1 - (int)location;
             string url;
             navigationUrlDict.TryGetValue(key, out url);
             if (url == null) return null;
             var newPage = PageFactory(url);
-            await newPage.UpdateAsync();
-            return newPage;
+            await newPage.RefreshAsync();
+            //如果认为页面不存在，那么就不用返回了。
+            return newPage._IsExists ? newPage : null;
         }
 
-        protected abstract VisitorPageListView<T> PageFactory(string url);
+        protected abstract VisitorPageListView<TChild> PageFactory(string url);
+    }
 
-        protected VisitorPageListView(IVisitor parent, string pageUrl)
-        {
-            if (parent == null) throw new ArgumentNullException("parent");
-            if (string.IsNullOrEmpty(pageUrl)) throw new ArgumentNullException("pageUrl");
-            Parent = parent;
-            PageUrl = pageUrl;
+    /// <summary>
+    /// 表示一个支持从网页抓取信息的分页列表视图。
+    /// </summary>
+    public abstract class VisitorPageListView<TParent, TChild> : VisitorPageListView<TChild>
+        where TParent : IVisitor
+    {
+        public new TParent Parent {
+            get { return (TParent) base.Parent; }
         }
 
-        public WebSession Session
-        {
-            get { return Parent.Session; }
-        }
-
-        public IAccountInfo AccountInfo
-        {
-            get { return Parent.AccountInfo; }
-        }
+        protected VisitorPageListView(TParent parent, string pageUrl)
+            : base(parent,pageUrl)
+        { }
     }
 }

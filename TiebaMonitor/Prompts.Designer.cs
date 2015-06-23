@@ -61,6 +61,24 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 账户已被局部或全局封禁。 的本地化字符串。
+        /// </summary>
+        internal static string AccountHasBeenBlocked {
+            get {
+                return ResourceManager.GetString("AccountHasBeenBlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 抱歉，你的发贴操作或发表贴子的内容违反了本吧的吧规，已经被封禁，封禁期间不能在本吧继续发言。 的本地化字符串。
+        /// </summary>
+        internal static string BlockUserDefaultMessage {
+            get {
+                return ResourceManager.GetString("BlockUserDefaultMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 用户的 Portrait 特性为空。这一般表明载入的页面数据有误。 的本地化字符串。
         /// </summary>
         internal static string Exception_PortraitIsNull {
@@ -84,24 +102,6 @@ namespace PrettyBots.Visitors {
         internal static string InvalidContentException {
             get {
                 return ResourceManager.GetString("InvalidContentException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 登录失败。 的本地化字符串。
-        /// </summary>
-        internal static string LoginException {
-            get {
-                return ResourceManager.GetString("LoginException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 登录失败。错误代码：{0}。 的本地化字符串。
-        /// </summary>
-        internal static string LoginException_ErrorCode {
-            get {
-                return ResourceManager.GetString("LoginException_ErrorCode", resourceCulture);
             }
         }
         
@@ -133,6 +133,15 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 操作失败。 的本地化字符串。
+        /// </summary>
+        internal static string OperationFailedException {
+            get {
+                return ResourceManager.GetString("OperationFailedException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 操作失败。错误代码：{0}。 的本地化字符串。
         /// </summary>
         internal static string OperationFailedException_ErrorCode {
@@ -156,6 +165,24 @@ namespace PrettyBots.Visitors {
         internal static string OperationsTooFrequentException {
             get {
                 return ResourceManager.GetString("OperationsTooFrequentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 要执行操作的页面已不存在。 的本地化字符串。
+        /// </summary>
+        internal static string PageNotExists {
+            get {
+                return ResourceManager.GetString("PageNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 回复 {0} :{1} 的本地化字符串。
+        /// </summary>
+        internal static string SubPostReplyTemplate {
+            get {
+                return ResourceManager.GetString("SubPostReplyTemplate", resourceCulture);
             }
         }
         

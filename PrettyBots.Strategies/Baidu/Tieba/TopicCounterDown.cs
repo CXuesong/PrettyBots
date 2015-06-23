@@ -72,7 +72,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         private int? GetCurrentCounter(TopicVisitor t)
         {
             if (!t.IsExists) return null;
-            return t.GetPosts().Navigate(PageRelativeLocation.Last)
+            return t.Posts.Navigate(PageRelativeLocation.Last)
                 .EnumerateToBeginning().Take(MaxTraceBackPostsCount)
                 .Select(ExtractCounter).FirstOrDefault(c => c != null);
         }
@@ -83,7 +83,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         public int? GetCurrentCounter(long topicId)
         {
             var visitor = new BaiduVisitor(Context.Session);
-            return GetCurrentCounter(visitor.Tieba.Topic(topicId));
+            return GetCurrentCounter(visitor.Tieba.GetTopic(topicId));
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             var visitor = new BaiduVisitor(Context.Session);
             return Context.Repository.TiebaStatus.GetStatus(StatusKey)
                 .Where(s => s.Topic != null)
-                .Select(s => visitor.Tieba.Topic(s.Topic.Value))
+                .Select(s => visitor.Tieba.GetTopic(s.Topic.Value))
                 .Where(t => t.IsExists)
                 .Select(t => new { Topic = t, Counter = GetCurrentCounter(t) })
                 .Where(d => d.Counter != null)

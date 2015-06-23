@@ -28,12 +28,12 @@ namespace PrettyBots.Visitors.NetEase
 
         public string SelfIntroduction { get; private set; }
 
-        public void Update()
+        protected override async Task OnFetchDataAsync()
         {
             using (var c = Session.CreateWebClient())
             {
                 var doc = new HtmlDocument();
-                doc.LoadHtml(c.DownloadString(DashboardUrl));
+                doc.LoadHtml(await c.DownloadStringTaskAsync(DashboardUrl));
                 Update(doc);
             }
         }
@@ -176,7 +176,7 @@ url=http%3A%2F%2Fwww.lofter.com%2Flogingate.do%3Fusername%3Dnvforest93          
                 doc.LoadHtml(result);
                 var errorHintNode = doc.GetElementbyId("eHint");
                 if (errorHintNode != null)
-                    throw new LoginException(HtmlEntity.DeEntitize(errorHintNode.InnerText).Trim());
+                    throw new OperationFailedException(HtmlEntity.DeEntitize(errorHintNode.InnerText).Trim());
                 var redirectionUrl = Utility.GetRedirectionUrl(doc);
                 if (string.IsNullOrEmpty(redirectionUrl)) throw new UnexpectedDataException();
                 //http://reg.www.lofter.com/crossdomain.jsp?username=....
@@ -229,8 +229,8 @@ url=http%3A%2F%2Fwww.lofter.com%2Flogingate.do%3Fusername%3Dnvforest93          
                 return Prompts.HasntLoggedIn;
         }
 
-        internal LofterAccountInfo(LofterVisitor parent)
-            : base(parent)
+        internal LofterAccountInfo(LofterVisitor root)
+            : base(root)
         { }
     }
 }
