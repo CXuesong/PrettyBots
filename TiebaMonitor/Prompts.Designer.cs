@@ -61,7 +61,7 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 账户已被局部或全局封禁。 的本地化字符串。
+        ///   查找类似 账户已被局部或全局封禁 的本地化字符串。
         /// </summary>
         internal static string AccountHasBeenBlocked {
             get {
@@ -79,7 +79,7 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 用户的 Portrait 特性为空。这一般表明载入的页面数据有误。 的本地化字符串。
+        ///   查找类似 用户的 Portrait 特性为空。这一般表明载入的页面数据有误 的本地化字符串。
         /// </summary>
         internal static string Exception_PortraitIsNull {
             get {
@@ -160,7 +160,7 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 操作过于密集。 的本地化字符串。
+        ///   查找类似 操作过于密集 的本地化字符串。
         /// </summary>
         internal static string OperationsTooFrequentException {
             get {
@@ -169,7 +169,7 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 要执行操作的页面已不存在。 的本地化字符串。
+        ///   查找类似 待执行操作的页面已不存在。 的本地化字符串。
         /// </summary>
         internal static string PageNotExists {
             get {

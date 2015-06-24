@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using PrettyBots.Visitors.Baidu.Tieba;
 
 namespace PrettyBots.Visitors.Baidu
 {
@@ -42,12 +43,14 @@ namespace PrettyBots.Visitors.Baidu
             string pageHtml;
             using (var s = Root.Session.CreateWebClient())
             {
-                //Workaround Update 之后再登录会失败。
+                //Workaround OetchData 之后再登录会失败。
                 //不能先访问贴吧再访问 passport.baidu.com 获取 token
+                //于是保证在访问 tieba 前先访问 passport.baidu.com
                 var r = s.CreateHttpRequest("https://passport.baidu.com");
                 (await r.GetResponseAsync()).Dispose();
-                pageHtml = await s.DownloadStringTaskAsync("http://tieba.baidu.com/");
+                pageHtml = await s.DownloadStringTaskAsync(TiebaVisitor.TiebaIndexUrl);
             }
+            Root.Tieba.SetTiebaPageCache(pageHtml);
             var userInfo = Utility.FindJsonAssignment(pageHtml, "PageData.user");
             /*
              {
@@ -83,6 +86,7 @@ namespace PrettyBots.Visitors.Baidu
             {
                 UserName = UserNameUrl = Portrait = null;
             }
+            await Root.Tieba.UpdateAsync();
         }
 
         private static void TraceCookies(ExtendedWebClient wc)
@@ -184,7 +188,7 @@ window.location.replace(url);
                 {
                     case 0:
                         Session.OverrideCookies(client.CookieContainer);
-                        Update();
+                        Update(true);
                         Debug.Assert(IsLoggedIn);
                         return true;
                     case 1:

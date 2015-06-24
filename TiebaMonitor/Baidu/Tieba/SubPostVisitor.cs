@@ -5,7 +5,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class SubPostVisitor : PostVisitorBase
     {
-        public TopicVisitor Topic
+        public override TopicVisitor Topic
         {
             get { return Post.Topic; }
         }

@@ -16,7 +16,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         private SubPostListView _SubPosts;
 
-        public TopicVisitor Topic {
+        public override TopicVisitor Topic {
             get { return Parent.Parent; }
         }
 

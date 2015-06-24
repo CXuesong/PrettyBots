@@ -127,7 +127,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             IsExists = true;
             PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
             //记录发帖前缀信息。
-            var prefixSettings = Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
+            var prefixSettings = (JObject)Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
             /*
 杂谈北京{
     prefix: {
@@ -272,7 +272,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public override string ToString()
         {
-            return QueryName;
+            return NeedRefetch ? QueryName : string.Format("[{0}]{1}", Id, Name);
         }
 
         internal ForumVisitor(string queryName, BaiduVisitor root)

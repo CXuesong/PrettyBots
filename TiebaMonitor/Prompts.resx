@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AccountHasBeenBlocked" xml:space="preserve">
-    <value>账户已被局部或全局封禁。</value>
+    <value>账户已被局部或全局封禁</value>
   </data>
   <data name="BlockUserDefaultMessage" xml:space="preserve">
     <value>抱歉，你的发贴操作或发表贴子的内容违反了本吧的吧规，已经被封禁，封禁期间不能在本吧继续发言。</value>
   </data>
   <data name="Exception_PortraitIsNull" xml:space="preserve">
-    <value>用户的 Portrait 特性为空。这一般表明载入的页面数据有误。</value>
+    <value>用户的 Portrait 特性为空。这一般表明载入的页面数据有误</value>
   </data>
   <data name="HasntLoggedIn" xml:space="preserve">
     <value>未登录</value>
@@ -151,10 +151,10 @@
     <value>操作失败。错误代码：{0}，{1}。</value>
   </data>
   <data name="OperationsTooFrequentException" xml:space="preserve">
-    <value>操作过于密集。</value>
+    <value>操作过于密集</value>
   </data>
   <data name="PageNotExists" xml:space="preserve">
-    <value>要执行操作的页面已不存在。</value>
+    <value>待执行操作的页面已不存在。</value>
   </data>
   <data name="SubPostReplyTemplate" xml:space="preserve">
     <value>回复 {0} :{1}</value>

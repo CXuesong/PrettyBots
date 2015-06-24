@@ -134,10 +134,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             var doc = new HtmlDocument();
             using (var client = Parent.Session.CreateWebClient())
-            {
-                client.Encoding = Encoding.GetEncoding("GBK");
                 doc.LoadHtml(await client.DownloadStringTaskAsync(PageUrl));
-            }
             var resultNode = doc.DocumentNode.SelectSingleNode("//div[@class='s_post_list']");
             if (resultNode == null)
             {

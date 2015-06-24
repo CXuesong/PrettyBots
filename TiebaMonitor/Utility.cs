@@ -5,7 +5,9 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace PrettyBots.Visitors
 {
@@ -80,7 +82,7 @@ namespace PrettyBots.Visitors
         }
         public static string FindStringAssignment(string source, string lhs, bool noException = false)
         {
-            //TODO 检查字段内部是否可能出现 { 。
+            //TODO 检查字段内部是否可能出现 " 。
             var forumDataMatcher = new Regex(Regex.Escape(lhs) + "\\s*=\\s*\"(.*?)\"\\s*;");
             var result = forumDataMatcher.Match(source);
             if (result.Success) return result.Groups[1].Value;
@@ -91,21 +93,25 @@ namespace PrettyBots.Visitors
         /// <summary>
         /// 查找诸如 _.Module.use("common/widget/RichPoster", {...}); 这样的调用。
         /// </summary>
-        public static JObject Find_ModuleUse(string source, string moduleName, string subProperty = null, bool noException = false)
+        public static JToken Find_ModuleUse(string sourceRegEx, string moduleNameRegEx, string subProperty = null, bool noException = false)
         {
-            //TODO 检查字段内部是否可能出现 { 。
-            var matcher =
-                new Regex(@"_.Module.use\(\s*" + "\"" + moduleName + "\"" + @"\s*,\s*((?<lb>\{).*?(?<-lb>\})).*?\);");
-            var result = matcher.Match(source);
+            //注意下面这个正则表达式的右侧匹配是不准确的
+            //因此需要使用 JsonTextReader 进行解析。
+            var matcher = new Regex(@"_.Module.use\(\s*" + "['\"]" + moduleNameRegEx + "['\"]" + @"\s*,\s*(.*)\);");
+            var result = matcher.Match(sourceRegEx);
             if (!result.Success) goto ERR;
             if (!string.IsNullOrEmpty(subProperty))
             {
-                //直接搜索子元素。
-                matcher = new Regex(subProperty + "\"?" + @"\s*:\s*((?<lb>\{).*?(?<-lb>\}))");
+                //直接匹配子元素。
+                matcher = new Regex(subProperty + "['\"]?" + @"\s*:\s*(.*)\)");
                 result = matcher.Match(result.Groups[1].Value);
                 if (!result.Success) goto ERR;
             }
-            return JObject.Parse(result.Groups[1].Value);
+            using (var sr = new StringReader(result.Groups[1].Value))
+            {
+                var reader = new JsonTextReader(sr);
+                return JToken.ReadFrom(reader);
+            }
         ERR:
             if (noException) return null;
             throw new UnexpectedDataException();

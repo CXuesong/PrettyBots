@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +35,7 @@ namespace PrettyBots.Visitors
         }
         #endregion
 
-        #region POST支持
+        #region 编码支持
 
         /// <summary>
         /// 使用指定的方法上载数据，并获取返回的字符串。
@@ -94,6 +97,52 @@ namespace PrettyBots.Visitors
                 builder.Append(HttpUtility.UrlEncode(data[key]));
             }
             return Encoding.ASCII.GetBytes(builder.ToString());
+        }
+
+        // 键	值
+        //Content-Type	text/html; charset=GBK
+        private string ExtractContentCharset(string contentType)
+        {
+            if (string.IsNullOrEmpty(contentType)) return null;
+            var entry = contentType.Split(';').Select(e => e.Trim())
+                .FirstOrDefault(e => e.StartsWith("charset", StringComparison.OrdinalIgnoreCase));
+            if (entry == null) return null;
+            var subEntry = entry.Split('=');
+            if (subEntry.Length < 2) return null;
+            return subEntry[1];
+        }
+
+        public new Task<string> DownloadStringTaskAsync(string address)
+        {
+            return DownloadStringTaskAsync(new Uri(address, UriKind.Absolute));
+        }
+
+        public new async Task<string> DownloadStringTaskAsync(Uri address)
+        {
+            if (address == null) throw new ArgumentNullException("address");
+            var request = GetWebRequest(address);
+            Debug.Assert(request != null);
+            using (var response = await request.GetResponseAsync())
+            {
+                Encoding enc;
+                var rh = response.Headers;
+                if (!string.IsNullOrEmpty(rh[HttpResponseHeader.ContentEncoding]))
+                    enc = Encoding.GetEncoding(rh[HttpResponseHeader.ContentEncoding]);
+                else
+                {
+                    var charset = ExtractContentCharset(rh[HttpResponseHeader.ContentType]);
+                    //注意 ISO-8859-1
+                    if (!string.IsNullOrEmpty(charset))
+                        enc = Encoding.GetEncoding(charset);
+                    else
+                        enc = this.Encoding;
+                }
+                using (var s = response.GetResponseStream())
+                using (var reader = new StreamReader(s, enc))
+                {
+                    return await reader.ReadToEndAsync();
+                }
+            }
         }
 
         #endregion

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace PrettyBots.Visitors.Baidu.Tieba
 {
@@ -17,10 +20,97 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         private OrderedDictionary forumCache = new OrderedDictionary(ForumCacheCapacity,
             StringComparer.OrdinalIgnoreCase);
 
+        private List<FavoriteForum> _FavoriteForums = new List<FavoriteForum>();
+
+        private string _TiebaPageCache;
+        // 调用方： BaiduAccountInfo
+        internal void SetTiebaPageCache(string html)
+        {
+            _TiebaPageCache = html;
+        }
+
+        protected override async Task OnFetchDataAsync()
+        {
+            if (_TiebaPageCache == null)
+                using (var client = Session.CreateWebClient())
+                    _TiebaPageCache = await client.DownloadStringTaskAsync(TiebaIndexUrl);
+            //使用 HtmlDocument 以进行必要的字符转换。
+            var doc = new HtmlDocument();
+            doc.LoadHtml(_TiebaPageCache);
+            _TiebaPageCache = null;
+            FavoriteForums.Clear();
+            //暂时必须要使用 JSON 辅助提取 forums
+            var fd = Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, "spage/widget/forumDirectory");
+            var forums = fd["forums"];
+            /*
+{
+    "forums": [
+...
+        {
+            "user_id": 13724678,
+            "forum_id": 25439,
+            "forum_name": "西安交通大学",
+            "is_black": 0,
+            "is_top": 0,
+            "in_time": 1391863680,
+            "level_id": 9,
+            "cur_score": 1864,
+            "score_left": 136,
+            "level_name": "六级杀手",
+            "is_sign": 0
+        },
+        {
+            "user_id": 13724678,
+            "forum_id": 69368,
+            "forum_name": "高等数学",
+            "is_black": 0,
+            "is_top": 0,
+            "in_time": 1376017112,
+            "level_id": 9,
+            "cur_score": 1567,
+            "score_left": 433,
+            "level_name": "曲线积分",
+            "is_sign": 0
+        },
+...
+    ],
+    "directory": {
+        "entertainment": {
+            "directory_group": [
+                {
+                    "name": "娱乐明星",
+                    "type": 1,
+                    "id": 0,
+                    "second_class": [
+                        {
+                            "name": "港台东南亚明星",
+                            "id": 0,
+                            "type": 1
+                        },
+            ...
+             */
+            foreach (var f in forums)
+            {
+                var ff = new FavoriteForum();
+                ff.LoadData((long) f["forum_id"], (string) f["forum_name"],
+                    Utility.FromUnixDateTime((long) f["in_time"]*1000), (int) f["level_id"],
+                    (int) f["is_sign"] != 0);
+                FavoriteForums.Add(ff);
+            }
+        }
+
         /// <summary>
         /// 管理当前用户的贴吧消息。
         /// </summary>
         public MessagesVisitor Messages { get; private set; }
+
+        /// <summary>
+        /// 获取当前账户已经关注的贴吧。
+        /// </summary>
+        public IList<FavoriteForum> FavoriteForums
+        {
+            get { return _FavoriteForums; }
+        }
 
         /// <summary>
         /// 访问具有指定名称的贴吧。
@@ -30,6 +120,12 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             var f = (ForumVisitor)forumCache[name];
             if (f == null)
             {
+                //prune
+                if (forumCache.Count >= ForumCacheCapacity)
+                {
+                    while (forumCache.Count > ForumCacheCapacity / 2)
+                        forumCache.RemoveAt(0);
+                }
                 f = new ForumVisitor(name, Root);
                 forumCache[name] = f;
             }

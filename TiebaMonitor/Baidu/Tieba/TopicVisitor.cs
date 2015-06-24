@@ -110,39 +110,16 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             var pageData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData");
             /*
 {
-    "tbs": "18b27684b96ef3da1435071926",
+    "tbs": "",
     "charset": "UTF-8",
-    "product": "pb",
-    "page": "pb_bright",
+    "product": "frs",
+    "page": "new_version",
     "user": {
-        "is_login": true,
         "user_id": 1733233632,
         "user_name": "La_Mobile",
-        "no_un": false,
-        "mobilephone": "",
-        "email": "xxx***@xxx.xxx",
-        "urank": {
-            "uid": 1733233632,
-            "score": "24",
-            "rank": 408,
-            "change": 0,
-            "status": 0
-        },
-        "userhide": 0,
-        "need_black_pop": 0,
-        "black_pop_level": 0,
-        "forbidden": [
-            
-        ],
-        "tips": [
-            {
-                "tip_id": 2,
-                "tip_info": "{&quot;id1&quot;:3}"
-            }
-        ],
         "user_sex": 1,
         "user_status": 1,
-        "card": "a:6:{s:8:&quot;post_num&quot;;i:46;s:8:&quot;good_num&quot;;i:0;s:12:&quot;manager_info&quot;;a:2:{s:7:&quot;manager&quot;;a:2:{s:10:&quot;forum_list&quot;;a:0:{}s:5:&quot;count&quot;;i:0;}s:6:&quot;assist&quot;;a:2:{s:10:&quot;forum_list&quot;;a:1:{i:0;s:10:&quot;\u5b88\u536b\u8005\u4f20\u5947&quot;;}s:5:&quot;count&quot;;i:1;}}s:10:&quot;like_forum&quot;;a:0:{}s:9:&quot;is_novice&quot;;i:0;s:7:&quot;op_time&quot;;i:1435069193;}",
+        "card": "a:6:{s:8:&quot;post_num&quot;;i:46;s:8:&quot;good_num&quot;;i:0;s:12:&quot;manager_info&quot;;a:2:{s:7:&quot;manager&quot;;a:2:{s:10:&quot;forum_list&quot;;a:0:{}s:5:&quot;count&quot;;i:0;}s:6:&quot;assist&quot;;a:2:{s:10:&quot;forum_list&quot;;a:1:{i:0;s:10:&quot;守卫者传奇&quot;;}s:5:&quot;count&quot;;i:1;}}s:10:&quot;like_forum&quot;;a:0:{}s:9:&quot;is_novice&quot;;i:0;s:7:&quot;op_time&quot;;i:1435069193;}",
         "portrait_time": "1433862313",
         "tbscore_repeate_finish_time": "1433860103",
         "use_sig": 0,
@@ -160,32 +137,127 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             "group": "2"
         },
         "user_type": 0,
-        "meizhi_level": 0,
+        "meizhi_level": -1,
+        "new_iconinfo": {
+            "1": []
+        },
         "global": {
             "tbmall_newprops": 0
         },
-        "new_iconinfo": {
-            "1": [
-                
+        "is_login": true,
+        "email": "nvf***@163.com",
+        "mobile": "",
+        "no_un": 0,
+        "is_new": 1,
+        "start_time": 1435071754,
+        "id": 1733233632,
+        "name": "La_Mobile",
+        "portrait": "e00b4c615f4d6f62696c654f67",
+        "mobilephone": "",
+        "name_show": "La_Mobile",
+        "identity": {
+            "is_forum_assist": true,
+            "is_forum_member": true,
+            "is_forum_bawu": true,
+            "is_forum_pm": false,
+            "manager": null,
+            "member": true,
+            "pm": false
+        },
+        "itieba_id": null,
+        "like_forums": [],
+        "bduid": "FA7B0721B3C254658A45CAA7D4B14881",
+        "userhide": 0,
+        "user_forum_list": {
+            "info": [
+                {
+                    "forum_name": "天文",
+                    "user_level": 2,
+                    "user_exp": 7,
+                    "id": 8322,
+                    "is_like": true,
+                    "favo_type": 1
+                },
+                {
+                    "forum_name": "生物",
+                    "user_level": 2,
+                    "user_exp": 11,
+                    "id": 997,
+                    "is_like": true,
+                    "favo_type": 1
+                },
+                {
+                    "forum_name": "化学",
+                    "user_level": 2,
+                    "user_exp": 11,
+                    "id": 9046,
+                    "is_like": true,
+                    "favo_type": 1
+                },
+                {
+                    "forum_name": "mark5ds",
+                    "user_level": 4,
+                    "user_exp": 36,
+                    "id": 2195006,
+                    "is_like": true,
+                    "favo_type": 1
+                },
+                {
+                    "forum_name": "猫头鹰王国",
+                    "user_level": 4,
+                    "user_exp": 38,
+                    "id": 656638,
+                    "is_like": true,
+                    "favo_type": 2
+                },
+               ......
             ]
         },
-        "level_id": 3,
-        "level_name": "\u906d\u9047\u7ed1\u67b6",
-        "is_like": 1,
-        "is_black": 0,
-        "cur_score": 24,
-        "score_left": 6,
-        "portrait": "e00b4c615f4d6f62696c654f67"
+        "power": {
+            "post": true,
+            "bawu": true,
+            "vote_creater": true,
+            "bakan_edit": false,
+            "idisk": false,
+            "is_assist": true,
+            "can_edit_gconforum": false
+        },
+        "balv": {
+            "is_firstlike": 0,
+            "has_award": 0,
+            "award_code": 0,
+            "award_inf1o": "",
+            "award_value": 0,
+            "is_lvup": 0,
+            "rights": "",
+            "has_trans_info": 0,
+            "trans_info": "",
+            "has_mall_expire_info": 0,
+            "mall_expire_info": "",
+            "has_liked": 1,
+            "is_like": 0,
+            "level_id": 3,
+            "cur_score": 25,
+            "score_left": 5,
+            "levelup_score": 30,
+            "level_name": "遭遇绑架",
+            "picasso": false,
+            "is_black": 0,
+            "is_liked": 1,
+            "is_by_pm": 0,
+            "is_block": 1,
+            "days_tofree": 1,
+            "opgroup": "bawu",
+            "block_reason": "This is a test block reason.",
+            "like_forums": []
+        },
+        "rank": {
+            "index": 407,
+            "num": 0,
+            "status": 0
+        }
     },
     "fromPlatformUi": true
-};PageData.user.name_url="&ie=utf-8";varEnv={
-    server_time: 1435071926000
-};varTbs={
-    "forward": "594d4632b9fbc420",
-    "follow": "db32022d704708c3",
-    "upload_img": "be03c91d6a16b6da014350719260125500_1",
-    "common": "18b27684b96ef3da1435071926",
-    "rp": "3114281efdb7587e0c9ad0b5"
 }
              */
             pageData_tbs = (string)pageData["tbs"];

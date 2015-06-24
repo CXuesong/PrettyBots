@@ -48,6 +48,20 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
+        public void FavoriteForumTest()
+        {
+            var visitor = CreateVisitor();
+            Trace.WriteLine("登录前");
+            foreach (var f in visitor.Tieba.FavoriteForums)
+                Trace.WriteLine(f);
+            LoginVisitor(visitor);
+            Trace.WriteLine("登录后");
+            foreach (var f in visitor.Tieba.FavoriteForums)
+                Trace.WriteLine(f);
+            visitor.AccountInfo.Logout();
+        }
+
+        [TestMethod]
         public void BlockUserTest()
         {
             var visitor = CreateVisitor();
@@ -62,9 +76,17 @@ namespace UnitTestProject1
         {
             var visitor = CreateVisitor();
             //LoginVisitor(visitor);
-            var f = visitor.Tieba.Forum("化学");
-            foreach (var t in f.Topics.Take(50))
-                Trace.WriteLine(t);
+            Action<string> visit = fn =>
+            {
+                var f = visitor.Tieba.Forum(fn);
+                Trace.WriteLine(f);
+                for (int i = 0; i < f.TopicPrefix.Count; i++)
+                    Trace.WriteLine(f.GetTopicPrefix(i));
+                foreach (var t in f.Topics.EnumerateToEnd().Skip(25).Take(50))
+                    Trace.WriteLine(t);
+            };
+            visit("化学");
+            visit("test");
             //visitor.AccountInfo.Logout();
         }
 

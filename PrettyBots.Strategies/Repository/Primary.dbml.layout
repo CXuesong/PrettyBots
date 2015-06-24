@@ -20,10 +20,16 @@
         <elementListCompartment Id="1891d233-420d-4587-9885-f5d3d2eb3b8e" absoluteBounds="4.015, 3.71, 1.9700000000000002, 1.346893310546875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="17a3ed1b-69e1-4e68-8811-de0346b356ae" absoluteBounds="0.75, 3.375, 2, 1.3525109863281251">
+    <classShape Id="17a3ed1b-69e1-4e68-8811-de0346b356ae" absoluteBounds="0.875, 2.625, 2, 1.3525109863281251">
       <DataClassMoniker Name="/PrimaryDataContext/Session" />
       <nestedChildShapes>
-        <elementListCompartment Id="0a6fbd3f-9cbf-46ae-88ff-41ec4ac4c082" absoluteBounds="0.765, 3.835, 1.9700000000000002, 0.792510986328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="0a6fbd3f-9cbf-46ae-88ff-41ec4ac4c082" absoluteBounds="0.89, 3.085, 1.9700000000000002, 0.792510986328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="aade15e8-3800-4604-b658-5323779f5ac6" absoluteBounds="0.625, 4.25, 2, 1.5373050944010416">
+      <DataClassMoniker Name="/PrimaryDataContext/BaiduUserStatus" />
+      <nestedChildShapes>
+        <elementListCompartment Id="f82f7e78-0f10-4223-8912-03cfaa2527f6" absoluteBounds="0.64000000000000012, 4.71, 1.9700000000000002, 0.97730509440104174" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
   </nestedChildShapes>

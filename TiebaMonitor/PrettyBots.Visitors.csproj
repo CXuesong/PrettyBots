@@ -70,6 +70,7 @@
     <Compile Include="Baidu\BaiduUtility.cs" />
     <Compile Include="Baidu\MessagesVisitor.cs" />
     <Compile Include="Baidu\Tieba\BaiduUserStubs.cs" />
+    <Compile Include="Baidu\Tieba\FavoriteForum.cs" />
     <Compile Include="Baidu\Tieba\SubPostVisitor.cs" />
     <Compile Include="Baidu\Tieba\PostVisitorBase.cs" />
     <Compile Include="CacheDictionary.cs" />

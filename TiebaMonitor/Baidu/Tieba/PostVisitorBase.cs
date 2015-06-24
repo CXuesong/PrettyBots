@@ -12,9 +12,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         public long Id { get; private set; }
 
         /// <summary>
-        /// 获取此帖子所在的页面。
+        /// 获取此帖子所在的主题。
         /// </summary>
-        public PostListView ParentView { get; private set; }
+        public abstract TopicVisitor Topic { get; }
 
         public TiebaUserStub Author { get; private set; }
 

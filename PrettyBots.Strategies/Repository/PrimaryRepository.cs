@@ -20,12 +20,15 @@ namespace PrettyBots.Strategies.Repository
 
         public TiebaStatusRepository TiebaStatus { get; private set; }
 
+        public BaiduUserStatusRepository BaiduUserStatus { get; private set; }
+
         private void Initialize()
         {
             Accounts = new AccountRepository(this);
             Loggings = new LoggingRepository(this);
             Sessions = new SessionRepository(this);
             TiebaStatus = new TiebaStatusRepository(this);
+            BaiduUserStatus = new BaiduUserStatusRepository(this);
         }
 
         /// <summary>
