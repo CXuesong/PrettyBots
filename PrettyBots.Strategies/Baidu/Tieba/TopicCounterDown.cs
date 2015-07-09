@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
@@ -58,12 +59,43 @@ namespace PrettyBots.Strategies.Baidu.Tieba
 
         private static Regex counterMatcher = new Regex(@"^\d+");
 
+        private static int? ExtractCounter(string postContent)
+        {
+            var content = Utility.NormalizeString(postContent);
+            var result = counterMatcher.Match(content);
+            return result.Success ? (int?) Convert.ToInt32(result.Value) : null;
+        }
+
         private static int? ExtractCounter(PostVisitor p)
         {
-            var content = Utility.NormalizeString(p.Content);
-            var result = counterMatcher.Match(content);
-            if (result.Success) return Convert.ToInt32(result.Value);
+            var counter = ExtractCounter(p.Content);
+            if (counter == null) return null;
+            //允许作者修订倒数。
+            var revCounter = p.SubPosts.Where(sp => sp.Author == p.Author)
+                .Select(sp => ExtractCounter(sp.Content)).LastOrDefault();
+            return revCounter ?? counter;
+        }
+
+        /// <summary>
+        /// 使用线性拟合计算下一层应当倒数的值。
+        /// </summary>
+        public int? NextCounter(TopicVisitor t)
+        {
+            if (!t.IsExists) return null;
+            var traceback = t.Posts.Navigate(PageRelativeLocation.Last)
+                .EnumerateToBeginning().Take(MaxTraceBackPostsCount)
+                .Select(p => new {floor = p.Floor, counter = ExtractCounter(p)})
+                .Where(p => p.counter != null).ToArray();
+            foreach (var tb in traceback)
+                Debug.Print("{0}\t{1}", tb.floor, tb.counter);
+            //TODO 拟合。
             return null;
+        }
+
+        public int? NextCounter(long topicId)
+        {
+            var visitor = new BaiduVisitor(Context.Session);
+            return NextCounter(visitor.Tieba.GetTopic(topicId));
         }
 
         /// <summary>
@@ -143,7 +175,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         public TopicCounterDown(StrategyContext context)
             : base(context)
         {
-            MaxTraceBackPostsCount = 10;
+            MaxTraceBackPostsCount = 20;
         }
     }
 }

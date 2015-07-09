@@ -212,7 +212,7 @@ namespace BaiduInterop.Interactive
 
         private static void TopicViewer_OnViewItem(int index, PostVisitor p)
         {
-            UI.Print("{0}\t{1}楼\tBy [{2}]\t@{3}\tRe {4}", index, p.Floor, p.Author, p.SubmissionTime, p.CommentsCount);
+            UI.Print("{0}\t{1}楼\tBy [{2}]\t@{3}\tRe {4}", index, p.Floor, p.Author, p.SubmissionTime, p.SubPostsCount);
             //UI.PrintToMargin("    " + Utility.PrettyParseHtml(p.Content, true));
             UI.Print(Utility.PrettyParseHtml(p.Content, PrettyParseHtmlOptions.DefaultCompact));
             UI.Print();
@@ -220,7 +220,7 @@ namespace BaiduInterop.Interactive
 
         private static void TopicViewer_OnItemSelected(PostVisitor p)
         {
-            UI.Print("{0}F\tBy [{1}]\t@{2}\tRe {3}", p.Floor, p.Author, p.SubmissionTime, p.CommentsCount);
+            UI.Print("{0}F\tBy [{1}]\t@{2}\tRe {3}", p.Floor, p.Author, p.SubmissionTime, p.SubPostsCount);
             using (var client = new WebClient())
             {
                 var pphOptions = new PrettyParseHtmlOptions(false, true, client, Console.WindowWidth - 2);
@@ -231,7 +231,7 @@ namespace BaiduInterop.Interactive
                     try
                     {
                         switch (UI.Input(Prompts.SelectAnOperation, "L",
-                            "L", "查看楼中楼[" + p.CommentsCount + "]",
+                            "L", "查看楼中楼[" + p.SubPostsCount + "]",
                             "R", "回复",
                             "K", "封禁",
                             "B", Prompts.Back))

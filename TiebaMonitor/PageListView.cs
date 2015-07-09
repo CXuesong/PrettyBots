@@ -146,7 +146,7 @@ namespace PrettyBots.Visitors
             do
             {
                 for (var i = currentPage.Items.Count - 1; i > -1; i--)
-                    yield return Items[i];
+                    yield return currentPage.Items[i];
                 currentPage = currentPage.Navigate(PageRelativeLocation.Previous);
             } while (currentPage != null);
         }

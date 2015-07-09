@@ -28,7 +28,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// <summary>
         /// 楼中楼的数量。
         /// </summary>
-        public int CommentsCount { get; private set; }
+        public int SubPostsCount { get; private set; }
 
         public SubPostListView SubPosts
         {
@@ -56,7 +56,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             int commentsCount, JObject subPostsCache, PostListView view)
             : base(id,floor,author,content,submissionTime, view)
         {
-            CommentsCount = commentsCount;
+            SubPostsCount = commentsCount;
             _SubPosts = new SubPostListView(this, "about:blank");
             _SubPosts.SetOverallSubPostsCache(subPostsCache);
             //已知第一页肯定是预先缓存好的。
