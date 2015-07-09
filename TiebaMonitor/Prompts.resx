@@ -141,6 +141,9 @@
   <data name="NeedLogin" xml:space="preserve">
     <value>需要登录以进行操作。</value>
   </data>
+  <data name="NeedVCode" xml:space="preserve">
+    <value>需要验证码以继续操作。</value>
+  </data>
   <data name="OperationFailedException" xml:space="preserve">
     <value>操作失败。</value>
   </data>
@@ -148,10 +151,10 @@
     <value>操作失败。错误代码：{0}。</value>
   </data>
   <data name="OperationFailedException_ErrorCodeMessage" xml:space="preserve">
-    <value>操作失败。错误代码：{0}，{1}。</value>
+    <value>操作失败。错误代码：{0}，{1}</value>
   </data>
   <data name="OperationsTooFrequentException" xml:space="preserve">
-    <value>操作过于密集</value>
+    <value>操作过于密集。</value>
   </data>
   <data name="PageNotExists" xml:space="preserve">
     <value>待执行操作的页面已不存在。</value>

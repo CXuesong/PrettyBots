@@ -73,8 +73,8 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         {
             if (!t.IsExists) return null;
             return t.Posts.Navigate(PageRelativeLocation.Last)
-                .EnumerateToBeginning().Take(MaxTraceBackPostsCount)
-                .Select(ExtractCounter).FirstOrDefault(c => c != null);
+                .EnumerateToBeginning()
+                .Select(ExtractCounter).FirstOrDefault();
         }
 
         /// <summary>

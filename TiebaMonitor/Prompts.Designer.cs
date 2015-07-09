@@ -133,6 +133,15 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 需要验证码以继续操作。 的本地化字符串。
+        /// </summary>
+        internal static string NeedVCode {
+            get {
+                return ResourceManager.GetString("NeedVCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 操作失败。 的本地化字符串。
         /// </summary>
         internal static string OperationFailedException {
@@ -151,7 +160,7 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 操作失败。错误代码：{0}，{1}。 的本地化字符串。
+        ///   查找类似 操作失败。错误代码：{0}，{1} 的本地化字符串。
         /// </summary>
         internal static string OperationFailedException_ErrorCodeMessage {
             get {
@@ -160,7 +169,7 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 操作过于密集 的本地化字符串。
+        ///   查找类似 操作过于密集。 的本地化字符串。
         /// </summary>
         internal static string OperationsTooFrequentException {
             get {

@@ -60,10 +60,11 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         /// <summary>如果发贴人的等级超过此数目，则忽略此帖。</summary>
         public int AuthorLevelLimit { get; set; }
 
-        private static bool InString(string test, string match)
+        private static bool InString(string test, string match, bool requireBeginWith = false)
         {
             if (string.IsNullOrEmpty(test)) return string.IsNullOrEmpty(match);
-            return test.IndexOf(match, StringComparison.CurrentCulture) >= 0;
+            var index = test.IndexOf(match, StringComparison.CurrentCulture);
+            return requireBeginWith ? index == 0 : index >= 0;
         }
 
         public IList<TopicVisitor> CheckForum(string forumName, int checkCount = 20)
@@ -93,7 +94,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                     {
                         //貌似重复了……
                         //检查帖子内容。
-                        if (internalWeakMatcher.Any(m => InString(preview, m)))
+                        if (internalWeakMatcher.Any(m => InString(preview, m, true)))
                         {
                             Debug.Print("Weak Matcher: {0}", t);
                             goto CHECKTOPIC;

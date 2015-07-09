@@ -225,17 +225,35 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 }             */
             using (var client = Session.CreateWebClient())
                 result = JObject.Parse(client.UploadValuesAndDecode("http://tieba.baidu.com/sign/add", siParams));
-            switch ((int)result["no"])
+            var num = (int) result["no"];
+            switch (num)
             {
                 case 0:
                     var resultData = result["data"];
                     SignInRank = (int)resultData["finfo"]["current_rank_info"]["sign_count"];
                     return;
                 case 265:
-                    throw new InvalidOperationException(Prompts.NeedLogin);
+                    throw new OperationFailedException(num, Prompts.NeedLogin);
+                case 1102:
+                    throw new OperationFailedException(num, Prompts.OperationsTooFrequentException);
+                case 2150040:
+                    //“/sign/getVcode”
+                    //"/sign/checkVcode”
+                    /*
+
+{
+  "no": 2150040,
+  "error": "need vcode",
+  "data": {
+    "captcha_vcode_str": "captchaservice3037356454465a46596a63596e6b477456324c6b7a79386c304c74514b67436b776f5763522f6d4e4d2b664e5a4c46417565355a4861393064467470634d63357a67656553754a63734a2f6f434169677a4a6558337a33457045766b4845514d4357474a33344674386370507a58777a686d7471656770342b674d79506d722f5669482b444d4f39336d35516d7474706b2f4856416178485168626f6570554175502f4a3778314d342f6c454932504a304c5977415637393670344b4c776a6d6251394566746c417438476a716f6f466731652f6877595a5850713762626231664e33764559526d5677724667765449697275424d67723036767677664f4a574c6a6a4e65492f6535715a626d435042597849346c6a41747059726d54476e493769577756675868674b2f6730557634414e73",
+    "captcha_code_type": 4,
+    "str_reason": "请输入验证码完成操作"
+  }
+}
+                     */
+                    throw new OperationFailedException(num, Prompts.NeedVCode);
                 default:
-                    throw new InvalidOperationException(string.Format(Prompts.OperationFailedException_ErrorCodeMessage,
-                        (int)result["no"], (string)result["error"]));
+                    throw new OperationFailedException(num, (string) result["error"]);
             }
         }
 
