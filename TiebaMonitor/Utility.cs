@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -177,6 +180,35 @@ namespace PrettyBots.Visitors
             if (string.IsNullOrEmpty(source)) return string.Empty;
             if (source.Length <= maxLength) return source;
             return source.Substring(0, maxLength - 3) + "...";
+        }
+
+        private static readonly CultureInfo _zhCN = CultureInfo.GetCultureInfo(2052);
+        /// <summary>
+        /// 获取 中文（中国） 语言设置。
+        /// </summary>
+        public static CultureInfo zhCN
+        {
+            get { return _zhCN; }
+        }
+
+        public static DateTime ParseDateTime(string s)
+        {
+            DateTime d;
+            if (DateTime.TryParse(s, zhCN,
+                DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d)) return d;
+            if (DateTime.TryParseExact(s, "MM-dd HH:mm", zhCN,
+                DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d)) return d;
+            if (DateTime.TryParseExact(s, "MM-dd HH:mm:ss", zhCN,
+                DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out d)) return d;
+            throw new FormatException();
+        }
+
+        public static T WaitForResult<T>(Task<T> task)
+        {
+            if (task == null) throw new ArgumentNullException("task");
+            task.Wait();
+            Debug.Assert(task.Status == TaskStatus.RanToCompletion);
+            return task.Result;
         }
     }
 }

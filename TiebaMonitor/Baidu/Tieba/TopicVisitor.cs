@@ -609,7 +609,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 }
                 var badageNode = eachNode.SelectSingleNode(".//div[@class='d_badge_lv']");
                 var badageValue = badageNode.InnerText;
-                var author = new TiebaUserStub((long?) pd["author"]["user_id"],
+                var author = new UserStub((long?) pd["author"]["user_id"],
                     (string) pd["author"]["user_name"],
                     string.IsNullOrWhiteSpace(badageValue)
                         ? null

@@ -60,10 +60,11 @@ namespace PrettyBots.Visitors
         /// 根据当前的会话，建立一个网络客户端。
         /// </summary>
         /// <returns>一个网络客户端，其引用了当前会话的 Cookie，并使用标头的副本。</returns>
-        internal ExtendedWebClient CreateWebClient()
+        internal ExtendedWebClient CreateWebClient(bool emitReferer = false)
         {
             var c = new ExtendedWebClient();
             if (Headers != null) c.Headers.Add(Headers);
+            if (emitReferer) c.Headers[HttpRequestHeader.Referer] = "http://cxuesong.com/lmbot";
             //SetupCookie
             c.CookieContainer = CookieContainer;
             c.Encoding = Encoding.UTF8;
@@ -142,10 +143,15 @@ namespace PrettyBots.Visitors
             CookieContainer = new CookieContainer();
             Headers = new WebHeaderCollection
             {
-                {HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; InfoPath.3; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; Tablet PC 2.0; rv:11.0; PrettyBot/1.0; LMBot/1.0) like Gecko"}
+                {
+                    HttpRequestHeader.UserAgent,
+                    "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET4.0E; .NET4.0C; InfoPath.3; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; Tablet PC 2.0; rv:11.0; PrettyBot/1.0; LMBot/1.0) like Gecko"
+                },
             };
             CacheDuration = TimeSpan.FromSeconds(10);
         }
+
+
     }
 
     ///// <summary>

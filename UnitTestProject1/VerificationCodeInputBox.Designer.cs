@@ -85,6 +85,7 @@
             // VerificationTextBox
             // 
             this.VerificationTextBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.VerificationTextBox.ImeMode = System.Windows.Forms.ImeMode.Off;
             this.VerificationTextBox.Location = new System.Drawing.Point(0, 0);
             this.VerificationTextBox.Name = "VerificationTextBox";
             this.VerificationTextBox.Size = new System.Drawing.Size(284, 21);

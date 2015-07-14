@@ -75,6 +75,7 @@
     <Compile Include="NetEaseTests.cs" />
     <Compile Include="DataModelTests.cs" />
     <Compile Include="LibUnitTest.cs" />
+    <Compile Include="BaiduExplicitTests.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="VerificationCodeInputBox.cs">
       <SubType>Form</SubType>

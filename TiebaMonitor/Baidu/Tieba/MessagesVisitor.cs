@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -14,14 +16,24 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         private const string NotifierCounterUrlFormat = "http://message.tieba.baidu.com/i/msg/get_data?user={0}";
 
         // 0 : Type e.g. 4 ，与 initItiebaMessage 的顺序保持一致，以 1 为下标。
-        // 1 : Profile
+        // 1 : Portrait
         // 2 : Unix Time
         public const string ClearNotificationsUrlFormat = "http://message.tieba.baidu.com/i/msg/clear_data?type={0}&user={1}&stamp={2}";
+
+        // 0 : Portrait
+        // 1 : Type
+        //      replyme
+        //      atme
+        //      friendapply
+        //      fans
+        public const string MessageListUrlFormat = "http://tieba.baidu.com/i/sys/jump?u={0}&type={1}";
+
+        public const int MaxPeekedReplications = 100;
 
         /// <summary>
         /// 获取新消息的计数。
         /// </summary>
-        public NewMessagesCounter Counter { get; set; }
+        public NewMessagesCounters Counters { get; set; }
 
         private static Regex countersMatcher = new Regex(@"\[.*\]");
 
@@ -35,10 +47,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 Debug.Print(pageText);
                 var match = countersMatcher.Match(pageText);
                 if (!match.Success) throw new UnexpectedDataException();
-                Counter = new NewMessagesCounter(JArray.Parse(match.Value));
+                Counters = new NewMessagesCounters(JArray.Parse(match.Value));
             }
         }
 
+        /// <summary>
+        /// 清除指定的通知。
+        /// </summary>
         public void ClearNotifications(params MessageCounter[] counter)
         {
             Root.AccountInfo.CheckPortrait();
@@ -58,14 +73,69 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public void ClearNotifications()
         {
-            ClearNotifications(MessageCounter.FollowedMe, MessageCounter.ReferedMe,
-                MessageCounter.ReferedMe,
+            ClearNotifications(MessageCounter.FollowedMe, MessageCounter.ReferredMe,
+                MessageCounter.ReferredMe,
                 MessageCounter.PostsRecycled);
         }
 
+#region 消息获取
+
+        private ReplicationMessageListView _RepliedMe;
+
+        public ReplicationMessageListView RepliedMe
+        {
+            get
+            {
+                return _RepliedMe;
+            }
+        }
+
+        private ReplicationMessageListView _ReferredMe;
+        public ReplicationMessageListView ReferredMe
+        {
+            get
+            {
+                return _ReferredMe;
+            }
+        }
+
+        /// <summary>
+        /// 异步获取回复或提到本账户的帖子。
+        /// </summary>
+        public async Task<IList<PostStub>> PeekReplicationsAsync(bool clearNotifications)
+        {
+            await UpdateAsync(true);
+            var posts = new List<PostStub>();
+            if (Counters.RepliedMe > 0)
+            {
+                if (clearNotifications) ClearNotifications(MessageCounter.RepliedMe);
+                await _RepliedMe.RefreshAsync();
+                posts.AddRange(_RepliedMe.EnumerateToEnd().Take(Math.Min(Counters.RepliedMe, MaxPeekedReplications)));
+            }
+            if (Counters.ReferredMe > 0)
+            {
+                if (clearNotifications) ClearNotifications(MessageCounter.ReferredMe);
+                await _ReferredMe.RefreshAsync();
+                posts.AddRange(_ReferredMe.EnumerateToEnd().Take(Math.Min(Counters.ReferredMe, MaxPeekedReplications)));
+            }
+            return posts;
+        }
+
+        public IList<PostStub> PeekReplications(bool clearNotifications)
+        {
+            return Utility.WaitForResult(PeekReplicationsAsync(clearNotifications));
+        }
+#endregion
+
+
         internal MessagesVisitor(BaiduVisitor root)
             : base(root)
-        { }
+        {
+            _RepliedMe = new ReplicationMessageListView(this,
+                string.Format(MessageListUrlFormat, root.AccountInfo.Portrait, "replyme"), ReplicationwMode.RepliedMe);
+            _ReferredMe = new ReplicationMessageListView(this,
+                string.Format(MessageListUrlFormat, root.AccountInfo.Portrait, "atme"), ReplicationwMode.ReferedMe);
+        }
     }
 
     /// <summary>
@@ -75,39 +145,42 @@ namespace PrettyBots.Visitors.Baidu.Tieba
     {
         FollowedMe = 0,
         RepliedMe = 3,
-        ReferedMe = 8,
+        ReferredMe = 8,
         PostsRecycled = 9,
     }
 
     /// <summary>
     /// 用于解析和保存新消息的数目。
     /// </summary>
-    public struct NewMessagesCounter
+    public struct NewMessagesCounters
     {
         public int FollowedMe { get; private set; }
 
         public int RepliedMe { get; private set; }
 
-        public int ReferedMe { get; private set; }
+        public int ReferredMe { get; private set; }
 
         public int PostsRecycled { get; private set; }
 
-        public bool AnyNewMessage
+        /// <summary>
+        /// 当前是否有新消息。
+        /// </summary>
+        public bool Any
         {
-            get { return FollowedMe != 0 || ReferedMe != 0 || ReferedMe != 0; }
+            get { return FollowedMe != 0 || ReferredMe != 0 || ReferredMe != 0; }
         }
 
         public override string ToString()
         {
-            return string.Format("R{0},@{1},F{2}", RepliedMe, ReferedMe, FollowedMe);
+            return string.Format("R{0},@{1},F{2}", RepliedMe, ReferredMe, FollowedMe);
         }
 
-        internal NewMessagesCounter(JArray source)
+        internal NewMessagesCounters(JArray source)
             : this()
         {
             FollowedMe = (int)source[0];
             RepliedMe = (int)source[3];
-            ReferedMe = (int)source[8];
+            ReferredMe = (int)source[8];
             PostsRecycled = (int) source[9];
         }
     }

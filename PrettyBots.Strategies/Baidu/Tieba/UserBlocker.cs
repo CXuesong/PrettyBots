@@ -99,7 +99,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         private void SetUserReferer(string forumName, string userName, UserForumStatusEntry entry)
         {
             var p = visitor.Tieba.Search(null, forumName, userName).Result
-                .Select(r => r.GetPost())
+                .Select(r => r.GetPost(visitor.Tieba))
                 .FirstOrDefault(p1 => p1 != null);
             if (p == null) return;
             entry.ReferTopic = p.Topic.Id;

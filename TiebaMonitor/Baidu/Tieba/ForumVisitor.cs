@@ -352,7 +352,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     var replyTimeNode =
                         threadDetailNode.SelectSingleNode(".//*[contains(@class,'threadlist_reply_date')]");
                     if (replyerNode != null) replyer = replyerNode.InnerText.Trim();
-                    if (replyTimeNode != null) replyTime = DateTime.Parse(replyTimeNode.InnerText.Trim());
+                    if (replyTimeNode != null) replyTime = Utility.ParseDateTime(replyTimeNode.InnerText);
                 }
                 var dataFieldStr = HtmlEntity.DeEntitize(eachLi.GetAttributeValue("data-field", ""));
                 //Debug.Print(dataFieldStr);

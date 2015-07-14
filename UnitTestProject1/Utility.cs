@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.NetEase;
@@ -29,5 +30,19 @@ namespace UnitTestProject1
             }
             throw new NotSupportedException();
         }
+
+        public static BaiduVisitor CreateBaiduVisitor()
+        {
+            var s = new BaiduVisitor();
+            s.Session.VerificationCodeRecognizer = new InteractiveVCodeRecognizer();
+            return s;
+        }
+
+        public static void LoginVisitor(BaiduVisitor v)
+        {
+            LoginAccount(v.AccountInfo);
+            Assert.IsTrue(v.AccountInfo.IsLoggedIn);
+        }
+
     }
 }

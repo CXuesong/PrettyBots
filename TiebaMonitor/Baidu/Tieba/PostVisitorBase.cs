@@ -16,7 +16,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public abstract TopicVisitor Topic { get; }
 
-        public TiebaUserStub Author { get; private set; }
+        public UserStub Author { get; private set; }
 
         public string Content { get; private set; }
 
@@ -58,7 +58,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             return string.Format("[{0}][{1}]{2}", Id, Author, Utility.StringElipsis(Content, 50));
         }
 
-        protected PostVisitorBase(long id, int floor, TiebaUserStub author,
+        protected PostVisitorBase(long id, int floor, UserStub author,
             string content, DateTime submissionTime, IVisitor parent)
             : base(parent)
         {

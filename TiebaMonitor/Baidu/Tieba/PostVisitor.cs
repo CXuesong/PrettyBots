@@ -52,7 +52,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             Topic.BlockUser(new BlockUserParams(Author.Name, Id), reason);
         }
 
-        internal PostVisitor(long id, int floor, TiebaUserStub author, string content, DateTime submissionTime,
+        internal PostVisitor(long id, int floor, UserStub author, string content, DateTime submissionTime,
             int commentsCount, JObject subPostsCache, PostListView view)
             : base(id,floor,author,content,submissionTime, view)
         {
@@ -146,7 +146,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 RegisterNewItem(
                     thisSp["comment_info"].Select(et =>
                         new SubPostVisitor((long) et["comment_id"],
-                            new TiebaUserStub((long) et["user_id"], (string) et["username"]),
+                            new UserStub((long) et["user_id"], (string) et["username"]),
                             (string) et["content"],
                             Utility.FromUnixDateTime((long) et["now_time"]*1000),
                             this)));

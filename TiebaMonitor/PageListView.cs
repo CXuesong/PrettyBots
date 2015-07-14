@@ -39,6 +39,8 @@ namespace PrettyBots.Visitors
     /// </summary>
     public abstract class PageListView<T> : IPageListView, IEnumerable<T>
     {
+        public const int UnknownPageCount = -1;
+
         /// <summary>
         /// 获取结果集的总页数。
         /// </summary>
@@ -208,7 +210,6 @@ namespace PrettyBots.Visitors
         /// <summary>
         /// 声明页面内容的存在性。
         /// </summary>
-        /// <param name="value"></param>
         protected void ClaimExistence(bool value)
         {
             _IsExists = value; 

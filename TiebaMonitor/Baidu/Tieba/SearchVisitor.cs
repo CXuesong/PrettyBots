@@ -66,69 +66,10 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         }
     }
 
-    /// <summary>
-    /// 用于保存贴吧搜索结果的一项。
-    /// </summary>
-    public class SearchResultEntry : ChildVisitor<BaiduVisitor>, ITextMessageVisitor
-    {
-
-        void ITextMessageVisitor.Update()
-        {
-
-        }
-        public string ForumName { get; private set; }
-
-        public string Title { get; private set; }
-
-        public string Content { get; private set; }
-
-        public string AuthorName { get; private set; }
-
-        public bool Reply(string content)
-        {
-            throw new NotImplementedException();
-        }
-
-        public DateTime SubmissionTime { get; private set; }
-
-        public long TopicId { get; private set; }
-
-        public long PostId { get; private set; }
-
-        public long CommentId { get; private set; }
-
-        /// <summary>
-        /// 获取搜索结果对应的帖子。
-        /// </summary>
-        /// <returns>如果帖子已经不存在，则返回<c>null</c></returns>
-        public PostVisitorBase GetPost()
-        {
-            return Root.Tieba.GetPost(TopicId, PostId);
-        }
-
-        internal SearchResultEntry(long tid, long pid, long cid, string forum,
-            string title, string author,
-            string contentPreview, DateTime submissionTime,
-            SearchResultListView view)
-            : base(view.Parent.Root)
-        {
-            TopicId = tid;
-            PostId = pid;
-            CommentId = cid;
-            ForumName = forum;
-            SubmissionTime = submissionTime;
-            Title = title;
-            AuthorName = author;
-            Content = contentPreview;
-        }
-    }
-
-    public class SearchResultListView : VisitorPageListView<SearchVisitor, SearchResultEntry>
+    public class SearchResultListView : VisitorPageListView<SearchVisitor, PostStub>
     {
 
         private static Regex postUrlMatcher = new Regex(@"/p/(?<T>\d*)?.*pid=(?<P>\d*)(&cid=(?<C>\d*))?");
-
-        public new SearchVisitor Parent { get { return (SearchVisitor) base.Parent; } }
 
         protected override async Task OnRefreshPageAsync()
         {
@@ -159,16 +100,16 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                  */
                 var titleNode = eachNode.SelectSingleNode("./span[@class='p_title']/a[@href]");
                 if (titleNode == null) continue;
-                var title = titleNode.InnerText;
+                var title = HtmlEntity.DeEntitize(titleNode.InnerText);
                 var matchResult = postUrlMatcher.Match(titleNode.GetAttributeValue("href", ""));
                 //有可能是推荐贴吧的链接。
                 if (!matchResult.Success) continue;
                 var node = eachNode.SelectSingleNode("./a[last()]");
-                var author = node == null ? null : node.InnerText;
+                var author = node == null ? null : HtmlEntity.DeEntitize(node.InnerText);
                 node = eachNode.SelectSingleNode("./a[last()-1]");
                 var forumName = node == null ? null : node.InnerText;
                 node = eachNode.SelectSingleNode("./div[@class='p_content']");
-                var content = node == null ? null : node.InnerText;
+                var content = node == null ? null : HtmlEntity.DeEntitize(node.InnerText);
                 node = eachNode.SelectSingleNode("./*[contains(@class, 'p_date')]");
                 var time = node == null ? DateTime.MinValue : Convert.ToDateTime(node.InnerText);
                 var tid = Convert.ToInt64(matchResult.Groups["T"].Value);
@@ -176,8 +117,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 var cid = string.IsNullOrEmpty(matchResult.Groups["C"].Value)
                     ? 0
                     : Convert.ToInt64(matchResult.Groups["C"].Value);
-                RegisterNewItem(new SearchResultEntry(tid, pid, cid, forumName,
-                    title, author, content, time, this));
+                RegisterNewItem(new PostStub(tid, pid, cid, forumName,
+                    title, author, content, time));
             }
             ClaimExistence(true);
             //解析其它页面地址。
@@ -232,7 +173,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             if (lastPageUrl == lastNumNavigatorUrl) PageCount = lastNumNavigator + 1;
         }
 
-        protected override VisitorPageListView<SearchResultEntry> PageFactory(string url)
+        protected override VisitorPageListView<PostStub> PageFactory(string url)
         {
             return new SearchResultListView(Parent, url);
         }

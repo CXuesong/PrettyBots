@@ -14,33 +14,12 @@ namespace UnitTestProject1
     [TestClass]
     public class BaiduTests
     {
-        BaiduVisitor CreateVisitor()
-        {
-            var s = new BaiduVisitor();
-            s.Session.VerificationCodeRecognizer = new InteractiveVCodeRecognizer();
-            return s;
-        }
-
-        void LoginVisitor(BaiduVisitor v)
-        {
-            Utility.LoginAccount(v.AccountInfo);
-            Assert.IsTrue(v.AccountInfo.IsLoggedIn);
-        }
-
-        void LoginVisitorFromFile(BaiduVisitor v)
-        {
-            v.Session.LoadCookies("../../../BaiduInteractive/bin/Debug/BDICookies.bin");
-            v.AccountInfo.Update();
-            Trace.WriteLine(v.AccountInfo);
-            Assert.IsTrue(v.AccountInfo.IsLoggedIn);
-        }
-
         [TestMethod]
         public void LoginTest()
         {
-            var visitor = CreateVisitor();
-            //visitor.AccountInfo.Update();
-            LoginVisitor(visitor);
+            var visitor = Utility.CreateBaiduVisitor();
+            visitor.AccountInfo.Update();
+            Utility.LoginVisitor(visitor);
             Assert.IsTrue(visitor.AccountInfo.IsLoggedIn);
             Trace.WriteLine(visitor.AccountInfo.UserName);
             visitor.AccountInfo.Logout();
@@ -50,11 +29,11 @@ namespace UnitTestProject1
         [TestMethod]
         public void FavoriteForumTest()
         {
-            var visitor = CreateVisitor();
+            var visitor = Utility.CreateBaiduVisitor();
             Trace.WriteLine("登录前");
             foreach (var f in visitor.Tieba.FavoriteForums)
                 Trace.WriteLine(f);
-            LoginVisitor(visitor);
+            Utility.LoginVisitor(visitor);
             Trace.WriteLine("登录后");
             foreach (var f in visitor.Tieba.FavoriteForums)
                 Trace.WriteLine(f);
@@ -62,20 +41,10 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
-        public void BlockUserTest()
-        {
-            var visitor = CreateVisitor();
-            LoginVisitor(visitor);
-            var post = visitor.Tieba.GetPost(932580115, 52671043153);
-            post.BlockAuthor();
-            visitor.AccountInfo.Logout();
-        }
-
-        [TestMethod]
         public void ForumVisitTest()
         {
-            var visitor = CreateVisitor();
-            //LoginVisitor(visitor);
+            var visitor = Utility.CreateBaiduVisitor();
+            //Utility.LoginVisitor(visitor);
             Action<string> visit = fn =>
             {
                 var f = visitor.Tieba.Forum(fn);
@@ -91,25 +60,51 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
+        public void PostVisitTest()
+        {
+            var visitor = Utility.CreateBaiduVisitor();
+            var topic = visitor.Tieba.GetTopic(3295483216L);
+            Trace.WriteLine(topic.ToString());
+            Trace.WriteLine(topic.Forum.ToString());
+        }
+
+        [TestMethod]
         public void MessageNotifierTest()
         {
-            var visitor = CreateVisitor();
-            LoginVisitor(visitor);
+            var visitor = Utility.CreateBaiduVisitor();
+            Utility.LoginVisitor(visitor);
             visitor.Messages.Update();
             Trace.WriteLine(visitor.Messages.Counter);
             visitor.Tieba.Messages.Update();
-            Trace.WriteLine(visitor.Tieba.Messages.Counter);
+            Trace.WriteLine(visitor.Tieba.Messages.Counters);
             visitor.AccountInfo.Logout();
         }
 
         [TestMethod]
-        public void MessageNotifierCleanupTest()
+        public void TiebaMessagesTest()
         {
-            var visitor = CreateVisitor();
-            LoginVisitor(visitor);
-            visitor.Tieba.Messages.ClearNotifications();
-            visitor.Tieba.Messages.Update();
-            Trace.WriteLine(visitor.Tieba.Messages.Counter);
+            var visitor = Utility.CreateBaiduVisitor();
+            Utility.LoginVisitor(visitor);
+            var msg = visitor.Tieba.Messages;
+            Trace.WriteLine("Replies:");
+            msg.RepliedMe.Refresh();
+            foreach (var r in visitor.Tieba.Messages.RepliedMe.EnumerateToEnd().Take(50))
+                Trace.WriteLine(r);
+            Trace.WriteLine("References:");
+            msg.ReferredMe.Refresh();
+            foreach (var r in visitor.Tieba.Messages.ReferredMe.EnumerateToEnd().Take(50))
+                Trace.WriteLine(r);
+            visitor.AccountInfo.Logout();
+        }
+
+        [TestMethod]
+        public void TiebaMessagePeekTest()
+        {
+            var visitor = Utility.CreateBaiduVisitor();
+            Utility.LoginVisitor(visitor);
+            var msg = visitor.Tieba.Messages;
+            foreach (var r in visitor.Tieba.Messages.PeekReplications(false))
+                Trace.WriteLine(r);
             visitor.AccountInfo.Logout();
         }
 
@@ -117,26 +112,16 @@ namespace UnitTestProject1
         [TestMethod]
         public void TiebaSearchTest()
         {
-            var visitor = CreateVisitor();
+            var visitor = Utility.CreateBaiduVisitor();
             var s = visitor.Tieba.Search(userName: "狐の笑");
             Trace.WriteLine(s.Result.PageUrl);
-            VisitorPageListView<SearchResultEntry> r = s.Result;
+            PageListView<PostStub> r = s.Result;
             var loopCount = 0;
-            var r1 = r.FirstOrDefault();
-            if (r1 != null)
-            {
-                var p = r1.GetPost();
-                Trace.WriteLine(p);
-            }
             while (r != null)
             {
                 Trace.WriteLine(string.Format("Page {0}/{1}", r.PageIndex, r.PageCount));
                 foreach (var p in r)
-                {
-                    Trace.WriteLine(string.Format("{0}\t{1}\t{2}\t{3}\t{4}",
-                        p.SubmissionTime, p.ForumName,
-                        p.Title, p.AuthorName, p.Content));
-                }
+                    Trace.WriteLine(p);
                 r = r.Navigate(PageRelativeLocation.Next);
                 loopCount += 1;
                 if (loopCount >= 12) break;
@@ -146,8 +131,8 @@ namespace UnitTestProject1
         [TestMethod]
         public void SignInTest()
         {
-            var visitor = CreateVisitor();
-            LoginVisitor(visitor);
+            var visitor = Utility.CreateBaiduVisitor();
+            Utility.LoginVisitor(visitor);
             //由于每天每贴吧只能签到一次，因此需要指定一个贴吧列表。
             var destList = new[] {"mark5ds", "化学", "化学2", "物理", "生物", "汉服"};
             //抽取第一个没有签到的贴吧。

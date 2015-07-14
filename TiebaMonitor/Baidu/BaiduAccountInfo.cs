@@ -224,9 +224,9 @@ window.location.replace(url);
         {
             var request = WebRequest.CreateHttp("https://passport.baidu.com/?logout&u=http://www.baidu.com");
             Session.SetupCookies(request);
-            request.GetResponse();
+            request.GetResponse().Dispose();
             Session.OverrideCookies(request.CookieContainer);
-            Update();
+            Update(true);
         }
 
         public override string ToString()

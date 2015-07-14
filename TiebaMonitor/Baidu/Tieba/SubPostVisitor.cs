@@ -32,7 +32,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             Topic.BlockUser(new BlockUserParams(Author.Name, Id), reason);
         }
 
-        internal SubPostVisitor(long id, TiebaUserStub author,
+        internal SubPostVisitor(long id, UserStub author,
             string content, DateTime submissionTime, SubPostListView parent)
             : base(id, -1, author, content, submissionTime, parent)
         { }

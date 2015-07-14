@@ -32,7 +32,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         protected override async Task OnFetchDataAsync()
         {
             if (_TiebaPageCache == null)
-                using (var client = Session.CreateWebClient())
+                using (var client = Session.CreateWebClient(true))
                     _TiebaPageCache = await client.DownloadStringTaskAsync(TiebaIndexUrl);
             //使用 HtmlDocument 以进行必要的字符转换。
             var doc = new HtmlDocument();
@@ -160,12 +160,12 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// 注意现在百度有将LZL（comment）转换为子帖（SubPost）的趋势，目前看来，LZL和主贴的ID是不重复的。
         /// 目前仅支持每层至多前十层楼中楼的检查。
         /// </remarks>
-        public PostVisitorBase GetPost(long topicId, long anchorPostId)
+        public PostVisitorBase GetPost(long topicId, long postId)
         {
-            var t = GetTopic(topicId, anchorPostId);
+            var t = GetTopic(topicId, postId);
             if (!t.IsExists) return null;
-            return (PostVisitorBase)t.Posts.FirstOrDefault(p => p.Id == anchorPostId) ??
-                   t.Posts.SelectMany(p => p.SubPosts).FirstOrDefault(sp => sp.Id == anchorPostId);
+            return (PostVisitorBase)t.Posts.FirstOrDefault(p => p.Id == postId) ??
+                   t.Posts.SelectMany(p => p.SubPosts).FirstOrDefault(sp => sp.Id == postId);
         }
 
         /// <summary>
