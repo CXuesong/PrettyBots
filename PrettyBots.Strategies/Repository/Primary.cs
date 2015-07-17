@@ -35,7 +35,7 @@ namespace PrettyBots.Strategies.Repository
 
     partial class Session
     {
-        public WebSession LoadSession()
+        public WebSession CreateSession()
         {
             var s = new WebSession();
             LoadSession(s);

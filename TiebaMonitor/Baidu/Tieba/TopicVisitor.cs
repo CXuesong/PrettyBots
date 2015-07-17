@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
@@ -74,41 +75,44 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         public string LastReplyer { get; private set; }
 
         public DateTime? LastReplyTime { get; private set; }
- 
+
         protected override async Task OnFetchDataAsync()
         {
-            var doc = new HtmlDocument();
-            using (var s = Root.Session.CreateWebClient())
+            Logging.Enter(this);
+            try
             {
-                var pageHtml = await s.DownloadStringTaskAsync(posts.PageUrl);
-                doc.LoadHtml(pageHtml);
-                //下载页面时，将页面内容缓存至帖子列表视图中。
-                posts.SetTopicPageCache(pageHtml);
-            }
-            var errorTextNode = doc.GetElementbyId("errorText");
-            if (errorTextNode != null)
-            {
-                Debug.Print("pid={0}, {1}", Id, errorTextNode.InnerText);
-                IsExists = false;
-                return;
-            }
-            var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
-            _ForumId = (long)forumData["forum_id"];
-            _ForumName = (string)forumData["forum_name"];
-            var topicData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.thread");
-            //PageData.thread = 
-            //{ author: "来自草原的雪狼", thread_id: 3369574832, 
-            //title: "【珈瑚传奇】猫头鹰王国之战火纷飞", reply_num: 506,
-            //thread_type: "0",
-            //topic: { is_topic: false, topic_type: false, is_live_post: false,
-            //is_lpost: false, lpost_type: 0 }, /*null,*/ is_ad: 0, video_url: "" };
-            AuthorName = (string)topicData["author"];
-            Id = (long)topicData["thread_id"];
-            Title = (string)topicData["title"];
-            RepliesCount = (int)topicData["reply_num"];
-            //状态信息
-            var pageData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData");
-            /*
+                var doc = new HtmlDocument();
+                using (var s = Root.Session.CreateWebClient())
+                {
+                    var pageHtml = await s.DownloadStringTaskAsync(posts.PageUrl);
+                    doc.LoadHtml(pageHtml);
+                    //下载页面时，将页面内容缓存至帖子列表视图中。
+                    posts.SetTopicPageCache(pageHtml);
+                }
+                var errorTextNode = doc.GetElementbyId("errorText");
+                if (errorTextNode != null)
+                {
+                    Debug.Print("pid={0}, {1}", Id, errorTextNode.InnerText);
+                    IsExists = false;
+                    return;
+                }
+                var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
+                _ForumId = (long)forumData["forum_id"];
+                _ForumName = (string)forumData["forum_name"];
+                var topicData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.thread");
+                //PageData.thread = 
+                //{ author: "来自草原的雪狼", thread_id: 3369574832, 
+                //title: "【珈瑚传奇】猫头鹰王国之战火纷飞", reply_num: 506,
+                //thread_type: "0",
+                //topic: { is_topic: false, topic_type: false, is_live_post: false,
+                //is_lpost: false, lpost_type: 0 }, /*null,*/ is_ad: 0, video_url: "" };
+                AuthorName = (string)topicData["author"];
+                Id = (long)topicData["thread_id"];
+                Title = (string)topicData["title"];
+                RepliesCount = (int)topicData["reply_num"];
+                //状态信息
+                var pageData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData");
+                /*
 {
     "tbs": "",
     "charset": "UTF-8",
@@ -260,11 +264,21 @@ namespace PrettyBots.Visitors.Baidu.Tieba
     "fromPlatformUi": true
 }
              */
-            pageData_tbs = (string)pageData["tbs"];
-            if (string.IsNullOrEmpty(pageData_tbs)) Debug.Print("TBS == null, Url:{0}", posts.PageUrl);
-            IsExists = true;
-            //顺带着更新一下。注意，要载入主题信息后，才能刷新列表内容。
-            await posts.RefreshAsync();
+                pageData_tbs = (string)pageData["tbs"];
+                if (string.IsNullOrEmpty(pageData_tbs)) Debug.Print("TBS == null, Url:{0}", posts.PageUrl);
+                IsExists = true;
+                //顺带着更新一下。注意，要载入主题信息后，才能刷新列表内容。
+                await posts.RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(this, ex);
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this);
+            }
         }
 
         /// <summary>
@@ -305,42 +319,45 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             //TIP
             //"@La_Mobile&nbsp;....[br][url]http://tieba.baidu.com/[/url]"
             if (string.IsNullOrWhiteSpace(contentCode)) return false;
+            Logging.Enter(this, (pid == null ? null : pid + ", ") + contentCode);
             await UpdateAsync();
-            if (!IsExists) throw new InvalidOperationException(Prompts.PageNotExists);
-            Debug.Assert(_ForumId == null || Forum == null || Forum.Id == _ForumId);
-            using (var client = Root.Session.CreateWebClient())
+            try
             {
-                var baseTime = DateTime.Now;
-                //var baseTimeStr = baseTime.ToString(CultureInfo.InvariantCulture);
-                var replyParams = new NameValueCollection
+                if (!IsExists) throw new InvalidOperationException(Prompts.PageNotExists);
+                Debug.Assert(_ForumId == null || Forum == null || Forum.Id == _ForumId);
+                using (var client = Root.Session.CreateWebClient())
                 {
-                    {"ie", "utf-8"},
-                    {"kw", ForumName},
-                    {"fid", Convert.ToString(ForumId)},
-                    {"tid", Convert.ToString(Id)},
-                    {"vcode_md5", ""},
-                    /*{"floor_num", "5"},*/
-                    {"rich_text", "1"},
-                    {"tbs", pageData_tbs},
-                    {"content", contentCode},
-                    {"files", "[]"},
-                    //{"sign_id", "4787987"},
+                    var baseTime = DateTime.Now;
+                    //var baseTimeStr = baseTime.ToString(CultureInfo.InvariantCulture);
+                    var replyParams = new NameValueCollection
                     {
-                        "mouse_pwd",
-                        BaiduUtility.GenerateMousePwd(baseTime)
-                    },
-                    {"mouse_pwd_t", Convert.ToString(Utility.ToUnixDateTime(baseTime))},
-                    {"mouse_pwd_isclick", "0"},
-                    {"__type__", "reply"}
-                };
-                if (pid != null)
-                {
-                    replyParams["quote_id"] = pid.ToString();
-                    replyParams["repostid"] = pid.ToString();
-                }
-                var result = await client.UploadValuesAndDecodeTaskAsync(ReplyUrl, replyParams);
-                var resultObj = JObject.Parse(result);
-                /*
+                        {"ie", "utf-8"},
+                        {"kw", ForumName},
+                        {"fid", Convert.ToString(ForumId)},
+                        {"tid", Convert.ToString(Id)},
+                        {"vcode_md5", ""},
+                        /*{"floor_num", "5"},*/
+                        {"rich_text", "1"},
+                        {"tbs", pageData_tbs},
+                        {"content", contentCode},
+                        {"files", "[]"},
+                        //{"sign_id", "4787987"},
+                        {
+                            "mouse_pwd",
+                            BaiduUtility.GenerateMousePwd(baseTime)
+                        },
+                        {"mouse_pwd_t", Convert.ToString(Utility.ToUnixDateTime(baseTime))},
+                        {"mouse_pwd_isclick", "0"},
+                        {"__type__", "reply"}
+                    };
+                    if (pid != null)
+                    {
+                        replyParams["quote_id"] = pid.ToString();
+                        replyParams["repostid"] = pid.ToString();
+                    }
+                    var result = await client.UploadValuesAndDecodeTaskAsync(ReplyUrl, replyParams);
+                    var resultObj = JObject.Parse(result);
+                    /*
                  {
   "no": 40,
   "err_code": 40,
@@ -362,29 +379,39 @@ namespace PrettyBots.Visitors.Baidu.Tieba
   }
 }
                  */
-                //Debug.Print(resultObj.ToString());
-                var errNumer = (int)resultObj["no"];
-                switch (errNumer)
-                {
-                    case 0:
-                        return true;
-                    case 12:
-                        throw new OperationFailedException(errNumer, Prompts.AccountHasBeenBlocked);
-                    case 34:
-                        throw new OperationFailedException(errNumer, Prompts.OperationsTooFrequentException);
-                    case 40:
-                        //需要验证码。
-                        return false;
-                    case 265:
-                        throw new OperationFailedException(errNumer, Prompts.NeedLogin);
-                    case 274:
-                        throw new OperationFailedException(errNumer, "POST数据错误。");
-                    case 2007:
-                        throw new OperationFailedException(errNumer, Prompts.InvalidContentException);
-                    default:
-                        throw new OperationFailedException(errNumer, (string)resultObj["error"]);
+                    //Debug.Print(resultObj.ToString());
+                    var errNumer = (int)resultObj["no"];
+                    switch (errNumer)
+                    {
+                        case 0:
+                            return true;
+                        case 12:
+                            throw new AccountBlockedException(errNumer);
+                        case 34:
+                            throw new OperationTooFrequentException(errNumer);
+                        case 40:
+                            //需要验证码。
+                            return false;
+                        case 265:
+                            throw new OperationUnauthorizedException(errNumer);
+                        case 274:
+                            throw new OperationFailedException(errNumer, "POST数据错误。");
+                        case 2007:
+                            throw new OperationFailedException(errNumer, Prompts.InvalidContentException);
+                        default:
+                            throw new OperationFailedException(errNumer, (string)resultObj["error"]);
+                    }
+                    return true;
                 }
-                return true;
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(this, ex);
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this);
             }
         }
 
@@ -430,7 +457,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public override string ToString()
         {
-            return string.Format("[{0}]{1}[A={2}][R={3}][{4}]", Id, Title, AuthorName, RepliesCount, PreviewText);
+            return string.Format("[{0}]{1}[A={2}][R={3}]{4}", Id, Title, AuthorName, RepliesCount,
+                Utility.StringElipsis(PreviewText, 10));
         }
 
         // 由 Forum -> TopicListView 创建
@@ -493,7 +521,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         private string GetPageUrl(int pageIndex)
         {
-            return string.Format(TopicUrlFormatPN, ((TopicVisitor)Parent).Id, pageIndex);
+            return string.Format(TopicUrlFormatPN, Parent.Id, pageIndex);
         }
 
         protected async override Task<PageListView<PostVisitor>>
@@ -609,14 +637,14 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 }
                 var badageNode = eachNode.SelectSingleNode(".//div[@class='d_badge_lv']");
                 var badageValue = badageNode.InnerText;
-                var author = new UserStub((long?) pd["author"]["user_id"],
-                    (string) pd["author"]["user_name"],
+                var author = new UserStub((long?)pd["author"]["user_id"],
+                    (string)pd["author"]["user_name"],
                     string.IsNullOrWhiteSpace(badageValue)
                         ? null
-                        : (int?) Convert.ToInt32(badageNode.InnerText));
-                RegisterNewItem(new PostVisitor(pid, (int) pdc["post_no"],
+                        : (int?)Convert.ToInt32(badageNode.InnerText));
+                RegisterNewItem(new PostVisitor(pid, (int)pdc["post_no"],
                     author, content, submissionTime.Value,
-                    (int) pdc["comment_num"], commentData, this));
+                    (int)pdc["comment_num"], commentData, this));
             }
             ClaimExistence(true);
         }

@@ -87,93 +87,108 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         protected override async Task OnFetchDataAsync()
         {
-            var doc = new HtmlDocument();
-            using (var s = Root.Session.CreateWebClient())
+            Logging.Enter(this);
+            try
             {
-                s.Headers[HttpRequestHeader.Referer] = TiebaVisitor.TiebaIndexUrl;
-                var content = await s.DownloadStringTaskAsync(string.Format(ForumUrlFormat, QueryName));
-                //顺带刷新主题列表。
-                _Topics.SetPageHtmlCache(content);
-                doc.LoadHtml(content);
-            }
-            var noResultTipNode =
-                doc.GetElementbyId("forum_not_exist")
-                ?? doc.DocumentNode.SelectSingleNode("//div[@class='search_noresult']")
-                ?? doc.DocumentNode.SelectSingleNode("//div[@class='s_make_bar']");
-            if (noResultTipNode != null)
-            {
-                //无结果。
-                QueryResult = noResultTipNode.InnerText.Trim();
-                IsExists = false;
-                return;
-            }
-            QueryResult = string.Empty;
-            var redirectTipNode = doc.DocumentNode.SelectSingleNode("//div[@class='polysemant-redirect-section']");
-            //检查重定向
-            IsRedirected = (redirectTipNode != null);
-            var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
-            Id = (long)forumData["forum_id"];
-            Name = (string)forumData["forum_name"];
-            MemberName = (string)forumData["member_name"];
-            MembersCount = (int)forumData["member_num"];
-            TopicsCount = (int)forumData["thread_num"];
-            PostsCount = (int)forumData["post_num"];
-            var userSignInInfo = forumData["sign_in_info"]["user_info"];
-            if ((int?) userSignInInfo["is_sign_in"] == null)
-                SignInRank = null;  //一般表示用户尚未登录。
-            else
-                SignInRank = (int)userSignInInfo["is_sign_in"] != 0 ?
-                    (int?)userSignInInfo["user_sign_rank"] : null;
-            IsExists = true;
-            PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
-            //记录发帖前缀信息。
-            var prefixSettings = (JObject)Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
-            /*
-杂谈北京{
-    prefix: {
-        "mode": 1,
-        "text": "\u300e06.10\u300f",
-        "type": [
-            ""
-        ],
-        "time": "06.10",
-        "sug_html": "<div class=\"pprefix-item\">\u300e06.10\u300f<\/div>",
-        "value": "\u300e06.10\u300f",
-        "need_sug": true
-    },
-    QinglangData: [
+                var doc = new HtmlDocument();
+                using (var s = Root.Session.CreateWebClient())
+                {
+                    s.Headers[HttpRequestHeader.Referer] = TiebaVisitor.TiebaIndexUrl;
+                    var content = await s.DownloadStringTaskAsync(string.Format(ForumUrlFormat, QueryName));
+                    //顺带刷新主题列表。
+                    _Topics.SetPageHtmlCache(content);
+                    doc.LoadHtml(content);
+                }
+                var noResultTipNode =
+                    doc.GetElementbyId("forum_not_exist")
+                    ?? doc.DocumentNode.SelectSingleNode("//div[@class='search_noresult']")
+                    ?? doc.DocumentNode.SelectSingleNode("//div[@class='s_make_bar']");
+                if (noResultTipNode != null)
+                {
+                    //无结果。
+                    QueryResult = noResultTipNode.InnerText.Trim();
+                    IsExists = false;
+                    return;
+                }
+                QueryResult = string.Empty;
+                var redirectTipNode = doc.DocumentNode.SelectSingleNode("//div[@class='polysemant-redirect-section']");
+                //检查重定向
+                IsRedirected = (redirectTipNode != null);
+                var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
+                Id = (long) forumData["forum_id"];
+                Name = (string) forumData["forum_name"];
+                MemberName = (string) forumData["member_name"];
+                MembersCount = (int) forumData["member_num"];
+                TopicsCount = (int) forumData["thread_num"];
+                PostsCount = (int) forumData["post_num"];
+                var userSignInInfo = forumData["sign_in_info"]["user_info"];
+                if ((int?) userSignInInfo["is_sign_in"] == null)
+                    SignInRank = null; //一般表示用户尚未登录。
+                else
+                    SignInRank = (int) userSignInInfo["is_sign_in"] != 0
+                        ? (int?) userSignInInfo["user_sign_rank"]
+                        : null;
+                IsExists = true;
+                PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
+                //记录发帖前缀信息。
+                var prefixSettings =
+                    (JObject) Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
+                /*
+    杂谈北京{
+        prefix: {
+            "mode": 1,
+            "text": "\u300e06.10\u300f",
+            "type": [
+                ""
+            ],
+            "time": "06.10",
+            "sug_html": "<div class=\"pprefix-item\">\u300e06.10\u300f<\/div>",
+            "value": "\u300e06.10\u300f",
+            "need_sug": true
+        },
+        QinglangData: [
         
-    ],
-    redirectAfterPost: isGameTab?getNormalTabUrl(): false,
-    isPaypost: 0,
-    needPaypostAgree: !0
-}
-}
- */
-            var prefixFormat = (string)prefixSettings["text"];
-            if (string.IsNullOrWhiteSpace(prefixFormat))
-                TopicPrefix = emptyStringList;
-            else
-            {
-                prefixFormat = prefixFormat.Replace((string)prefixSettings["time"], "#time#");
-                if (prefixSettings["type"].Type == JTokenType.Array)
-                {
-                    TopicPrefix =
-                        prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string)type)).ToArray();
-                }
+        ],
+        redirectAfterPost: isGameTab?getNormalTabUrl(): false,
+        isPaypost: 0,
+        needPaypostAgree: !0
+    }
+    }
+     */
+                var prefixFormat = (string) prefixSettings["text"];
+                if (string.IsNullOrWhiteSpace(prefixFormat))
+                    TopicPrefix = emptyStringList;
                 else
                 {
-                    //type == ""
-                    TopicPrefix = new [] { prefixFormat };
+                    prefixFormat = prefixFormat.Replace((string) prefixSettings["time"], "#time#");
+                    if (prefixSettings["type"].Type == JTokenType.Array)
+                    {
+                        TopicPrefix =
+                            prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string) type))
+                                .ToArray();
+                    }
+                    else
+                    {
+                        //type == ""
+                        TopicPrefix = new[] {prefixFormat};
+                    }
+                    JToken jt;
+                    if (prefixSettings.TryGetValue("time", out jt))
+                        topicPrefixTime = (string) jt;
+                    else
+                        topicPrefixTime = null;
                 }
-                JToken jt;
-                if (prefixSettings.TryGetValue("time", out jt))
-                    topicPrefixTime = (string)jt;
-                else
-                    topicPrefixTime = null;
+                cachedTopicMatchers.Clear();
             }
-            cachedTopicMatchers.Clear();
-            //
+            catch (Exception ex)
+            {
+                Logging.Exception(this, ex);
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this);
+            }
             await _Topics.RefreshAsync();
         }
         #endregion
@@ -225,7 +240,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 }             */
             using (var client = Session.CreateWebClient())
                 result = JObject.Parse(client.UploadValuesAndDecode("http://tieba.baidu.com/sign/add", siParams));
-            var num = (int) result["no"];
+            var num = (int)result["no"];
             switch (num)
             {
                 case 0:
@@ -233,9 +248,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     SignInRank = (int)resultData["finfo"]["current_rank_info"]["sign_count"];
                     return;
                 case 265:
-                    throw new OperationFailedException(num, Prompts.NeedLogin);
+                    throw new OperationUnauthorizedException(num);
                 case 1102:
-                    throw new OperationFailedException(num, Prompts.OperationsTooFrequentException);
+                    throw new OperationTooFrequentException(num);
                 case 2150040:
                     //“/sign/getVcode”
                     //"/sign/checkVcode”
@@ -251,9 +266,9 @@ namespace PrettyBots.Visitors.Baidu.Tieba
   }
 }
                      */
-                    throw new OperationFailedException(num, Prompts.NeedVCode);
+                    throw new NonhumanException(num);
                 default:
-                    throw new OperationFailedException(num, (string) result["error"]);
+                    throw new OperationFailedException(num, (string)result["error"]);
             }
         }
 
@@ -359,16 +374,17 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 //{"author_name":"Mark5ds","id":3540683824,"first_post_id":63285795913,
                 //"reply_num":1,"is_bakan":0,"vid":"","is_good":0,"is_top":0,"is_protal":0}
                 var jo = JObject.Parse(dataFieldStr);
-                RegisterNewItem(new TopicVisitor((long) jo["id"], title,
-                    (int) jo["is_good"] != 0, (int) jo["is_top"] != 0,
-                    (string) jo["author_name"], preview, (int) jo["reply_num"],
+                RegisterNewItem(new TopicVisitor((long)jo["id"], title,
+                    (int)jo["is_good"] != 0, (int)jo["is_top"] != 0,
+                    (string)jo["author_name"], preview, (int)jo["reply_num"],
                     replyer, replyTime, Parent));
             }
             ClaimExistence(true);
             //解析其它页面地址。
             var pagerNode = doc.GetElementbyId("frs_list_pager");
-            if (pagerNode == null) {
-                PageIndex = 0; 
+            if (pagerNode == null)
+            {
+                PageIndex = 0;
                 return;
             }
             var n = pagerNode.SelectSingleNode("./span[@class='cur']");
@@ -433,12 +449,12 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// <summary>
         /// 用户名。
         /// </summary>
-        public string UserName { get; private set;}
+        public string UserName { get; private set; }
 
         /// <summary>
         /// 帖子 Id。
         /// </summary>
-        public long PostId { get; private set;}
+        public long PostId { get; private set; }
 
         public BlockUserParams(string userName, long postId)
             : this()

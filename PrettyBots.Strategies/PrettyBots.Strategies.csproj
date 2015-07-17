@@ -59,17 +59,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaiduUserManager.cs" />
     <Compile Include="Baidu\Tieba\UserBlocker.cs" />
+    <Compile Include="Prompts.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Prompts.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Repository\AccountRepository.cs" />
     <Compile Include="Repository\Infrastructures.cs" />
-    <Compile Include="Repository\LoggingRepository.cs" />
-    <Compile Include="Repository\PrimaryRepository.cs" />
+    <Compile Include="PrimaryRepository.cs" />
     <Compile Include="Repository\Primary.cs">
       <DependentUpon>Primary.dbml</DependentUpon>
     </Compile>
@@ -78,14 +82,13 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="Repository\SessionRepository.cs" />
-    <Compile Include="Repository\BaiduUserStatusRepository.cs" />
-    <Compile Include="Repository\TiebaStatusRepository.cs" />
+    <Compile Include="TiebaStatusManager.cs" />
+    <Compile Include="Session.cs" />
     <Compile Include="Strategy.cs" />
-    <Compile Include="StrategyContext.cs" />
     <Compile Include="Baidu\Tieba\NewbieDetector.cs" />
     <Compile Include="Baidu\Tieba\TopicCounterDown.cs" />
     <Compile Include="Baidu\Tieba\ZhidaoRedirectionDetector.cs" />
+    <Compile Include="Schedule.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +140,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Prompts.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Prompts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

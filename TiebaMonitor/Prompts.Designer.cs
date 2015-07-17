@@ -61,11 +61,11 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 账户已被局部或全局封禁 的本地化字符串。
+        ///   查找类似 账户已被局部或全局封禁。 的本地化字符串。
         /// </summary>
-        internal static string AccountHasBeenBlocked {
+        internal static string AccountBlockedException {
             get {
-                return ResourceManager.GetString("AccountHasBeenBlocked", resourceCulture);
+                return ResourceManager.GetString("AccountBlockedException", resourceCulture);
             }
         }
         
@@ -124,15 +124,6 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
-        ///   查找类似 需要登录以进行操作。 的本地化字符串。
-        /// </summary>
-        internal static string NeedLogin {
-            get {
-                return ResourceManager.GetString("NeedLogin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 需要验证码以继续操作。 的本地化字符串。
         /// </summary>
         internal static string NeedVCode {
@@ -174,6 +165,15 @@ namespace PrettyBots.Visitors {
         internal static string OperationsTooFrequentException {
             get {
                 return ResourceManager.GetString("OperationsTooFrequentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 操作权限不足。 的本地化字符串。
+        /// </summary>
+        internal static string OperationUnauthorizedException {
+            get {
+                return ResourceManager.GetString("OperationUnauthorizedException", resourceCulture);
             }
         }
         

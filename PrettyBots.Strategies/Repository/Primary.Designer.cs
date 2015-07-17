@@ -36,15 +36,18 @@ namespace PrettyBots.Strategies.Repository
     partial void InsertLogEntry(LogEntry instance);
     partial void UpdateLogEntry(LogEntry instance);
     partial void DeleteLogEntry(LogEntry instance);
-    partial void InsertTiebaStatus(TiebaStatus instance);
-    partial void UpdateTiebaStatus(TiebaStatus instance);
-    partial void DeleteTiebaStatus(TiebaStatus instance);
     partial void InsertSession(Session instance);
     partial void UpdateSession(Session instance);
     partial void DeleteSession(Session instance);
-    partial void InsertBaiduUserStatus(BaiduUserStatus instance);
-    partial void UpdateBaiduUserStatus(BaiduUserStatus instance);
-    partial void DeleteBaiduUserStatus(BaiduUserStatus instance);
+    partial void InsertSchedule(Schedule instance);
+    partial void UpdateSchedule(Schedule instance);
+    partial void DeleteSchedule(Schedule instance);
+    partial void InsertTask(Task instance);
+    partial void UpdateTask(Task instance);
+    partial void DeleteTask(Task instance);
+    partial void InsertStatus(Status instance);
+    partial void UpdateStatus(Status instance);
+    partial void DeleteStatus(Status instance);
     #endregion
 		
 		public PrimaryDataContext() : 
@@ -93,14 +96,6 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		public System.Data.Linq.Table<TiebaStatus> TiebaStatus
-		{
-			get
-			{
-				return this.GetTable<TiebaStatus>();
-			}
-		}
-		
 		public System.Data.Linq.Table<Session> Session
 		{
 			get
@@ -109,11 +104,27 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		public System.Data.Linq.Table<BaiduUserStatus> BaiduUserStatus
+		public System.Data.Linq.Table<Schedule> Schedule
 		{
 			get
 			{
-				return this.GetTable<BaiduUserStatus>();
+				return this.GetTable<Schedule>();
+			}
+		}
+		
+		public System.Data.Linq.Table<Task> Task
+		{
+			get
+			{
+				return this.GetTable<Task>();
+			}
+		}
+		
+		public System.Data.Linq.Table<Status> Status
+		{
+			get
+			{
+				return this.GetTable<Status>();
 			}
 		}
 	}
@@ -408,188 +419,6 @@ namespace PrettyBots.Strategies.Repository
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.TiebaStatus")]
-	public partial class TiebaStatus : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _Id;
-		
-		private long _Forum;
-		
-		private System.Nullable<long> _Topic;
-		
-		private System.Nullable<long> _Post;
-		
-		private string _Key;
-		
-		private string _Value;
-		
-    #region 可扩展性方法定义
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnIdChanging(int value);
-    partial void OnIdChanged();
-    partial void OnForumChanging(long value);
-    partial void OnForumChanged();
-    partial void OnTopicChanging(System.Nullable<long> value);
-    partial void OnTopicChanged();
-    partial void OnPostChanging(System.Nullable<long> value);
-    partial void OnPostChanged();
-    partial void OnKeyChanging(string value);
-    partial void OnKeyChanged();
-    partial void OnValueChanging(string value);
-    partial void OnValueChanged();
-    #endregion
-		
-		public TiebaStatus()
-		{
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int Id
-		{
-			get
-			{
-				return this._Id;
-			}
-			set
-			{
-				if ((this._Id != value))
-				{
-					this.OnIdChanging(value);
-					this.SendPropertyChanging();
-					this._Id = value;
-					this.SendPropertyChanged("Id");
-					this.OnIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Forum", DbType="BigInt NOT NULL")]
-		public long Forum
-		{
-			get
-			{
-				return this._Forum;
-			}
-			set
-			{
-				if ((this._Forum != value))
-				{
-					this.OnForumChanging(value);
-					this.SendPropertyChanging();
-					this._Forum = value;
-					this.SendPropertyChanged("Forum");
-					this.OnForumChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Topic", DbType="BigInt")]
-		public System.Nullable<long> Topic
-		{
-			get
-			{
-				return this._Topic;
-			}
-			set
-			{
-				if ((this._Topic != value))
-				{
-					this.OnTopicChanging(value);
-					this.SendPropertyChanging();
-					this._Topic = value;
-					this.SendPropertyChanged("Topic");
-					this.OnTopicChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Post", DbType="BigInt")]
-		public System.Nullable<long> Post
-		{
-			get
-			{
-				return this._Post;
-			}
-			set
-			{
-				if ((this._Post != value))
-				{
-					this.OnPostChanging(value);
-					this.SendPropertyChanging();
-					this._Post = value;
-					this.SendPropertyChanged("Post");
-					this.OnPostChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Name="[Key]", Storage="_Key", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
-		public string Key
-		{
-			get
-			{
-				return this._Key;
-			}
-			set
-			{
-				if ((this._Key != value))
-				{
-					this.OnKeyChanging(value);
-					this.SendPropertyChanging();
-					this._Key = value;
-					this.SendPropertyChanged("Key");
-					this.OnKeyChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Value", DbType="NVarChar(MAX)")]
-		public string Value
-		{
-			get
-			{
-				return this._Value;
-			}
-			set
-			{
-				if ((this._Value != value))
-				{
-					this.OnValueChanging(value);
-					this.SendPropertyChanging();
-					this._Value = value;
-					this.SendPropertyChanged("Value");
-					this.OnValueChanged();
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Sessions")]
 	public partial class Session : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -602,6 +431,8 @@ namespace PrettyBots.Strategies.Repository
 		
 		private System.Data.Linq.Binary _Cookies;
 		
+		private string _Context;
+		
     #region 可扩展性方法定义
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -612,6 +443,8 @@ namespace PrettyBots.Strategies.Repository
     partial void OnNameChanged();
     partial void OnCookiesChanging(System.Data.Linq.Binary value);
     partial void OnCookiesChanged();
+    partial void OnContextChanging(string value);
+    partial void OnContextChanged();
     #endregion
 		
 		public Session()
@@ -659,7 +492,7 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cookies", DbType="VarBinary(MAX)", UpdateCheck=UpdateCheck.Never)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cookies", DbType="VarBinary(MAX)")]
 		public System.Data.Linq.Binary Cookies
 		{
 			get
@@ -675,6 +508,26 @@ namespace PrettyBots.Strategies.Repository
 					this._Cookies = value;
 					this.SendPropertyChanged("Cookies");
 					this.OnCookiesChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Context", DbType="NVarChar(MAX)", CanBeNull=false)]
+		public string Context
+		{
+			get
+			{
+				return this._Context;
+			}
+			set
+			{
+				if ((this._Context != value))
+				{
+					this.OnContextChanging(value);
+					this.SendPropertyChanging();
+					this._Context = value;
+					this.SendPropertyChanged("Context");
+					this.OnContextChanged();
 				}
 			}
 		}
@@ -700,19 +553,17 @@ namespace PrettyBots.Strategies.Repository
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.BaiduUserStatus")]
-	public partial class BaiduUserStatus : INotifyPropertyChanging, INotifyPropertyChanged
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Schedule")]
+	public partial class Schedule : INotifyPropertyChanging, INotifyPropertyChanged
 	{
 		
 		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
 		
 		private int _Id;
 		
-		private string _UserName;
+		private string _Name;
 		
-		private string _Key;
-		
-		private string _Value;
+		private EntitySet<Task> _Task;
 		
     #region 可扩展性方法定义
     partial void OnLoaded();
@@ -720,15 +571,350 @@ namespace PrettyBots.Strategies.Repository
     partial void OnCreated();
     partial void OnIdChanging(int value);
     partial void OnIdChanged();
-    partial void OnUserNameChanging(string value);
-    partial void OnUserNameChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
+    #endregion
+		
+		public Schedule()
+		{
+			this._Task = new EntitySet<Task>(new Action<Task>(this.attach_Task), new Action<Task>(this.detach_Task));
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="NVarChar(100)")]
+		public string Name
+		{
+			get
+			{
+				return this._Name;
+			}
+			set
+			{
+				if ((this._Name != value))
+				{
+					this.OnNameChanging(value);
+					this.SendPropertyChanging();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Schedule_Task", Storage="_Task", ThisKey="Id", OtherKey="Schedule")]
+		public EntitySet<Task> Task
+		{
+			get
+			{
+				return this._Task;
+			}
+			set
+			{
+				this._Task.Assign(value);
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_Task(Task entity)
+		{
+			this.SendPropertyChanging();
+			entity.Schedule1 = this;
+		}
+		
+		private void detach_Task(Task entity)
+		{
+			this.SendPropertyChanging();
+			entity.Schedule1 = null;
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Task")]
+	public partial class Task : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _Id;
+		
+		private int _Schedule;
+		
+		private string _Action;
+		
+		private long _Interval;
+		
+		private System.Nullable<System.DateTime> _LastExecuted;
+		
+		private System.Nullable<int> _LastResult;
+		
+		private EntityRef<Schedule> _Schedule1;
+		
+    #region 可扩展性方法定义
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(int value);
+    partial void OnIdChanged();
+    partial void OnScheduleChanging(int value);
+    partial void OnScheduleChanged();
+    partial void OnActionChanging(string value);
+    partial void OnActionChanged();
+    partial void OnIntervalChanging(long value);
+    partial void OnIntervalChanged();
+    partial void OnLastExecutedChanging(System.Nullable<System.DateTime> value);
+    partial void OnLastExecutedChanged();
+    partial void OnLastResultChanging(System.Nullable<int> value);
+    partial void OnLastResultChanged();
+    #endregion
+		
+		public Task()
+		{
+			this._Schedule1 = default(EntityRef<Schedule>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Schedule", DbType="Int NOT NULL")]
+		public int Schedule
+		{
+			get
+			{
+				return this._Schedule;
+			}
+			set
+			{
+				if ((this._Schedule != value))
+				{
+					if (this._Schedule1.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnScheduleChanging(value);
+					this.SendPropertyChanging();
+					this._Schedule = value;
+					this.SendPropertyChanged("Schedule");
+					this.OnScheduleChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Action", DbType="NVarChar(100)")]
+		public string Action
+		{
+			get
+			{
+				return this._Action;
+			}
+			set
+			{
+				if ((this._Action != value))
+				{
+					this.OnActionChanging(value);
+					this.SendPropertyChanging();
+					this._Action = value;
+					this.SendPropertyChanged("Action");
+					this.OnActionChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Interval", DbType="BigInt NOT NULL")]
+		public long Interval
+		{
+			get
+			{
+				return this._Interval;
+			}
+			set
+			{
+				if ((this._Interval != value))
+				{
+					this.OnIntervalChanging(value);
+					this.SendPropertyChanging();
+					this._Interval = value;
+					this.SendPropertyChanged("Interval");
+					this.OnIntervalChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastExecuted", DbType="DateTime2")]
+		public System.Nullable<System.DateTime> LastExecuted
+		{
+			get
+			{
+				return this._LastExecuted;
+			}
+			set
+			{
+				if ((this._LastExecuted != value))
+				{
+					this.OnLastExecutedChanging(value);
+					this.SendPropertyChanging();
+					this._LastExecuted = value;
+					this.SendPropertyChanged("LastExecuted");
+					this.OnLastExecutedChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastResult", DbType="Int")]
+		public System.Nullable<int> LastResult
+		{
+			get
+			{
+				return this._LastResult;
+			}
+			set
+			{
+				if ((this._LastResult != value))
+				{
+					this.OnLastResultChanging(value);
+					this.SendPropertyChanging();
+					this._LastResult = value;
+					this.SendPropertyChanged("LastResult");
+					this.OnLastResultChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Schedule_Task", Storage="_Schedule1", ThisKey="Schedule", OtherKey="Id", IsForeignKey=true)]
+		public Schedule Schedule1
+		{
+			get
+			{
+				return this._Schedule1.Entity;
+			}
+			set
+			{
+				Schedule previousValue = this._Schedule1.Entity;
+				if (((previousValue != value) 
+							|| (this._Schedule1.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Schedule1.Entity = null;
+						previousValue.Task.Remove(this);
+					}
+					this._Schedule1.Entity = value;
+					if ((value != null))
+					{
+						value.Task.Add(this);
+						this._Schedule = value.Id;
+					}
+					else
+					{
+						this._Schedule = default(int);
+					}
+					this.SendPropertyChanged("Schedule1");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Status")]
+	public partial class Status : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _Id;
+		
+		private string _Key;
+		
+		private System.Xml.Linq.XElement _Value;
+		
+    #region 可扩展性方法定义
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(int value);
+    partial void OnIdChanged();
     partial void OnKeyChanging(string value);
     partial void OnKeyChanged();
-    partial void OnValueChanging(string value);
+    partial void OnValueChanging(System.Xml.Linq.XElement value);
     partial void OnValueChanged();
     #endregion
 		
-		public BaiduUserStatus()
+		public Status()
 		{
 			OnCreated();
 		}
@@ -753,27 +939,7 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserName", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
-		public string UserName
-		{
-			get
-			{
-				return this._UserName;
-			}
-			set
-			{
-				if ((this._UserName != value))
-				{
-					this.OnUserNameChanging(value);
-					this.SendPropertyChanging();
-					this._UserName = value;
-					this.SendPropertyChanged("UserName");
-					this.OnUserNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Name="[Key]", Storage="_Key", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Name="[Key]", Storage="_Key", DbType="NVarChar(400) NOT NULL", CanBeNull=false)]
 		public string Key
 		{
 			get
@@ -793,8 +959,8 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Value", DbType="NVarChar(MAX)")]
-		public string Value
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Value", DbType="Xml", UpdateCheck=UpdateCheck.Never)]
+		public System.Xml.Linq.XElement Value
 		{
 			get
 			{

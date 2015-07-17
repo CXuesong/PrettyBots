@@ -11,10 +11,12 @@ using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Win32;
+using PrettyBots.Strategies;
 using PrettyBots.Strategies.Repository;
 using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.NetEase;
+using Session = PrettyBots.Strategies.Repository.Session;
 
 namespace PBRepositoryManager
 {

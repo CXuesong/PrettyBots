@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PBRepositoryManager", "PBRe
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LMBotTest", "_private\LMBotTest\LMBotTest.fsproj", "{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LMBot2", "_private\LMBot2\LMBot2.vbproj", "{5102F316-8A3C-4555-BCEC-2682368ECBDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

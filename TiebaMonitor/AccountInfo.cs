@@ -26,13 +26,13 @@ namespace PrettyBots.Visitors
         /// </summary>
         /// <returns>如果用户成功登录，返回<c>true</c>。
         /// 如果用户取消登录，返回<c>false</c>。</returns>
-        /// <exception cref="LoginException">登录过程中发生了错误。</exception>
+        /// <exception cref="OperationFailedException">登录过程中发生了错误。</exception>
         bool Login(string userName, string password);
 
         /// <summary>
         /// 注销当前用户。
         /// </summary>
-        /// <exception cref="LoginException">注销过程中发生了错误。</exception>
+        /// <exception cref="OperationFailedException">注销过程中发生了错误。</exception>
         void Logout();
     }
 
@@ -59,10 +59,11 @@ namespace PrettyBots.Visitors
         }
     }
 
-    public static class AccountDomains
+    public static class Domains
     {
-        public const string Baidu = "baidu";
-        public const string NetEase = "netease";
+        public const string Baidu = "Baidu";
+        public const string BaiduTieba = "Baidu.Tieba";
+        public const string NetEase = "Netease";
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]

@@ -1,21 +1,31 @@
 ﻿using System;
+using PrettyBots.Strategies.Repository;
 using PrettyBots.Visitors;
 
 namespace PrettyBots.Strategies
 {
     public interface IStrategy
     {
-        StrategyContext Context { get; }
+        Session Session { get; }
     }
 
     public class Strategy : IStrategy
     {
-        public StrategyContext Context { get; private set; }
+        public Session Session { get; private set; }
 
-        public Strategy(StrategyContext context)
+        public WebSession WebSession {
+            get { return Session.WebSession; }
+        }
+
+        public PrimaryRepository Repository
         {
-            if (context == null) throw new ArgumentNullException("context");
-            Context = context;
+            get { return Session.Repository; }
+        }
+
+        public Strategy(Session session)
+        {
+            if (session == null) throw new ArgumentNullException("session");
+            Session = session;
         }
     }
 }

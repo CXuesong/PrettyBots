@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using PrettyBots.Strategies.Repository;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
 
@@ -71,7 +72,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         {
             var suspects = new List<TopicVisitor>();
             if (StrongMatcher == null || StrongMatcher.Count == 0) return suspects;
-            var visitor = new BaiduVisitor(Context.Session);
+            var visitor = new BaiduVisitor(Session.WebSession);
             var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new InvalidOperationException();
             var normalizedFn = Utility.NormalizeString(f.Name);
@@ -128,7 +129,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         public void RegisterTopic(TopicVisitor topic)
         {
             if (topic == null) throw new ArgumentNullException("topic");
-            Context.Repository.TiebaStatus.SetTopicStatus(topic.ForumId, topic.Id, StatusKey);
+            TiebaStatusManager.SetTopicStatus(Repository, topic.ForumId, topic.Id, StatusKey);
         }
 
         public void RegisterTopics(IEnumerable<TopicVisitor> topics)
@@ -139,11 +140,11 @@ namespace PrettyBots.Strategies.Baidu.Tieba
 
         public bool IsRegistered(long topicId)
         {
-            return Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).Any();
+            return TiebaStatusManager.GetTopicStatus(Repository, topicId, StatusKey).Any();
         }
 
-        public ZhidaoRedirectionDetector(StrategyContext context)
-            : base(context)
+        public ZhidaoRedirectionDetector(Session session)
+            : base(session)
         {
             RepliesCountLimit = 20;
             AuthorLevelLimit = 4;

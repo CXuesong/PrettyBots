@@ -13,7 +13,7 @@ namespace PrettyBots.Visitors.Baidu
     /// <summary>
     /// 表示当前登录账户的信息。
     /// </summary>
-    [AccountInfo(AccountDomains.Baidu)]
+    [AccountInfo(Domains.Baidu)]
     public class BaiduAccountInfo : ChildVisitor<BaiduVisitor>, IAccountInfo, IUpdatable
     {
         public bool IsLoggedIn { get; private set; }
@@ -102,59 +102,63 @@ namespace PrettyBots.Visitors.Baidu
         /// </summary>
         public bool Login(string userName, string password)
         {
-            using (var client = Session.CreateWebClient())
+            Logging.Enter(this, UserName);
+            try
             {
-                //STEP 1
-                //BAIDUID 包含在返回的Cookie中。
-                //此处使用相同的域名，防止出现
-                // the fisrt two args should be string type:0,1!
-                //的提示。
+                using (var client = Session.CreateWebClient())
                 {
-                    var r = client.CreateHttpRequest("https://passport.baidu.com");
-                    r.GetResponse().Dispose();
-                }
-                //Cookie
-                //  $Version=1; BAIDUID=9ABCFA4624E7F5023F52F611EC207798:FG=1; $Path=/; $Domain=.baidu.com
-                //Debug.Print(tbsString);
-                TraceCookies(client);
-                //STEP 2
-                //var apiString =
-                //    client.DownloadString("https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&class=login");
-                var apiString =
-                    client.DownloadString(
-                        string.Format(
-                            "https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&tt={0}&class=login&logintype=basicLogin&callback=bd__cbs__8tl5km",
-                            Utility.UnixNow()));
-                /*
+                    //STEP 1
+                    //BAIDUID 包含在返回的Cookie中。
+                    //此处使用相同的域名，防止出现
+                    // the fisrt two args should be string type:0,1!
+                    //的提示。
+                    {
+                        var r = client.CreateHttpRequest("https://passport.baidu.com");
+                        r.GetResponse().Dispose();
+                    }
+                    //Cookie
+                    //  $Version=1; BAIDUID=9ABCFA4624E7F5023F52F611EC207798:FG=1; $Path=/; $Domain=.baidu.com
+                    //Debug.Print(tbsString);
+                    TraceCookies(client);
+                    //STEP 2
+                    //var apiString =
+                    //    client.DownloadString("https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&class=login");
+                    var apiString =
+                        client.DownloadString(
+                            string.Format(
+                                "https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&tt={0}&class=login&logintype=basicLogin&callback=bd__cbs__8tl5km",
+                                Utility.UnixNow()));
+                    /*
 {"errInfo":{ "no": "0" }, "data": { "rememberedUserName" : "", "codeString" : "", "token" : "3567aa6023153e7bbf7caea2c2e33338", "cookie" : "1", "usernametype":"", "spLogin" : "rate", "disable":"", "loginrecord":{ 'email':[ ], 'phone':[ ] } }}
              */
-                //Debug.Print(apiString);
-                var tokenMatcher = new Regex("\"token\"\\s:\\s['\"](.*?)['\"]");
-                var matchResult = tokenMatcher.Match(apiString);
-                if (!matchResult.Success) throw new UnexpectedDataException();
-                var token = matchResult.Groups[1].Value;
-                Debug.Assert(!string.IsNullOrWhiteSpace(token));
-                if (token.Any(char.IsWhiteSpace)) throw new UnexpectedDataException(token);
-                Debug.Print("Token : {0}", token);
-                //STEP3
-                string codestring = null, verifycode = null;
-            LOGIN_ATTEMPT:
-                var loginParams = new NameValueCollection
-                {
-                    {"charset", "utf-8"},
-                    {"token", token},
-                    {"isPhone", "false"},
-                    {"tpl", "pp"},
-                    {"u", "https://passport.baidu.com/"},
-                    {"staticpage", "https://passport.baidu.com/static/passpc-account/html/v3Jump.html"},
-                    {"username", userName},
-                    {"password", password},
-                    {"callback", "parent.bd__pcbs__ra48vi"},
-                    {"codestring", codestring},
-                    {"verifycode", verifycode}
-                };
-                var loginResultStr = client.UploadValuesAndDecode("https://passport.baidu.com/v2/api/?login", loginParams);
-                /*
+                    //Debug.Print(apiString);
+                    var tokenMatcher = new Regex("\"token\"\\s:\\s['\"](.*?)['\"]");
+                    var matchResult = tokenMatcher.Match(apiString);
+                    if (!matchResult.Success) throw new UnexpectedDataException();
+                    var token = matchResult.Groups[1].Value;
+                    Debug.Assert(!string.IsNullOrWhiteSpace(token));
+                    if (token.Any(char.IsWhiteSpace)) throw new UnexpectedDataException(token);
+                    Debug.Print("Token : {0}", token);
+                    //STEP3
+                    string codestring = null, verifycode = null;
+                    LOGIN_ATTEMPT:
+                    var loginParams = new NameValueCollection
+                    {
+                        {"charset", "utf-8"},
+                        {"token", token},
+                        {"isPhone", "false"},
+                        {"tpl", "pp"},
+                        {"u", "https://passport.baidu.com/"},
+                        {"staticpage", "https://passport.baidu.com/static/passpc-account/html/v3Jump.html"},
+                        {"username", userName},
+                        {"password", password},
+                        {"callback", "parent.bd__pcbs__ra48vi"},
+                        {"codestring", codestring},
+                        {"verifycode", verifycode}
+                    };
+                    var loginResultStr = client.UploadValuesAndDecode("https://passport.baidu.com/v2/api/?login",
+                        loginParams);
+                    /*
 <!DOCTYPE html>
 <html>
 <head>
@@ -173,47 +177,57 @@ window.location.replace(url);
 </body>
 </html>
              */
-                var redirectMatcher = new Regex("['\"](https://passport.baidu.com/.*?)['\"]");
-                //Debug.Print(loginResult);
-                matchResult = redirectMatcher.Match(loginResultStr);
-                if (!matchResult.Success) throw new UnexpectedDataException();
-                var redirect = new Uri(matchResult.Groups[1].Value);
-                Debug.Print("Redirect : {0}", redirect);
-                //验证码
-                var loginResult = Utility.ParseUriQuery(redirect.Query);
-                var loginResultCode = Convert.ToInt32(loginResult["error"]);
-                Debug.Print("Login Attempt, Error = {0}", loginResultCode);
-                TraceCookies(client);
-                switch (loginResultCode)
-                {
-                    case 0:
-                        Session.OverrideCookies(client.CookieContainer);
-                        Update(true);
-                        Debug.Assert(IsLoggedIn);
-                        return true;
-                    case 1:
-                    case 2:
-                        throw new OperationFailedException(loginResultCode, Prompts.LoginException_UserName);
-                    case 4:
-                    case 9:
-                        throw new OperationFailedException(loginResultCode, Prompts.LoginException_Password);
-                    case 257:
-                        if (string.IsNullOrWhiteSpace(userName))
+                    var redirectMatcher = new Regex("['\"](https://passport.baidu.com/.*?)['\"]");
+                    //Debug.Print(loginResult);
+                    matchResult = redirectMatcher.Match(loginResultStr);
+                    if (!matchResult.Success) throw new UnexpectedDataException();
+                    var redirect = new Uri(matchResult.Groups[1].Value);
+                    Debug.Print("Redirect : {0}", redirect);
+                    //验证码
+                    var loginResult = Utility.ParseUriQuery(redirect.Query);
+                    var loginResultCode = Convert.ToInt32(loginResult["error"]);
+                    Debug.Print("Login Attempt, Error = {0}", loginResultCode);
+                    TraceCookies(client);
+                    switch (loginResultCode)
+                    {
+                        case 0:
+                            Session.OverrideCookies(client.CookieContainer);
+                            Update(true);
+                            Debug.Assert(IsLoggedIn);
+                            return true;
+                        case 1:
+                        case 2:
                             throw new OperationFailedException(loginResultCode, Prompts.LoginException_UserName);
-                        goto default;
-                    default:
-                        if (!string.IsNullOrEmpty(loginResult["codestring"]))
-                        {
-                            codestring = loginResult["codestring"];
-                            var codeImagePath = string.Format("https://passport.baidu.com/cgi-bin/genimage?{0}",
-                                codestring);
-                            verifycode = Session.RequestVerificationCode(codeImagePath);
-                            if (verifycode == null) return false;
-                            goto LOGIN_ATTEMPT;
-                        }
-                        throw new OperationFailedException(loginResultCode);
+                        case 4:
+                        case 9:
+                            throw new OperationFailedException(loginResultCode, Prompts.LoginException_Password);
+                        case 257:
+                            if (string.IsNullOrWhiteSpace(userName))
+                                throw new OperationFailedException(loginResultCode, Prompts.LoginException_UserName);
+                            goto default;
+                        default:
+                            if (!string.IsNullOrEmpty(loginResult["codestring"]))
+                            {
+                                codestring = loginResult["codestring"];
+                                var codeImagePath = string.Format("https://passport.baidu.com/cgi-bin/genimage?{0}",
+                                    codestring);
+                                verifycode = Session.RequestVerificationCode(codeImagePath);
+                                if (verifycode == null) return false;
+                                goto LOGIN_ATTEMPT;
+                            }
+                            throw new OperationFailedException(loginResultCode);
+                    }
+                    //Debug.Print(client.DownloadString(redirect));
                 }
-                //Debug.Print(client.DownloadString(redirect));
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(this, ex);
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this);
             }
         }
 

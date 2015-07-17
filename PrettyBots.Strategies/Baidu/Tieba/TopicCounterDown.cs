@@ -8,6 +8,7 @@ using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
 using Newtonsoft.Json.Linq;
+using PrettyBots.Strategies.Repository;
 
 namespace PrettyBots.Strategies.Baidu.Tieba
 {
@@ -94,7 +95,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
 
         public int? NextCounter(long topicId)
         {
-            var visitor = new BaiduVisitor(Context.Session);
+            var visitor = new BaiduVisitor(WebSession);
             return NextCounter(visitor.Tieba.GetTopic(topicId));
         }
 
@@ -114,7 +115,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         /// </summary>
         public int? GetCurrentCounter(long topicId)
         {
-            var visitor = new BaiduVisitor(Context.Session);
+            var visitor = new BaiduVisitor(WebSession);
             return GetCurrentCounter(visitor.Tieba.GetTopic(topicId));
         }
 
@@ -123,8 +124,8 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         /// </summary>
         public IList<CountdownTopicInfo> CheckTopics()
         {
-            var visitor = new BaiduVisitor(Context.Session);
-            return Context.Repository.TiebaStatus.GetStatus(StatusKey)
+            var visitor = new BaiduVisitor(WebSession);
+            return TiebaStatusManager.GetTopicStatus(Repository, StatusKey)
                 .Where(s => s.Topic != null)
                 .Select(s => visitor.Tieba.GetTopic(s.Topic.Value))
                 .Where(t => t.IsExists)
@@ -144,36 +145,36 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         public void RegisterTopic(TopicVisitor topic, CountdownTopicStatus status = null)
         {
             if (topic == null) throw new ArgumentNullException("topic");
-            Context.Repository.TiebaStatus.SetTopicStatus(topic.ForumId, topic.Id,
+            TiebaStatusManager.SetTopicStatus(Repository, topic.ForumId, topic.Id,
                 StatusKey, JsonConvert.SerializeObject(status));
         }
 
         public CountdownTopicStatus GetTopicStatus(long topicId)
         {
-            var s = Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).FirstOrDefault();
+            var s = TiebaStatusManager.GetTopicStatus(Repository, topicId, StatusKey).FirstOrDefault();
             if (s == null || string.IsNullOrEmpty(s.Value)) return null;
             return JsonConvert.DeserializeObject<CountdownTopicStatus>(s.Value);
         }
 
         public bool MarkTopicFinished(long topicId)
         {
-            var s = Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).FirstOrDefault();
+            var s = TiebaStatusManager.GetTopicStatus(Repository, topicId, StatusKey).FirstOrDefault();
             if (s == null) return false;
             if (s.Key != FinishedStatusKey)
             {
                 s.Key = FinishedStatusKey;
-                Context.Repository.SubmitChanges();
+                Session.Repository.SubmitChanges();
             }
             return true;
         }
 
         public bool IsRegistered(long topicId)
         {
-            return Context.Repository.TiebaStatus.GetTopicStatus(topicId, StatusKey).Any();
+            return TiebaStatusManager.GetTopicStatus(Repository, topicId, StatusKey).Any();
         }
 
-        public TopicCounterDown(StrategyContext context)
-            : base(context)
+        public TopicCounterDown(Session session)
+            : base(session)
         {
             MaxTraceBackPostsCount = 20;
         }

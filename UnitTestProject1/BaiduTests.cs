@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using PrettyBots.Strategies;
 using PrettyBots.Strategies.Baidu.Tieba;
+using PrettyBots.Strategies.Repository;
 using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
@@ -154,8 +155,8 @@ namespace UnitTestProject1
         [TestMethod]
         public void CountdownTopicTest()
         {
-            var context = new StrategyContext("primary");
-            var cd = new TopicCounterDown(context);
+            var context = new PrimaryRepository();
+            var cd = new TopicCounterDown(context.GetSession("primary"));
             Trace.WriteLine(cd.GetCurrentCounter(3044971499L));
         }
     }

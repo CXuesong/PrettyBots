@@ -32,15 +32,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public long PostId { get; private set; }
 
-        public long CommentId { get; private set; }
-
         /// <summary>
         /// 获取搜索结果对应的帖子。
         /// </summary>
         /// <returns>如果帖子已经不存在，则返回<c>null</c></returns>
         public PostVisitorBase GetPost(TiebaVisitor tieba)
         {
-            return tieba.GetPost(TopicId, CommentId > 0 ? CommentId : PostId);
+            return tieba.GetPost(TopicId, PostId);
         }
 
         /// <summary>
@@ -54,8 +52,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public override string ToString()
         {
-            return string.Format("{0} [{1},{2},{3}][{4}] {5}", SubmissionTime, TopicId,
-                PostId, CommentId, AuthorName,
+            return string.Format("{0} [{1},{2}][{3}] {4}", SubmissionTime, TopicId,
+                PostId, AuthorName,
                 Utility.StringElipsis(Content, 50));
         }
 
@@ -64,8 +62,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             string contentPreview, DateTime submissionTime)
         {
             TopicId = tid;
-            PostId = pid;
-            CommentId = cid;
+            PostId = cid > 0 ? cid : pid;
             ForumName = forum;
             SubmissionTime = submissionTime;
             Title = title;

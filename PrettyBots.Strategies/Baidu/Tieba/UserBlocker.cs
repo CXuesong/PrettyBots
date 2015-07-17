@@ -1,42 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
+using PrettyBots.Strategies.Repository;
 
 namespace PrettyBots.Strategies.Baidu.Tieba
 {
     public class TiebaUserBlocker : Strategy
     {
-        private BaiduVisitor visitor;
-
-        private class UserForumStatusEntry
+        private BaiduVisitor _Visitor;
+        private BaiduVisitor Visitor
         {
-
-            public long ReferTopic { get; set; }
-
-            public long ReferPost { get; set; }
-
-            public DateTime LastOperationTime { get; set; }
-
-            [JsonIgnore]
-            public bool HasReferer
+            get
             {
-                get { return ReferTopic > 0 && ReferPost > 0; }
-            }
-
-            public UserForumStatusEntry(long referTopic, long referPost, DateTime lastOperationTime)
-            {
-                ReferTopic = referTopic;
-                ReferPost = referPost;
-                LastOperationTime = lastOperationTime;
-            }
-
-            public UserForumStatusEntry()
-            {
-
+                if (_Visitor != null) _Visitor = new BaiduVisitor(WebSession);
+                return _Visitor;
             }
         }
 
@@ -45,84 +27,77 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         /// </summary>
         public TimeSpan BlockInterval { get; set; }
 
-        public bool BlockUser(string forumName, string userName)
+        public void BlockUser(string forumName, string userName)
         {
-            var userStatus = GetUserStatus(userName);
-            UserForumStatusEntry forumStatus;
-            if (!userStatus.TryGetValue(forumName, out forumStatus) || forumStatus == null)
-                userStatus[forumName] = forumStatus = new UserForumStatusEntry();
-            if ((DateTime.Now - forumStatus.LastOperationTime) > BlockInterval)
+            var fid = Utility.ForumNameToId(forumName);
+            var userStatus = GetUserStatus(fid, userName) ?? Tuple.Create(0L, 0L, DateTime.MinValue);
+            var tid = userStatus.Item1;
+            var pid = userStatus.Item2;
+            var time = userStatus.Item3;
+            if ((DateTime.Now - time) > BlockInterval)
             {
-                try
+                //验证基准帖。
+                var post = tid == 0 ? null : Visitor.Tieba.GetPost(tid, pid);
+                if (post == null)
                 {
-                    PostVisitorBase post;
-                    //验证基准帖。
-                    if (forumStatus.HasReferer)
-                    {
-                        post = visitor.Tieba.GetPost(forumStatus.ReferTopic, forumStatus.ReferPost);
-                        if (post == null)
-                        {
-                            //需要更新基准帖。
-                            forumStatus.ReferTopic = forumStatus.ReferPost = 0;
-                            SetUserReferer(forumName, userName, forumStatus);
-                            if (!forumStatus.HasReferer) return false;
-                            post = visitor.Tieba.GetPost(forumStatus.ReferTopic, forumStatus.ReferPost);
-                        }
-                    }
-                    else
-                    {
-                        //初次使用，寻找基准帖。
-                        SetUserReferer(forumName, userName, forumStatus);
-                        if (!forumStatus.HasReferer) return false;
-                        post = visitor.Tieba.GetPost(forumStatus.ReferTopic, forumStatus.ReferPost);
-                    }
-                    //开始封禁。
-                    post.BlockAuthor();
-                    forumStatus.LastOperationTime = DateTime.Now;
-                    return true;
+                    //需要更新基准帖。
+                    var newReferer = GetBlockReferer(forumName, userName);
+                    if (newReferer == null) return;
+                    tid = newReferer.Item1;
+                    pid = newReferer.Item2;
+                    post = Visitor.Tieba.GetPost(tid, pid);
                 }
-                finally
-                {
-                    //保存设置。
-                    userStatus[forumName] = forumStatus;
-                    SetUserStatus(userName, userStatus);
-                }
+                //开始封禁。
+                post.BlockAuthor();
+                time = DateTime.Now;
+                //保存设置。
+                SetUserStatus(fid, userName, pid, tid, time);
             }
-            return false;
         }
 
-        public const string StatusKey = "TiebaBlockingInfo";
+        public static readonly XName XNUserBlocker = "userBlocker";
+        public static readonly XName XNForum = "forum";
+        public static readonly XName XNTid = "tid";
+        public static readonly XName XNPid = "pid";
+        public static readonly XName XNTime = "time";
 
         /// <summary>
         /// 寻找一个可以用作封禁的用户发帖。
         /// </summary>
-        private void SetUserReferer(string forumName, string userName, UserForumStatusEntry entry)
+        private Tuple<long, long> GetBlockReferer(string forumName, string userName)
         {
-            var p = visitor.Tieba.Search(null, forumName, userName).Result
-                .Select(r => r.GetPost(visitor.Tieba))
-                .FirstOrDefault(p1 => p1 != null);
-            if (p == null) return;
-            entry.ReferTopic = p.Topic.Id;
-            entry.ReferPost = p.Id;
+            var p = Visitor.Tieba.Search(null, forumName, userName).Result.FirstOrDefault();
+            return p == null ? null : Tuple.Create(p.TopicId, p.PostId);
         }
 
-        private Dictionary<string, UserForumStatusEntry> GetUserStatus(string userName)
+        private Tuple<long,long,DateTime> GetUserStatus(long fid, string userName)
         {
-            var entry = Context.Repository.BaiduUserStatus.GetStatusValue(userName, StatusKey);
-            if (string.IsNullOrEmpty(entry)) return new Dictionary<string, UserForumStatusEntry>();
-            return JsonConvert.DeserializeObject<Dictionary<string, UserForumStatusEntry>>(entry);
+            var entry = BaiduUserManager.GetUserStatus(Repository, userName);
+            var status = entry.Elements(XNUserBlocker).Elements(XNForum).FirstOrDefault(e => (long) e == fid);
+            if (status == null) return null;
+            return Tuple.Create((long) status.Attribute(XNTid), (long) status.Attribute(XNPid),
+                (DateTime) status.Attribute(XNTime));
         }
 
-        private void SetUserStatus(string userName, Dictionary<string, UserForumStatusEntry> status)
+        private void SetUserStatus(long fid, string userName, long pid, long tid, DateTime time)
         {
-            Context.Repository.BaiduUserStatus.SetStatusValue(userName, StatusKey,
-                status == null ? null : JsonConvert.SerializeObject(status));
+            var entry = BaiduUserManager.GetUserStatus(Repository, userName);
+            var xForum = entry.CElement(XNUserBlocker);
+            var status = xForum.Elements(XNForum).FirstOrDefault(e => (long)e == fid);
+            if (status == null)
+            {
+                status = new XElement(XNForum, fid);
+                xForum.Add(status);
+            }
+            status.SetAttributeValue(XNPid, pid);
+            status.SetAttributeValue(XNTid, tid);
+            status.SetAttributeValue(XNTime, time);
+            Repository.SubmitChanges();
         }
 
-        public TiebaUserBlocker(StrategyContext context)
-            : base(context)
+        public TiebaUserBlocker(Session session)
+            : base(session)
         {
-            visitor = new BaiduVisitor(context.Session);
             BlockInterval = TimeSpan.FromHours(20);
         }
     }

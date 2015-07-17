@@ -9,7 +9,7 @@ using HtmlAgilityPack;
 
 namespace PrettyBots.Visitors.NetEase
 {
-    [AccountInfo(AccountDomains.NetEase)]
+    [AccountInfo(Domains.NetEase)]
     public class LofterAccountInfo : ChildVisitor<LofterVisitor>, IAccountInfo, IUpdatable
     {
         public const string LoginUrl = "https://reg.163.com/logins.jsp";
