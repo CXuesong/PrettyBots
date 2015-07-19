@@ -36,18 +36,18 @@ namespace PrettyBots.Strategies.Repository
     partial void InsertLogEntry(LogEntry instance);
     partial void UpdateLogEntry(LogEntry instance);
     partial void DeleteLogEntry(LogEntry instance);
-    partial void InsertSession(Session instance);
-    partial void UpdateSession(Session instance);
-    partial void DeleteSession(Session instance);
     partial void InsertSchedule(Schedule instance);
     partial void UpdateSchedule(Schedule instance);
     partial void DeleteSchedule(Schedule instance);
+    partial void InsertStrategyStatus(StrategyStatus instance);
+    partial void UpdateStrategyStatus(StrategyStatus instance);
+    partial void DeleteStrategyStatus(StrategyStatus instance);
     partial void InsertTask(Task instance);
     partial void UpdateTask(Task instance);
     partial void DeleteTask(Task instance);
-    partial void InsertStatus(Status instance);
-    partial void UpdateStatus(Status instance);
-    partial void DeleteStatus(Status instance);
+    partial void InsertSession(Session instance);
+    partial void UpdateSession(Session instance);
+    partial void DeleteSession(Session instance);
     #endregion
 		
 		public PrimaryDataContext() : 
@@ -96,15 +96,7 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		public System.Data.Linq.Table<Session> Session
-		{
-			get
-			{
-				return this.GetTable<Session>();
-			}
-		}
-		
-		public System.Data.Linq.Table<Schedule> Schedule
+		internal System.Data.Linq.Table<Schedule> Schedule
 		{
 			get
 			{
@@ -112,7 +104,15 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		public System.Data.Linq.Table<Task> Task
+		internal System.Data.Linq.Table<StrategyStatus> StrategyStatus
+		{
+			get
+			{
+				return this.GetTable<StrategyStatus>();
+			}
+		}
+		
+		internal System.Data.Linq.Table<Task> Task
 		{
 			get
 			{
@@ -120,11 +120,11 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		public System.Data.Linq.Table<Status> Status
+		public System.Data.Linq.Table<Session> Session
 		{
 			get
 			{
-				return this.GetTable<Status>();
+				return this.GetTable<Session>();
 			}
 		}
 	}
@@ -419,140 +419,6 @@ namespace PrettyBots.Strategies.Repository
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Sessions")]
-	public partial class Session : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _Id;
-		
-		private string _Name;
-		
-		private System.Data.Linq.Binary _Cookies;
-		
-		private string _Context;
-		
-    #region 可扩展性方法定义
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnIdChanging(int value);
-    partial void OnIdChanged();
-    partial void OnNameChanging(string value);
-    partial void OnNameChanged();
-    partial void OnCookiesChanging(System.Data.Linq.Binary value);
-    partial void OnCookiesChanged();
-    partial void OnContextChanging(string value);
-    partial void OnContextChanged();
-    #endregion
-		
-		public Session()
-		{
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int Id
-		{
-			get
-			{
-				return this._Id;
-			}
-			set
-			{
-				if ((this._Id != value))
-				{
-					this.OnIdChanging(value);
-					this.SendPropertyChanging();
-					this._Id = value;
-					this.SendPropertyChanged("Id");
-					this.OnIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="NVarChar(200)")]
-		public string Name
-		{
-			get
-			{
-				return this._Name;
-			}
-			set
-			{
-				if ((this._Name != value))
-				{
-					this.OnNameChanging(value);
-					this.SendPropertyChanging();
-					this._Name = value;
-					this.SendPropertyChanged("Name");
-					this.OnNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cookies", DbType="VarBinary(MAX)")]
-		public System.Data.Linq.Binary Cookies
-		{
-			get
-			{
-				return this._Cookies;
-			}
-			set
-			{
-				if ((this._Cookies != value))
-				{
-					this.OnCookiesChanging(value);
-					this.SendPropertyChanging();
-					this._Cookies = value;
-					this.SendPropertyChanged("Cookies");
-					this.OnCookiesChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Context", DbType="NVarChar(MAX)", CanBeNull=false)]
-		public string Context
-		{
-			get
-			{
-				return this._Context;
-			}
-			set
-			{
-				if ((this._Context != value))
-				{
-					this.OnContextChanging(value);
-					this.SendPropertyChanging();
-					this._Context = value;
-					this.SendPropertyChanged("Context");
-					this.OnContextChanged();
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Schedule")]
 	public partial class Schedule : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -667,6 +533,181 @@ namespace PrettyBots.Strategies.Repository
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.StrategyStatus")]
+	public partial class StrategyStatus : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _Id;
+		
+		private int _Session;
+		
+		private string _Strategy;
+		
+		private System.Xml.Linq.XElement _Status;
+		
+		private EntityRef<Session> _Session1;
+		
+    #region 可扩展性方法定义
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(int value);
+    partial void OnIdChanged();
+    partial void OnSessionChanging(int value);
+    partial void OnSessionChanged();
+    partial void OnStrategyChanging(string value);
+    partial void OnStrategyChanged();
+    partial void OnStatusChanging(System.Xml.Linq.XElement value);
+    partial void OnStatusChanged();
+    #endregion
+		
+		public StrategyStatus()
+		{
+			this._Session1 = default(EntityRef<Session>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Session", DbType="Int NOT NULL")]
+		public int Session
+		{
+			get
+			{
+				return this._Session;
+			}
+			set
+			{
+				if ((this._Session != value))
+				{
+					if (this._Session1.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnSessionChanging(value);
+					this.SendPropertyChanging();
+					this._Session = value;
+					this.SendPropertyChanged("Session");
+					this.OnSessionChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Strategy", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Strategy
+		{
+			get
+			{
+				return this._Strategy;
+			}
+			set
+			{
+				if ((this._Strategy != value))
+				{
+					this.OnStrategyChanging(value);
+					this.SendPropertyChanging();
+					this._Strategy = value;
+					this.SendPropertyChanged("Strategy");
+					this.OnStrategyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Status", DbType="Xml", UpdateCheck=UpdateCheck.Never)]
+		public System.Xml.Linq.XElement Status
+		{
+			get
+			{
+				return this._Status;
+			}
+			set
+			{
+				if ((this._Status != value))
+				{
+					this.OnStatusChanging(value);
+					this.SendPropertyChanging();
+					this._Status = value;
+					this.SendPropertyChanged("Status");
+					this.OnStatusChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Sessions_StrategyStatus", Storage="_Session1", ThisKey="Session", OtherKey="Id", IsForeignKey=true)]
+		public Session Session1
+		{
+			get
+			{
+				return this._Session1.Entity;
+			}
+			set
+			{
+				Session previousValue = this._Session1.Entity;
+				if (((previousValue != value) 
+							|| (this._Session1.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Session1.Entity = null;
+						previousValue.StrategyStatus.Remove(this);
+					}
+					this._Session1.Entity = value;
+					if ((value != null))
+					{
+						value.StrategyStatus.Add(this);
+						this._Session = value.Id;
+					}
+					else
+					{
+						this._Session = default(int);
+					}
+					this.SendPropertyChanged("Session1");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Task")]
 	public partial class Task : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -678,6 +719,8 @@ namespace PrettyBots.Strategies.Repository
 		private int _Schedule;
 		
 		private string _Action;
+		
+		private bool _Enabled;
 		
 		private long _Interval;
 		
@@ -697,6 +740,8 @@ namespace PrettyBots.Strategies.Repository
     partial void OnScheduleChanged();
     partial void OnActionChanging(string value);
     partial void OnActionChanged();
+    partial void OnEnabledChanging(bool value);
+    partial void OnEnabledChanged();
     partial void OnIntervalChanging(long value);
     partial void OnIntervalChanged();
     partial void OnLastExecutedChanging(System.Nullable<System.DateTime> value);
@@ -771,6 +816,26 @@ namespace PrettyBots.Strategies.Repository
 					this._Action = value;
 					this.SendPropertyChanged("Action");
 					this.OnActionChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Enabled", DbType="Bit NOT NULL")]
+		public bool Enabled
+		{
+			get
+			{
+				return this._Enabled;
+			}
+			set
+			{
+				if ((this._Enabled != value))
+				{
+					this.OnEnabledChanging(value);
+					this.SendPropertyChanging();
+					this._Enabled = value;
+					this.SendPropertyChanged("Enabled");
+					this.OnEnabledChanged();
 				}
 			}
 		}
@@ -890,17 +955,21 @@ namespace PrettyBots.Strategies.Repository
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Status")]
-	public partial class Status : INotifyPropertyChanging, INotifyPropertyChanged
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Sessions")]
+	public partial class Session : INotifyPropertyChanging, INotifyPropertyChanged
 	{
 		
 		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
 		
 		private int _Id;
 		
-		private string _Key;
+		private string _Name;
 		
-		private System.Xml.Linq.XElement _Value;
+		private System.Data.Linq.Binary _Cookies;
+		
+		private string _Context;
+		
+		private EntitySet<StrategyStatus> _StrategyStatus;
 		
     #region 可扩展性方法定义
     partial void OnLoaded();
@@ -908,14 +977,17 @@ namespace PrettyBots.Strategies.Repository
     partial void OnCreated();
     partial void OnIdChanging(int value);
     partial void OnIdChanged();
-    partial void OnKeyChanging(string value);
-    partial void OnKeyChanged();
-    partial void OnValueChanging(System.Xml.Linq.XElement value);
-    partial void OnValueChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
+    partial void OnCookiesChanging(System.Data.Linq.Binary value);
+    partial void OnCookiesChanged();
+    partial void OnContextChanging(string value);
+    partial void OnContextChanged();
     #endregion
 		
-		public Status()
+		public Session()
 		{
+			this._StrategyStatus = new EntitySet<StrategyStatus>(new Action<StrategyStatus>(this.attach_StrategyStatus), new Action<StrategyStatus>(this.detach_StrategyStatus));
 			OnCreated();
 		}
 		
@@ -939,43 +1011,76 @@ namespace PrettyBots.Strategies.Repository
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Name="[Key]", Storage="_Key", DbType="NVarChar(400) NOT NULL", CanBeNull=false)]
-		public string Key
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="NVarChar(200)")]
+		public string Name
 		{
 			get
 			{
-				return this._Key;
+				return this._Name;
 			}
 			set
 			{
-				if ((this._Key != value))
+				if ((this._Name != value))
 				{
-					this.OnKeyChanging(value);
+					this.OnNameChanging(value);
 					this.SendPropertyChanging();
-					this._Key = value;
-					this.SendPropertyChanged("Key");
-					this.OnKeyChanged();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Value", DbType="Xml", UpdateCheck=UpdateCheck.Never)]
-		public System.Xml.Linq.XElement Value
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cookies", DbType="VarBinary(MAX)", UpdateCheck=UpdateCheck.Never)]
+		public System.Data.Linq.Binary Cookies
 		{
 			get
 			{
-				return this._Value;
+				return this._Cookies;
 			}
 			set
 			{
-				if ((this._Value != value))
+				if ((this._Cookies != value))
 				{
-					this.OnValueChanging(value);
+					this.OnCookiesChanging(value);
 					this.SendPropertyChanging();
-					this._Value = value;
-					this.SendPropertyChanged("Value");
-					this.OnValueChanged();
+					this._Cookies = value;
+					this.SendPropertyChanged("Cookies");
+					this.OnCookiesChanged();
 				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Context", DbType="NVarChar(MAX)")]
+		public string Context
+		{
+			get
+			{
+				return this._Context;
+			}
+			set
+			{
+				if ((this._Context != value))
+				{
+					this.OnContextChanging(value);
+					this.SendPropertyChanging();
+					this._Context = value;
+					this.SendPropertyChanged("Context");
+					this.OnContextChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Sessions_StrategyStatus", Storage="_StrategyStatus", ThisKey="Id", OtherKey="Session")]
+		public EntitySet<StrategyStatus> StrategyStatus
+		{
+			get
+			{
+				return this._StrategyStatus;
+			}
+			set
+			{
+				this._StrategyStatus.Assign(value);
 			}
 		}
 		
@@ -997,6 +1102,18 @@ namespace PrettyBots.Strategies.Repository
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+		
+		private void attach_StrategyStatus(StrategyStatus entity)
+		{
+			this.SendPropertyChanging();
+			entity.Session1 = this;
+		}
+		
+		private void detach_StrategyStatus(StrategyStatus entity)
+		{
+			this.SendPropertyChanging();
+			entity.Session1 = null;
 		}
 	}
 }

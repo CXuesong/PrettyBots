@@ -1,23 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using PrettyBots.Visitors.Baidu.Tieba;
 
-namespace PrettyBots.Visitors
+namespace PrettyBots.Strategies
 {
     internal static class Logging
     {
-        private static TraceSource source = new TraceSource("PrettyBots.Visitors");
+        private static TraceSource source = new TraceSource("PrettyBots.Strategies");
 
         public static void Enter(object obj, string param = null, [CallerMemberName] string memberName = null)
         {
-            source.TraceEvent(TraceEventType.Verbose, 10,
+            source.TraceEvent(TraceEventType.Verbose, 0,
                 obj.GetType().Name + "#" + ToString(obj) + "." + memberName + " <| " + param);
         }
+
+        public static void Enter<T>(object obj, T param, [CallerMemberName] string memberName = null)
+        {
+            Enter(obj, Convert.ToString(param), memberName);
+        }
+
         public static void Exit(object obj, string result = null, [CallerMemberName] string memberName = null)
         {
             source.TraceEvent(TraceEventType.Verbose, 0,
@@ -30,15 +32,9 @@ namespace PrettyBots.Visitors
             return result;
         }
 
-        public static void Trace(object obj, string format, params object[] args)
-        {
-            source.TraceEvent(TraceEventType.Verbose, 0,
-                obj.GetType().Name + "#" + ToString(obj) + " : " + string.Format(format, args));
-        }
-
         public static void Exception(object obj, Exception ex, [CallerMemberName] string memberName = null)
         {
-            source.TraceEvent(TraceEventType.Error, 12,
+            source.TraceEvent(TraceEventType.Error, 0,
                 obj.GetType().Name + "#" + ToString(obj) + "." + memberName + " !> " + ex);
         }
 

@@ -186,7 +186,7 @@ window.location.replace(url);
                     //验证码
                     var loginResult = Utility.ParseUriQuery(redirect.Query);
                     var loginResultCode = Convert.ToInt32(loginResult["error"]);
-                    Debug.Print("Login Attempt, Error = {0}", loginResultCode);
+                    Logging.Trace(this, "Login Result = {0}", loginResultCode);
                     TraceCookies(client);
                     switch (loginResultCode)
                     {

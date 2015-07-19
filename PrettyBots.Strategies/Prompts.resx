@@ -117,7 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ActionNotRegistered" xml:space="preserve">
+    <value>操作“{0}”尚未注册。</value>
+  </data>
   <data name="ForumNotExists" xml:space="preserve">
     <value>贴吧“{0}”不存在。</value>
+  </data>
+  <data name="TiebaNewbieDetectorDefaultReply" xml:space="preserve">
+    <value>欢迎来到{0}吧！</value>
+  </data>
+  <data name="ZhidaoRedirectionDetectorDefaultReply" xml:space="preserve">
+    <value>LZ您的帖子是从百度知道上转过来的吗？</value>
   </data>
 </root>

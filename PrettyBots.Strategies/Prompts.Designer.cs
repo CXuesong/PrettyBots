@@ -61,11 +61,38 @@ namespace PrettyBots.Strategies {
         }
         
         /// <summary>
+        ///   查找类似 操作“{0}”尚未注册。 的本地化字符串。
+        /// </summary>
+        internal static string ActionNotRegistered {
+            get {
+                return ResourceManager.GetString("ActionNotRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 贴吧“{0}”不存在。 的本地化字符串。
         /// </summary>
         internal static string ForumNotExists {
             get {
                 return ResourceManager.GetString("ForumNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 欢迎来到{0}吧！ 的本地化字符串。
+        /// </summary>
+        internal static string TiebaNewbieDetectorDefaultReply {
+            get {
+                return ResourceManager.GetString("TiebaNewbieDetectorDefaultReply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 LZ您的帖子是从百度知道上转过来的吗？ 的本地化字符串。
+        /// </summary>
+        internal static string ZhidaoRedirectionDetectorDefaultReply {
+            get {
+                return ResourceManager.GetString("ZhidaoRedirectionDetectorDefaultReply", resourceCulture);
             }
         }
     }

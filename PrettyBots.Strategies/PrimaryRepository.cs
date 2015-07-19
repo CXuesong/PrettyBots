@@ -14,32 +14,34 @@ namespace PrettyBots.Strategies
     {
         internal PrimaryDataContext DataContext { get; private set; }
 
-        public Strategies.Session CreateSession()
+        public Session CreateSession(string name)
         {
-            var rs = new Repository.Session();
+            var rs = new Repository.Session() {Name = name};
             DataContext.Session.InsertOnSubmit(rs);
             DataContext.SubmitChanges();
-            return new Strategies.Session(rs, this);
+            return new Session(rs, this);
         }
 
-        public Strategies.Session GetSession(string name)
+        public Session GetSession(string name)
         {
             var rs = DataContext.Session.FirstOrDefault(s => s.Name == name);
-            return new Strategies.Session(rs, this);
+            if (rs == null) return CreateSession(name);
+            return new Session(rs, this);
         }
 
-        public Strategies.Schedule CreateSchedule()
+        public Schedule CreateSchedule(string name)
         {
-            var rs = new Repository.Schedule();
+            var rs = new Repository.Schedule() {Name = name};
             DataContext.Schedule.InsertOnSubmit(rs);
             DataContext.SubmitChanges();
-            return new Strategies.Schedule(rs, DataContext);
+            return new Schedule(rs, DataContext);
         }
 
-        public Strategies.Schedule GetSchedule(string name)
+        public Schedule GetSchedule(string name)
         {
             var rs = DataContext.Schedule.FirstOrDefault(s => s.Name == name);
-            return new Strategies.Schedule(rs, DataContext);
+            if (rs == null) return CreateSchedule(name);
+            return new Schedule(rs, DataContext);
         }
 
         /// <summary>

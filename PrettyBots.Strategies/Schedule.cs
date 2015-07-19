@@ -21,10 +21,49 @@ namespace PrettyBots.Strategies
         private ReposSchedule _DataSource;
         private TaskCollection _Tasks;
 
+        /// <summary>
+        /// 执行预订计划。
+        /// </summary>
+        public void ExecuteSchedule(TaskActionProvider actionProvider)
+        {
+            ExecuteSchedule(actionProvider, null);
+        }
+
+        public void ResetSchedule()
+        {
+            foreach (var task in _Tasks)
+                task.LastExecuted = null;
+            _DataContext.SubmitChanges();
+        }
+
+        /// <summary>
+        /// 执行预订计划。
+        /// </summary>
+        public void ExecuteSchedule(TaskActionProvider actionProvider, object context)
+        {
+            if (actionProvider == null) throw new ArgumentNullException("actionProvider");
+            try
+            {
+                foreach (var task in _Tasks
+                    .Where(task => !string.IsNullOrEmpty(task.Action))
+                    .Where(task => task.LastExecuted == null || DateTime.Now - task.LastExecuted > task.Interval))
+                {
+                    actionProvider.InvokeAction(task.Action, task, context);
+                    task.LastExecuted = DateTime.Now;
+                }
+            }
+            finally
+            {
+                _DataContext.SubmitChanges();
+            }
+        }
+
         internal Schedule(ReposSchedule dataSource, PrimaryDataContext dataContext)
         {
+            Debug.Assert(dataSource != null && dataContext != null);
             _DataSource = dataSource;
             _DataContext = dataContext;
+            _Tasks = new TaskCollection(this);
         }
 
         internal PrimaryDataContext DataContext
@@ -41,15 +80,29 @@ namespace PrettyBots.Strategies
         {
             get { return _Tasks; }
         }
+
+        public string Name
+        {
+            get { return _DataSource.Name; }
+        }
     }
 
     public class TaskCollection : Collection<Task>
     {
         private Schedule parent;
 
-        public TaskCollection(Schedule parent)
+        internal TaskCollection(Schedule parent)
         {
             this.parent = parent;
+            foreach (var t in parent.DataContext.Task.Where(t => t.Schedule1 == parent.DataSource))
+                Items.Add(new Task(t));
+        }
+
+        public Task Add(string action, TimeSpan interval)
+        {
+            var newInst = new Task() {Action = action, Interval = interval, Enabled = true};
+            base.Add(newInst);
+            return newInst;
         }
 
         protected override void InsertItem(int index, Task item)
@@ -92,6 +145,18 @@ namespace PrettyBots.Strategies
         {
             get { return Source.Action; }
             set { Source.Action = value; }
+        }
+
+        public TimeSpan Interval
+        {
+            get { return TimeSpan.FromTicks(Source.Interval); }
+            set { Source.Interval = value.Ticks; }
+        }
+
+        public bool Enabled
+        {
+            get { return Source.Enabled; }
+            set { Source.Enabled = value; }
         }
 
         public DateTime? LastExecuted

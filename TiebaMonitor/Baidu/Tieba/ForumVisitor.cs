@@ -15,7 +15,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 {
     public class ForumVisitor : ChildVisitor<BaiduVisitor>
     {
-        private const string ForumUrlFormat = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=search";
+        //我错了…… fr = index 和 fr = search 差别居然这么大……
+        private const string ForumUrlFormat = "http://tieba.baidu.com/f?ie=utf-8&kw={0}&fr=index";
 
         private TopicListView _Topics;
 
@@ -94,7 +95,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 using (var s = Root.Session.CreateWebClient())
                 {
                     s.Headers[HttpRequestHeader.Referer] = TiebaVisitor.TiebaIndexUrl;
-                    var content = await s.DownloadStringTaskAsync(string.Format(ForumUrlFormat, QueryName));
+                    var content =
+                        await s.DownloadStringTaskAsync(string.Format(ForumUrlFormat, HttpUtility.UrlEncode(QueryName)));
                     //顺带刷新主题列表。
                     _Topics.SetPageHtmlCache(content);
                     doc.LoadHtml(content);
@@ -180,11 +182,6 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 }
                 cachedTopicMatchers.Clear();
             }
-            catch (Exception ex)
-            {
-                Logging.Exception(this, ex);
-                throw;
-            }
             finally
             {
                 Logging.Exit(this);
@@ -198,6 +195,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public void SignIn()
         {
+            Logging.Enter(this);
             //ie=utf-8&kw=%E7%8C%AB%E5%A4%B4%E9%B9%B0%E7%8E%8B%E5%9B%BD&tbs=2ac4c76dba9f5f9e1434877655
             var siParams = new NameValueCollection
             {
@@ -246,9 +244,12 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 case 0:
                     var resultData = result["data"];
                     SignInRank = (int)resultData["finfo"]["current_rank_info"]["sign_count"];
+                    Logging.Exit(this);
                     return;
                 case 265:
                     throw new OperationUnauthorizedException(num);
+                case 1101:  //亲，你之前已经签过了
+                    goto default;
                 case 1102:
                     throw new OperationTooFrequentException(num);
                 case 2150040:

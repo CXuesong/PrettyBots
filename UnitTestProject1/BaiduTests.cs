@@ -157,7 +157,15 @@ namespace UnitTestProject1
         {
             var context = new PrimaryRepository();
             var cd = new TopicCounterDown(context.GetSession("primary"));
-            Trace.WriteLine(cd.GetCurrentCounter(3044971499L));
+            Trace.WriteLine(cd.NextCounter(3044971499L));
+        }
+
+        [TestMethod]
+        public void NewbieDetectorTest()
+        {
+            var context = new PrimaryRepository();
+            var nd = new NewbieDetector(context.GetSession("primary"));
+            Trace.WriteLine(string.Join("\n", nd.InspectForum("绝境狼王")));
         }
     }
 }

@@ -43,31 +43,30 @@ namespace PrettyBots.Strategies
             get { return _Repository; }
         }
 
-        public XElement Status(string strategyName)
+        public StrategyStatus Status(string strategyName)
         {
-            get
+            var sid = _DataSource.Id;
+            var st = _Repository.DataContext.StrategyStatus.FirstOrDefault(
+                s => s.Session == sid && s.Strategy == strategyName);
+            if (st == null)
             {
-                var key = "";
-                var st = repos.DataContext.Status.FirstOrDefault(s => s.Key == key);
-                if (st == null)
-                {
-                    st = new Status() { Key = key };
-                    repos.DataContext.Status.InsertOnSubmit(st);
-                    repos.SubmitChanges();
-                }
-                if (st.Value == null) st.Value = new XElement("root");
-                return st.Value;
+                st = new StrategyStatus() { Session = sid, Strategy = strategyName };
+                _Repository.DataContext.StrategyStatus.InsertOnSubmit(st);
+                _Repository.SubmitChanges();
             }
+            if (st.Status == null) st.Status = new XElement("root");
+            return st;
         }
 
-        internal void Save(ReposSession dest)
+        public void SubmitSession()
         {
-            Debug.Assert(dest != null);
+            Debug.Assert(_DataSource != null);
             using (var ms = new MemoryStream())
             {
                 _WebSession.SaveCookies(ms);
-                dest.Cookies = new Binary(ms.ToArray());
+                _DataSource.Cookies = new Binary(ms.ToArray());
             }
+            _Repository.SubmitChanges();
         }
 
         internal Session(ReposSession source, PrimaryRepository repository)

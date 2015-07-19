@@ -9,7 +9,7 @@ namespace PrettyBots.Visitors
     public class UnexpectedDataException : InvalidOperationException
     {
         public UnexpectedDataException()
-            : this(Prompts.OperationUnauthorizedException)
+            : this(Prompts.UnexpectedDataException)
         { }
 
         public UnexpectedDataException(string message)

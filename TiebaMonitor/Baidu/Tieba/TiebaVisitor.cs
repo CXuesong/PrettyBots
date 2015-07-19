@@ -140,7 +140,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             var v = new TopicVisitor(topicId, Root);
             v.Update();
-            return v;
+            return v.IsExists ? v : null;
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             var v = new TopicVisitor(topicId, anchorPostId, Root);
             v.Update();
-            return v;
+            return v.IsExists ? v : null;
         }
 
         /// <summary>

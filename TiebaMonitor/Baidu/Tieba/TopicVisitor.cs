@@ -318,13 +318,18 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             //TIP
             //"@La_Mobile&nbsp;....[br][url]http://tieba.baidu.com/[/url]"
-            if (string.IsNullOrWhiteSpace(contentCode)) return false;
             Logging.Enter(this, (pid == null ? null : pid + ", ") + contentCode);
+            if (string.IsNullOrWhiteSpace(contentCode)) return Logging.Exit(this, false);
             await UpdateAsync();
             try
             {
                 if (!IsExists) throw new InvalidOperationException(Prompts.PageNotExists);
-                Debug.Assert(_ForumId == null || Forum == null || Forum.Id == _ForumId);
+                Debug.Assert(_ForumId == null || _Forum == null || Forum.Id == _ForumId);
+                if (Session.IsDryRun)
+                {
+                    Logging.Trace(this, "Dry Run");
+                    return true;
+                }
                 using (var client = Root.Session.CreateWebClient())
                 {
                     var baseTime = DateTime.Now;
@@ -384,7 +389,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     switch (errNumer)
                     {
                         case 0:
-                            return true;
+                            return Logging.Exit(this, true);
                         case 12:
                             throw new AccountBlockedException(errNumer);
                         case 34:
@@ -401,7 +406,6 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                         default:
                             throw new OperationFailedException(errNumer, (string)resultObj["error"]);
                     }
-                    return true;
                 }
             }
             catch (Exception ex)

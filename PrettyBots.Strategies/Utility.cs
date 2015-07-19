@@ -36,7 +36,7 @@ namespace PrettyBots.Strategies
         public static IEnumerable<T> OfAuthor<T>(this IEnumerable<T> source, string authorName) where T : PostVisitorBase
         {
             if (source == null) throw new ArgumentNullException("source");
-            return source.Where(p => p.Author.Name == authorName);
+            return source.Where(p => string.Compare(p.Author.Name, authorName, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         /// <summary>
@@ -93,13 +93,22 @@ namespace PrettyBots.Strategies
             return e;
         }
 
+        private static Dictionary<string, long> fnCache = new Dictionary<string, long>();
+
         public static long ForumNameToId(string forumName)
         {
-            //TODO 缓存查询结果。
+            long fid;
+            if (fnCache.TryGetValue(forumName, out fid)) return fid;
             var visitor = new BaiduVisitor();
             var f = visitor.Tieba.Forum(forumName);
             if (!f.IsExists) throw new ArgumentException(string.Format(Prompts.ForumNotExists, forumName));
+            fnCache.Add(forumName, f.Id);
             return f.Id;
+        }
+
+        public static bool UserIdentity(string name1, string name2)
+        {
+            return string.Compare(name1, name2, StringComparison.OrdinalIgnoreCase) == 0;
         }
     }
 }
