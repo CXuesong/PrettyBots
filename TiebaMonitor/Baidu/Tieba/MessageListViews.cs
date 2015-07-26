@@ -59,7 +59,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                  */
                 var node = eachNode.SelectSingleNode(".//div[@class='" + modeName + "_user']/a");
                 if (node == null) throw new UnexpectedDataException();
-                var matchResult = postUrlMatcher.Match(node.GetAttributeValue("href", ""));
+                var matchResult = postUrlMatcher.Match(HtmlEntity.DeEntitize(node.GetAttributeValue("href", "")));
                 if (!matchResult.Success) continue;
                 var tid = Convert.ToInt64(matchResult.Groups["T"].Value);
                 var pid = Convert.ToInt64(matchResult.Groups["P"].Value);

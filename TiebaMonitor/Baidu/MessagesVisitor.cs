@@ -61,7 +61,7 @@ namespace PrettyBots.Visitors.Baidu
 
         public int StrangerPrivateMessages { get; internal set; }
 
-        public bool Any
+        public bool AnyMessages
         {
             get
             {

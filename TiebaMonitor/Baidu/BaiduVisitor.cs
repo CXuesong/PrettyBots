@@ -22,9 +22,17 @@ namespace PrettyBots.Visitors.Baidu
         /// <summary>
         /// 管理当前用户的贴吧消息。
         /// </summary>
-        public MessagesVisitor Messages { get; private set; }
+        public MessagesVisitor Messages
+        {
+            get
+            {
+                _Messages.Update();
+                return _Messages;
+            }
+        }
 
         private TiebaVisitor _Tieba;
+        private MessagesVisitor _Messages;
 
         /// <summary>
         /// 访问百度贴吧。
@@ -33,7 +41,11 @@ namespace PrettyBots.Visitors.Baidu
         {
             get
             {
-                if (_Tieba == null) _Tieba = new TiebaVisitor(this);
+                if (_Tieba == null)
+                {
+                    _Tieba = new TiebaVisitor(this);
+                    Tieba.Update();
+                }
                 return _Tieba;
             }
         }
@@ -42,7 +54,7 @@ namespace PrettyBots.Visitors.Baidu
             : base(session)
         {
             base.AccountInfo = new BaiduAccountInfo(this);
-            Messages = new MessagesVisitor(this);
+            _Messages = new MessagesVisitor(this);
         }
 
         public BaiduVisitor()

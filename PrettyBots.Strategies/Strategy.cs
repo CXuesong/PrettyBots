@@ -55,7 +55,14 @@ namespace PrettyBots.Strategies
             }
         }
 
-        public abstract void EntryPoint();
+        public void EntryPoint()
+        {
+            Logging.Enter(this);
+            EntryPointCore();
+            Logging.Exit(this);
+        }
+
+        protected abstract void EntryPointCore();
 
         public Strategy(Session session)
         {

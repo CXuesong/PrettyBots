@@ -56,7 +56,7 @@ namespace UnitTestProject1
                     Trace.WriteLine(t);
             };
             visit("化学");
-            visit("test");
+            visit("猫武士");
             //visitor.AccountInfo.Logout();
         }
 

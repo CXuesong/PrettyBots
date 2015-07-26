@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PrettyBots.Visitors.Baidu.Tieba
 {
@@ -68,6 +69,21 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             Title = title;
             AuthorName = author;
             Content = contentPreview;
+        }
+    }
+
+    public class PostEqualityComparer : IEqualityComparer<PostStub>
+    {
+        public static readonly PostEqualityComparer Default = new PostEqualityComparer();
+
+        public bool Equals(PostStub x, PostStub y)
+        {
+            return x.TopicId == y.TopicId && x.PostId == y.PostId;
+        }
+
+        public int GetHashCode(PostStub obj)
+        {
+            return obj.PostId.GetHashCode() ^ obj.TopicId.GetHashCode();
         }
     }
 }

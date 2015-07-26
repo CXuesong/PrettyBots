@@ -14,7 +14,7 @@ using System.IO;
 
 namespace PrettyBots.Visitors
 {
-    static class Utility
+    static internal class Utility
     {
         public static string FormatCookies(CookieCollection cookies)
         {
@@ -93,20 +93,37 @@ namespace PrettyBots.Visitors
             throw new UnexpectedDataException();
         }
 
+        public static long? FindIntegerAssignment(string source, string lhs, bool noException)
+        {
+            //TODO 检查字段内部是否可能出现 " 。
+            var forumDataMatcher = new Regex(Regex.Escape(lhs) + @"\s*=\s*(\d*)\s*;");
+            var result = forumDataMatcher.Match(source);
+            if (result.Success) return Convert.ToInt64(result.Groups[1].Value);
+            if (noException) return null;
+            throw new UnexpectedDataException();
+        }
+
+        public static long FindIntegerAssignment(string source, string lhs)
+        {
+            var v = FindIntegerAssignment(source, lhs, false);
+            Debug.Assert(v != null);
+            return v.Value;
+        }
+
         /// <summary>
-        /// 查找诸如 _.Module.use("common/widget/RichPoster", {...}); 这样的调用。
+        /// 查找诸如 _.Module.use("common/widget/RichPoster", ... {...}); 这样的调用。
         /// </summary>
-        public static JToken Find_ModuleUse(string sourceRegEx, string moduleNameRegEx, string subProperty = null, bool noException = false)
+        public static JToken Find_ModuleUse(string source, string moduleNameRegEx, string subProperty = null, bool noException = false)
         {
             //注意下面这个正则表达式的右侧匹配是不准确的
             //因此需要使用 JsonTextReader 进行解析。
-            var matcher = new Regex(@"_.Module.use\(\s*" + "['\"]" + moduleNameRegEx + "['\"]" + @"\s*,\s*(.*)\);");
-            var result = matcher.Match(sourceRegEx);
+            var matcher = new Regex(@"_.Module.use\(\s*" + "['\"]" + moduleNameRegEx + "['\"]" + @"\s*,.*?({(.|\n)*)\);");
+            var result = matcher.Match(source);
             if (!result.Success) goto ERR;
             if (!string.IsNullOrEmpty(subProperty))
             {
                 //直接匹配子元素。
-                matcher = new Regex(subProperty + "['\"]?" + @"\s*:\s*(.*)\)");
+                matcher = new Regex(subProperty + "['\"]?" + @"\s*:\s*((.|\n)*)\)");
                 result = matcher.Match(result.Groups[1].Value);
                 if (!result.Success) goto ERR;
             }

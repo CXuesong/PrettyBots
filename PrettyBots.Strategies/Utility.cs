@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
+using HtmlAgilityPack;
 
 namespace PrettyBots.Strategies
 {
@@ -17,15 +22,30 @@ namespace PrettyBots.Strategies
         /// </summary>
         public static string NormalizeString(string str)
         {
+            return NormalizeString(str, false);
+        }
+
+        /// <summary>
+        /// 移除字符串中的符号等内容，并使得大小写一致，便于比对。可以选择在分隔的位置插入空格。
+        /// </summary>
+        public static string NormalizeString(string str, bool keepSeparators)
+        {
             if (string.IsNullOrWhiteSpace(str)) return string.Empty;
             var builder = new StringBuilder();
+            var lastIsWhitespace = false;
             foreach (var c in str)
             {
                 if (char.IsWhiteSpace(c) || char.IsPunctuation(c) ||
                     char.IsSymbol(c) || char.IsControl(c) ||
                     char.IsSeparator(c))
-                    continue;
+                    if (keepSeparators && !lastIsWhitespace)
+                    {
+                        builder.Append(' ');
+                        lastIsWhitespace = true;
+                        continue;
+                    }
                 builder.Append(char.ToUpper(c));
+                lastIsWhitespace = false;
             }
             return builder.ToString();
         }
@@ -106,9 +126,89 @@ namespace PrettyBots.Strategies
             return f.Id;
         }
 
+        /// <summary>
+        /// 判断两个用户名是否相等。
+        /// </summary>
         public static bool UserIdentity(string name1, string name2)
         {
             return string.Compare(name1, name2, StringComparison.OrdinalIgnoreCase) == 0;
+        }
+
+        private static Random r = new Random();
+        //	Based on Java code from wikipedia:
+        //	http://en.wikipedia.org/wiki/Fisher-Yates_shuffle
+        public static void Shuffle<T>(IList<T> list)
+        {
+            for (var n = list.Count - 1; n >= 1; n += -1)
+            {
+                var k = r.Next(n + 1);
+                var temp = list[n];
+                list[n] = list[k];
+                list[k] = temp;
+            }
+        }
+
+        /// <summary>
+        /// 清理帖子的 Html 内容，使其便于分析。
+        /// </summary>
+        public static XElement ParsePostContent(string content)
+        {
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var root = new XElement("post");
+            foreach (var node in doc.DocumentNode.ChildNodes)
+                foreach (var xn in ParsePostContentCore(node)) root.Add(xn);
+            return root;
+        }
+
+        private static IEnumerable ParsePostContentCore(HtmlNode node)
+        {
+            var hasNewLine = false;
+            var e = new XElement("e_root");
+            if (node.NodeType == HtmlNodeType.Comment) return Enumerable.Empty<object>();
+            if (node.NodeType == HtmlNodeType.Text) return new[] { node.InnerText };
+            //if (node.NodeType == HtmlNodeType.Document) goto BUILD_CONTENT;
+            switch (node.Name)
+            {
+                case "p":
+                    hasNewLine = true;
+                    break;
+                case "br":
+                    return new[] { "\n" };
+                case "img":
+                    var src = node.GetAttributeValue("src", "");
+                    if (string.IsNullOrWhiteSpace(src)) return Enumerable.Empty<object>();
+                    return new[] { new XElement("img", new XAttribute("src", src)) };
+                case "a":
+                    var className = node.GetAttributeValue("class", "");
+                    switch (className.Trim())
+                    {
+                        case "ps_cb":
+                            //去掉根据关键词识别的链接
+                            return new[] { node.InnerText };
+                        case "at":
+                            //@
+                            var userName = node.InnerText;
+                            if (userName[0] == '@') userName = userName.Substring(1);
+                            return new[] { new XElement("at", new XAttribute("user", userName), node.InnerText) };
+                        default:
+                            if (className.Trim() != "")
+                                Debug.Print("New a class : " + node.OuterHtml);
+                            var href = node.GetAttributeValue("href", "");
+                            Uri tempUri;
+                            if (Uri.TryCreate(node.InnerText, UriKind.Absolute, out tempUri))
+                                href = node.InnerText;
+                            return new[] { new XElement("a", new XAttribute("href", href), node.InnerText) };
+                    }
+                case "strong":
+                    e.Name = "b";
+                    break;
+            }
+            foreach (var n in node.ChildNodes)
+                foreach (var xn in ParsePostContentCore(n)) e.Add(xn);
+            IEnumerable<object> temp = e.Name == "e_root" ? e.Nodes() : new[] { e };
+            if (hasNewLine) temp = temp.Concat(new[] {"\n"});
+            return temp;
         }
     }
 }

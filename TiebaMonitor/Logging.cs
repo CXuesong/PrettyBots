@@ -20,7 +20,7 @@ namespace PrettyBots.Visitors
         }
         public static void Exit(object obj, string result = null, [CallerMemberName] string memberName = null)
         {
-            source.TraceEvent(TraceEventType.Verbose, 0,
+            source.TraceEvent(TraceEventType.Verbose, 11,
                 obj.GetType().Name + "#" + ToString(obj) + "." + memberName + " -> " + result);
         }
 

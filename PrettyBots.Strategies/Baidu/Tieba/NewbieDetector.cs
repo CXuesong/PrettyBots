@@ -31,6 +31,8 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         private static readonly XName XNTime = "time";
         private static readonly XName XNEnabled = "enabled";
 
+        public const string WelcomePostContentKey = "NewbieDetector.Welcome";
+
         /// <summary>
         /// 用于匹配的关键字。
         /// </summary>
@@ -46,8 +48,6 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         public TimeSpan LastReplyTimeSpanExplicitUpper { get; set; }
 
         public TimeSpan LastReplyTimeSpanUpper { get; set; }
-
-        public TopicReplyGenerator ReplyGenerator { get; set; }
 
         /// <summary>如果发贴人的等级超过此数目，则忽略此帖。</summary>
         public int AuthorLevelUpper { get; set; }
@@ -90,23 +90,6 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             return xf.Elements(XNUser).Any(e => Utility.UserIdentity(user, (string) e.Attribute(XNName)));
         }
 
-        public NewbieDetector(Session session)
-            : base(session)
-        {
-            RepliesCountUpper = 10;
-            LastReplyTimeSpanUpper = TimeSpan.FromDays(3);
-            LastReplyTimeSpanExplicitUpper = TimeSpan.FromDays(45);
-            AuthorLevelUpper = 7;
-            TopicKeywords = new[]
-            {
-                "新人", "报道"
-            };
-            ReplyKeywords = new[]
-            {
-                "你好", "欢迎", "这里", "介里", "大家好", "求昵称"
-            };
-        }
-
         private bool InspectTopic(TopicVisitor t)
         {
             //Debug.Print("Inspect : {0}", t);
@@ -139,15 +122,15 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             return ReplyKeywords.Any(k => InString(p.Content, k)) ? 1.0f : 0;
         }
 
-        private void ReplySuspects(IEnumerable<TopicVisitor> topics)
+        private void ReplyAndRegisterSuspects(IEnumerable<TopicVisitor> topics, string forumName)
         {
-            var rg = ReplyGenerator ?? DefaultReplyGenerator;
-            foreach (var topic in topics) topic.Reply(rg(topic));
-        }
-
-        private string DefaultReplyGenerator(TopicVisitor topic)
-        {
-            return string.Format(Prompts.TiebaNewbieDetectorDefaultReply, topic.ForumName);
+            foreach (var topic in topics)
+            {
+                var content = Session.TextComposer.ComposePost(WelcomePostContentKey, 
+                    string.Format(Prompts.TiebaNewbieDetectorDefaultReply, topic.ForumName),
+                    topic.Posts.First());
+                if (topic.Reply(content)) SetAsNewbie(topic, forumName);
+            }
         }
 
         private IEnumerable<TopicVisitor> InspectForum(string forumName, BaiduVisitor visitor)
@@ -155,6 +138,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             var forum = visitor.Tieba.Forum(forumName);
             if (!forum.IsExists) return Enumerable.Empty<TopicVisitor>();
             //仅检查第一页。
+            var ta = forum.Topics.ToArray();
             return forum.Topics
                 .Where(InspectTopic)
                 .Where(t => !HasRegistered(t.AuthorName, forumName))
@@ -166,14 +150,32 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             return InspectForum(forumName, new BaiduVisitor(WebSession));
         }
 
-        public override void EntryPoint()
+        protected override void EntryPointCore()
         {
             if (TopicKeywords == null && ReplyKeywords == null) return;
             var visitor = new BaiduVisitor(WebSession);
             foreach (var xf in Status.Elements(XNForum).Where(e => (bool?)e.Attribute(XNEnabled) ?? true))
             {
-                ReplySuspects(InspectForum((string)xf.Attribute(XNName), visitor));
+                var fn = (string) xf.Attribute(XNName);
+                ReplyAndRegisterSuspects(InspectForum(fn, visitor), fn);
             }
         }
+        public NewbieDetector(Session session)
+            : base(session)
+        {
+            RepliesCountUpper = 10;
+            LastReplyTimeSpanUpper = TimeSpan.FromDays(3);
+            LastReplyTimeSpanExplicitUpper = TimeSpan.FromDays(45);
+            AuthorLevelUpper = 7;
+            TopicKeywords = new[]
+            {
+                "新人", "报道"
+            };
+            ReplyKeywords = new[]
+            {
+                "你好", "欢迎", "这里", "介里", "大家好", "求昵称"
+            };
+        }
+
     }
 }

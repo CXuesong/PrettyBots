@@ -319,17 +319,15 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             //TIP
             //"@La_Mobile&nbsp;....[br][url]http://tieba.baidu.com/[/url]"
             Logging.Enter(this, (pid == null ? null : pid + ", ") + contentCode);
+            await Session.CheckIntervalConstraintAsync("Tieba.TopicVisitor.Reply", TimeSpan.FromSeconds(3));
             if (string.IsNullOrWhiteSpace(contentCode)) return Logging.Exit(this, false);
             await UpdateAsync();
             try
             {
                 if (!IsExists) throw new InvalidOperationException(Prompts.PageNotExists);
                 Debug.Assert(_ForumId == null || _Forum == null || Forum.Id == _ForumId);
-                if (Session.IsDryRun)
-                {
-                    Logging.Trace(this, "Dry Run");
-                    return true;
-                }
+                if (Session.CheckDryRun())
+                    return Logging.Exit(this, false);
                 using (var client = Root.Session.CreateWebClient())
                 {
                     var baseTime = DateTime.Now;
@@ -394,9 +392,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                             throw new AccountBlockedException(errNumer);
                         case 34:
                             throw new OperationTooFrequentException(errNumer);
-                        case 40:
-                            //需要验证码。
-                            return false;
+                        case 40:    //需要验证码。
+                            throw new NonhumanException(errNumer);
                         case 265:
                             throw new OperationUnauthorizedException(errNumer);
                         case 274:

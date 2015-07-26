@@ -21,6 +21,7 @@ namespace PrettyBots.Strategies
         private PrimaryRepository _Repository;
         private WebSession _WebSession;
         private ReposSession _DataSource;
+        private TextComposer _TextComposer;
 
         public WebSession WebSession
         {
@@ -68,6 +69,16 @@ namespace PrettyBots.Strategies
             }
             _Repository.SubmitChanges();
         }
+
+        #region 运行时状态
+
+        public TextComposer TextComposer
+        {
+            get { return _TextComposer ?? TextComposer.Default; }
+            set { _TextComposer = value; }
+        }
+
+        #endregion
 
         internal Session(ReposSession source, PrimaryRepository repository)
         {

@@ -11,7 +11,7 @@ namespace PrettyBots.Strategies
 
         public static void Enter(object obj, string param = null, [CallerMemberName] string memberName = null)
         {
-            source.TraceEvent(TraceEventType.Verbose, 0,
+            source.TraceEvent(TraceEventType.Verbose, 10,
                 obj.GetType().Name + "#" + ToString(obj) + "." + memberName + " <| " + param);
         }
 
@@ -22,7 +22,7 @@ namespace PrettyBots.Strategies
 
         public static void Exit(object obj, string result = null, [CallerMemberName] string memberName = null)
         {
-            source.TraceEvent(TraceEventType.Verbose, 0,
+            source.TraceEvent(TraceEventType.Verbose, 11,
                 obj.GetType().Name + "#" + ToString(obj) + "." + memberName + " -> " + result);
         }
 
@@ -30,6 +30,22 @@ namespace PrettyBots.Strategies
         {
             Exit(obj, Convert.ToString(result), memberName);
             return result;
+        }
+
+        public static void TraceEvent(object obj, TraceEventType type, string format, params object[] args)
+        {
+            source.TraceEvent(type, 0,
+                obj.GetType().Name + "#" + ToString(obj) + " : " + string.Format(format, args));
+        }
+
+        public static void TraceInfo(object obj, string format, params object[] args)
+        {
+            TraceEvent(obj, TraceEventType.Information, format, args);
+        }
+
+        public static void TraceWarning(object obj, string format, params object[] args)
+        {
+            TraceEvent(obj, TraceEventType.Warning, format, args);
         }
 
         public static void Exception(object obj, Exception ex, [CallerMemberName] string memberName = null)

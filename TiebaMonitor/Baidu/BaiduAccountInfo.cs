@@ -81,6 +81,8 @@ namespace PrettyBots.Visitors.Baidu
                 UserName = (string)userInfo["user_name"];
                 UserNameUrl = (string)userInfo["name_url"];
                 Portrait = (string)userInfo["portrait"];
+                if (string.IsNullOrEmpty(Portrait))
+                    throw new UnexpectedDataException("Portrait 为空。");
             }
             else
             {

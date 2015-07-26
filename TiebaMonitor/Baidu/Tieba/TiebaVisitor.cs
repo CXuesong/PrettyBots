@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 
 namespace PrettyBots.Visitors.Baidu.Tieba
 {
@@ -15,6 +16,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
     {
         public const string TiebaIndexUrl = "http://tieba.baidu.com";
 
+        public const string OneKeySignInUrl = "http://tieba.baidu.com/tbmall/onekeySignin1";
+
         public const int ForumCacheCapacity = 30;
 
         private OrderedDictionary forumCache = new OrderedDictionary(ForumCacheCapacity,
@@ -23,6 +26,10 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         private List<FavoriteForum> _FavoriteForums = new List<FavoriteForum>();
 
         private string _TiebaPageCache;
+
+        private string PageData_Tbs;
+        private MessagesVisitor _Messages;
+
         // 调用方： BaiduAccountInfo
         internal void SetTiebaPageCache(string html)
         {
@@ -39,6 +46,22 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             doc.LoadHtml(_TiebaPageCache);
             _TiebaPageCache = null;
             FavoriteForums.Clear();
+            PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
+            if (Root.AccountInfo.IsLoggedIn)
+            {
+                var node = doc.GetElementbyId("onekey_sign");
+                if (node == null) throw new UnexpectedDataException();
+                node = node.SelectSingleNode("./a[1]");
+                if (node == null) throw new UnexpectedDataException();
+                var className = node.GetAttributeValue("class", "");
+                if (!className.Contains("onekey_btn")) throw new UnexpectedDataException();
+                HasOneKeySignedIn = className.Contains("signed_btn");
+            }
+            else
+            {
+                HasOneKeySignedIn = false;
+                OneKeySignedInSignificant = false;
+            }
             //暂时必须要使用 JSON 辅助提取 forums
             var fd = Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, "spage/widget/forumDirectory");
             var forums = fd["forums"];
@@ -97,12 +120,20 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                     (int) f["is_sign"] != 0);
                 FavoriteForums.Add(ff);
             }
+            OneKeySignedInSignificant = _FavoriteForums.Any(f => f.Level >= 7 && !f.HasSignedIn);
         }
 
         /// <summary>
         /// 管理当前用户的贴吧消息。
         /// </summary>
-        public MessagesVisitor Messages { get; private set; }
+        public MessagesVisitor Messages
+        {
+            get
+            {
+                _Messages.Update();
+                return _Messages;
+            }
+        }
 
         /// <summary>
         /// 获取当前账户已经关注的贴吧。
@@ -111,6 +142,16 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         {
             get { return _FavoriteForums; }
         }
+
+        /// <summary>
+        /// 是否已经成功执行过一键签到。
+        /// </summary>
+        public bool HasOneKeySignedIn { get; private set; }
+
+        /// <summary>
+        /// 获取一个值，指示一键签到是否有意义。
+        /// </summary>
+        public bool OneKeySignedInSignificant { get; private set; }
 
         /// <summary>
         /// 访问具有指定名称的贴吧。
@@ -177,10 +218,96 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             return new SearchVisitor(Root, keyword, forumName, userName, reversedOrder);
         }
 
+#region 操作
+        /// <summary>
+        /// 一键签到。
+        /// </summary>
+        public int OneKeySignIn()
+        {
+            Logging.Enter(this);
+            var siParams = new NameValueCollection
+            {
+                {"ie", "utf-8"},
+                {"tbs", PageData_Tbs}
+            };
+            using (var client = Session.CreateWebClient())
+            {
+                var resultStr = client.UploadValuesAndDecode(OneKeySignInUrl, siParams);
+                var result = JObject.Parse(resultStr);
+                /*
+{
+    "no": 0,
+    "error": "success",
+    "data": {
+        "signedForumAmount": 16,
+        "signedForumAmountFail": 0,
+        "unsignedForumAmount": 9,
+        "vipExtraSignedForumAmount": 9,
+        "forum_list": [
+            {
+                "forum_id": 5234418,
+                "forum_name": "绝境狼王",
+                "is_sign_in": 1,
+                "level_id": 11,
+                "cont_sign_num": 1,
+                "loyalty_score": {
+                    "normal_score": 2,
+                    "high_score": 14
+                }
+            },
+            {
+                "forum_id": 2195006,
+                "forum_name": "mark5ds",
+                "is_sign_in": 1,
+                "level_id": 11,
+                "cont_sign_num": 1,
+                "loyalty_score": {
+                    "normal_score": 2,
+                    "high_score": 14
+                }
+            },
+            ...
+        ],
+        "gradeNoVip": 32,
+        "gradeVip": 350
+    }
+}
+                 */
+                switch ((int)result["no"])
+                {
+                    case 0:
+                        //更新数据。
+                        foreach (var f in result["data"]["forum_list"])
+                        {
+                            var ff = _FavoriteForums.FirstOrDefault(_f => _f.Id == (long) f["forum_id"]);
+                            if (ff != null)
+                            {
+                                ff.LoadData((int) f["level_id"], (int) f["is_sign_in"] != 0);
+                            }
+                            else
+                            {
+                                ff = new FavoriteForum();
+                                _FavoriteForums.Add(ff);
+                                ff.LoadData((long) f["forum_id"], (string) f["forum_name"], DateTime.MinValue,
+                                    (int) f["level_id"], (int) f["is_sign_in"] != 0);
+                            }
+                        }
+                        HasOneKeySignedIn = true;
+                        return Logging.Exit(this, (int)result["data"]["signedForumAmount"]);
+                    case 2500113:   //所有符合签到要求的贴吧均已签到完毕。
+                        HasOneKeySignedIn = true;
+                        return Logging.Exit(this, 0);
+                    default:
+                        throw new OperationFailedException((int) result["no"], (string) result["error"]);
+                }
+            }
+        }
+#endregion
+
         internal TiebaVisitor(BaiduVisitor root)
             : base(root)
         {
-            Messages = new MessagesVisitor(Root);
+            _Messages = new MessagesVisitor(Root);
         }
     }
 }

@@ -36,6 +36,7 @@ namespace PrettyBots.Visitors
     public abstract class Visitor : IVisitor
     {
         private WebSession _Session;
+        private IAccountInfo _AccountInfo;
 
         public virtual WebSession Session
         {
@@ -47,7 +48,16 @@ namespace PrettyBots.Visitors
             set { _Session = value; }
         }
 
-        public IAccountInfo AccountInfo { get; protected set; }
+        public IAccountInfo AccountInfo
+        {
+            get
+            {
+                var ud = _AccountInfo as IUpdatable;
+                if (ud != null) ud.Update();
+                return _AccountInfo;
+            }
+            protected set { _AccountInfo = value; }
+        }
 
         protected Visitor(WebSession session)
         {
@@ -142,6 +152,7 @@ namespace PrettyBots.Visitors
             {
                 try
                 {
+                    _IsRefreshing = true;
                     var t = OnFetchDataAsync();
                     if (t != null) await t;
                 }

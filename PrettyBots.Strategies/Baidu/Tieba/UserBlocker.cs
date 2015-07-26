@@ -75,7 +75,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             xUser.SetAttributeValue(XNLastBlocked, time);
         }
 
-        public override void EntryPoint()
+        protected override void EntryPointCore()
         {
             foreach (var ui in Status.Elements(XNForum).Elements(XNUser).Where(e => (bool?)e.Attribute(XNEnabled)??true)
                 .Select(e => Tuple.Create(e, ParseUserInfo(e))))

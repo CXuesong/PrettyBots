@@ -120,8 +120,17 @@
   <data name="ActionNotRegistered" xml:space="preserve">
     <value>操作“{0}”尚未注册。</value>
   </data>
+  <data name="ForumJoinedInContent" xml:space="preserve">
+    <value>已关注本贴吧。</value>
+  </data>
+  <data name="ForumJoinedInFailedContent" xml:space="preserve">
+    <value>在尝试加入本吧时发生了问题：{0}。</value>
+  </data>
   <data name="ForumNotExists" xml:space="preserve">
     <value>贴吧“{0}”不存在。</value>
+  </data>
+  <data name="TiebaDefaultReply" xml:space="preserve">
+    <value>[emotion pic_type=1 width=48 height=48]http://tb2.bdstatic.com/tb/editor/images/face/i_f25.png?t=20140803[/emotion]</value>
   </data>
   <data name="TiebaNewbieDetectorDefaultReply" xml:space="preserve">
     <value>欢迎来到{0}吧！</value>

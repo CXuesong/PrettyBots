@@ -16,6 +16,14 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public abstract TopicVisitor Topic { get; }
 
+        /// <summary>
+        /// 获取此帖子所在的论坛。
+        /// </summary>
+        public ForumVisitor Forum
+        {
+            get { return Topic.Forum; }
+        }
+
         public UserStub Author { get; private set; }
 
         public string Content { get; private set; }

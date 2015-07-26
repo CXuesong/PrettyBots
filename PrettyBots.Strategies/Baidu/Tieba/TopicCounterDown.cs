@@ -87,7 +87,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             return Logging.Exit(this, true);
         }
 
-        public override void EntryPoint()
+        protected override void EntryPointCore()
         {
             //根据已经注册的主题列表，扫描指定类型的主题。
             var visitor = new BaiduVisitor(WebSession);

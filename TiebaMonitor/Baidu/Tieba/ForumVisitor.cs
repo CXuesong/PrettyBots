@@ -38,6 +38,11 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public bool IsRedirected { get; private set; }
 
+        /// <summary>
+        /// 是否成为会员。
+        /// </summary>
+        public bool HasJoinedIn { get; private set; }
+
         public string MemberName { get; private set; }
 
         public int MembersCount { get; private set; }
@@ -46,7 +51,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public int PostsCount { get; private set; }
 
-        private string PageData_Tbs { get; set; }
+        private string PageData_Tbs;
 
         /// <summary>
         /// 获取当前用户的签到位次。
@@ -92,7 +97,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             try
             {
                 var doc = new HtmlDocument();
-                using (var s = Root.Session.CreateWebClient())
+                //Emit Referer
+                using (var s = Root.Session.CreateWebClient(true))
                 {
                     s.Headers[HttpRequestHeader.Referer] = TiebaVisitor.TiebaIndexUrl;
                     var content =
@@ -117,24 +123,128 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 //检查重定向
                 IsRedirected = (redirectTipNode != null);
                 var forumData = Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData.forum");
-                Id = (long) forumData["forum_id"];
-                Name = (string) forumData["forum_name"];
-                MemberName = (string) forumData["member_name"];
-                MembersCount = (int) forumData["member_num"];
-                TopicsCount = (int) forumData["thread_num"];
-                PostsCount = (int) forumData["post_num"];
-                var userSignInInfo = forumData["sign_in_info"]["user_info"];
-                if ((int?) userSignInInfo["is_sign_in"] == null)
-                    SignInRank = null; //一般表示用户尚未登录。
+                if (forumData["forum_id"] != null)
+                {
+                    // PLAN A
+                    Id = (long) forumData["forum_id"];
+                    Name = (string) forumData["forum_name"];
+                    MemberName = (string) forumData["member_name"];
+                    HasJoinedIn = Utility.FindIntegerAssignment(doc.DocumentNode.OuterHtml,
+                        "PageData.user.is_like") != 0;
+                    var userSignInInfo = forumData["sign_in_info"]["user_info"];
+                    if ((int?) userSignInInfo["is_sign_in"] == null)
+                        SignInRank = null; //一般表示用户尚未登录。
+                    else
+                        SignInRank = (int) userSignInInfo["is_sign_in"] != 0
+                            ? (int?) userSignInInfo["user_sign_rank"]
+                            : null;
+                }
                 else
-                    SignInRank = (int) userSignInInfo["is_sign_in"] != 0
-                        ? (int?) userSignInInfo["user_sign_rank"]
-                        : null;
+                {
+                    //事情开始起变化。
+                    //排版变了。
+                    // PLAN B
+                    if (forumData["id"] == null) throw new UnexpectedDataException();
+                    Id = (long) forumData["id"];
+                    Name = (string) forumData["name"];
+                    MemberName = null;
+                    //然后……估计是签到成功后会显示这样的文本吧……
+                    //<p>签到排名：今日本吧第<span class="sign_index_num j_signin_index">24811</span>个签到，</p>
+                    var signMod = Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, "forum/widget/sign_mod");
+/*
+{
+    "hasClass": 1,
+    "page": "",
+    "isLike": 1,
+    "isBlock": 0,
+    "isSignIn": 0,
+    "signForumInfo": {
+        "is_on": true,
+        "is_filter": false,
+        "forum_info": {
+            "forum_id": 8921451,
+            "level_1_dir_name": "网友俱乐部"
+        },
+        "current_rank_info": {
+            "sign_count": 20,
+            "member_count": 41,
+            "sign_rank": 33601,
+            "dir_rate": "0.1"
+        },
+        "yesterday_rank_info": {
+            "sign_count": 19,
+            "member_count": 41,
+            "sign_rank": 37497,
+            "dir_rate": "0.1"
+        },
+        "weekly_rank_info": {
+            "sign_count": 19,
+            "member_count": 41,
+            "sign_rank": 37212
+        },
+        "monthly_rank_info": {
+            "sign_count": 15,
+            "member_count": 40,
+            "sign_rank": 46243
+        },
+        "level_1_dir_name": "网友俱乐部",
+        "level_2_dir_name": "个人贴吧"
+    },
+    "memberTitle": "",
+    "memberNumber": "41",
+    "isActivitySign": ""
+}
+ */
+                    HasJoinedIn = (int) signMod["isLike"] != 0;
+                    if ((int) signMod["isSignIn"] != 0)
+                    {
+                        var signInIndexNode =
+                            doc.DocumentNode.SelectSingleNode(".//span[@class='sign_index_num j_signin_index']");
+                        if (signInIndexNode == null) throw new UnexpectedDataException();
+                        SignInRank = Convert.ToInt32(signInIndexNode.InnerText);
+                    }
+                    else
+                    {
+                        SignInRank = null;
+                    }
+                    MembersCount = (int) signMod["memberNumber"];
+                    Logging.Trace(this, "Plan B page style");
+                }
+                /*
+<div class="th_footer_l">
+共有主题数<span class="red_text">658</span>个，贴子数
+<span class="red_text">25697</span>篇
+<a class="fans_name" href="/bawu2/platform/listMemberInfo?word=%E7%BB%9D%E5%A2%83%E7%8B%BC%E7%8E%8B&ie=utf-8" target="_blank">荣耀守卫</a>数<span class="red_text">675</span>
+</div>
+ */
+                var footer = doc.DocumentNode.SelectSingleNode(".//div[@class='th_footer_l']");
+                if (MemberName == null) MemberName = footer.SelectSingleNode("./a[@class='fans_name']").InnerText;
+                if (forumData["member_num"] != null)
+                {
+                    // PLAN A
+                    MembersCount = (int) forumData["member_num"];
+                    TopicsCount = (int) forumData["thread_num"];
+                    PostsCount = (int) forumData["post_num"];
+                }
+                else
+                {
+                    // PLAN B
+                    if (footer == null) throw new UnexpectedDataException();
+                    var fields = footer.SelectNodes("./span[@class='red_text']");
+                    if (fields.Count < 3) throw new UnexpectedDataException();
+                    TopicsCount = Convert.ToInt32(fields[0].InnerText);
+                    PostsCount = Convert.ToInt32(fields[1].InnerText);
+                    MembersCount = Convert.ToInt32(fields[2].InnerText);
+                }
                 IsExists = true;
-                PageData_Tbs = Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs");
+                PageData_Tbs = (string) (Utility.FindStringAssignment(doc.DocumentNode.OuterHtml, "PageData.tbs", true)
+                                         ?? Utility.FindJsonAssignment(doc.DocumentNode.OuterHtml, "PageData")["tbs"]);
                 //记录发帖前缀信息。
-                var prefixSettings =
-                    (JObject) Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix");
+                var prefixSettingsToken =
+                    (Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/RichPoster", "prefix", true) ??
+                     Utility.Find_ModuleUse(doc.DocumentNode.OuterHtml, @".*?/widget/rich_poster", "prefix", true));
+                if (prefixSettingsToken.Type == JTokenType.Undefined) prefixSettingsToken = null;
+                var prefixSettings = (JObject) prefixSettingsToken;
                 /*
     杂谈北京{
         prefix: {
@@ -157,30 +267,32 @@ namespace PrettyBots.Visitors.Baidu.Tieba
     }
     }
      */
-                var prefixFormat = (string) prefixSettings["text"];
-                if (string.IsNullOrWhiteSpace(prefixFormat))
-                    TopicPrefix = emptyStringList;
-                else
+                TopicPrefix = emptyStringList;
+                if (prefixSettings != null)
                 {
-                    prefixFormat = prefixFormat.Replace((string) prefixSettings["time"], "#time#");
-                    if (prefixSettings["type"].Type == JTokenType.Array)
+                    var prefixFormat = (string) prefixSettings["text"];
+                    if (!string.IsNullOrWhiteSpace(prefixFormat))
                     {
-                        TopicPrefix =
-                            prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string) type))
-                                .ToArray();
+                        prefixFormat = prefixFormat.Replace((string) prefixSettings["time"], "#time#");
+                        if (prefixSettings["type"].Type == JTokenType.Array)
+                        {
+                            TopicPrefix =
+                                prefixSettings["type"].Select(type => prefixFormat.Replace("#type#", (string) type))
+                                    .ToArray();
+                        }
+                        else
+                        {
+                            //type == ""
+                            TopicPrefix = new[] {prefixFormat};
+                        }
+                        JToken jt;
+                        if (prefixSettings.TryGetValue("time", out jt))
+                            topicPrefixTime = (string) jt;
+                        else
+                            topicPrefixTime = null;
                     }
-                    else
-                    {
-                        //type == ""
-                        TopicPrefix = new[] {prefixFormat};
-                    }
-                    JToken jt;
-                    if (prefixSettings.TryGetValue("time", out jt))
-                        topicPrefixTime = (string) jt;
-                    else
-                        topicPrefixTime = null;
+                    cachedTopicMatchers.Clear();
                 }
-                cachedTopicMatchers.Clear();
             }
             finally
             {
@@ -190,12 +302,52 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         }
         #endregion
 
+
+        #region 操作
+
+        /// <summary>
+        /// 成为贴吧会员。
+        /// </summary>
+        public void JoinIn()
+        {
+            Logging.Enter(this);
+            if (Session.CheckDryRun())
+            {
+                Logging.Exit(this);
+                return;
+            }
+            //ie=utf-8&kw=%E7%8C%AB%E5%A4%B4%E9%B9%B0%E7%8E%8B%E5%9B%BD&tbs=2ac4c76dba9f5f9e1434877655
+            var jiParams = new NameValueCollection
+            {
+                {"ie", "utf-8"},
+                {"fid", Convert.ToString(Id)},
+                {"kw", Name},           //注意这里会由 WebClient 自动编码。
+                {"uid", Root.AccountInfo.UserName},
+                {"tbs", PageData_Tbs}
+            };
+            string resultStr;
+            using (var client = Session.CreateWebClient())
+                resultStr = client.UploadValuesAndDecode("http://tieba.baidu.com/f/like/commit/add", jiParams);
+            var result = JObject.Parse(resultStr);
+            //{"no":0,"data":{"ret":{"index":379572,"title":"Chemists"}},
+            //"error":"","like_no":1,"level_id":8,"level_name":"\u4e94\u5e74\u7ea7","rights_info":""}
+            switch ((int)result["no"])
+            {
+                case 0:
+                    Logging.Exit(this);
+                    return;
+                default:
+                    throw new OperationFailedException((int) result["no"], (string) result["error"]);
+            }
+        }
+
         /// <summary>
         /// 进行签到。
         /// </summary>
         public void SignIn()
         {
             Logging.Enter(this);
+            Session.CheckIntervalConstraint("Tieba.ForumVisitor.SignIn", TimeSpan.FromSeconds(3));
             //ie=utf-8&kw=%E7%8C%AB%E5%A4%B4%E9%B9%B0%E7%8E%8B%E5%9B%BD&tbs=2ac4c76dba9f5f9e1434877655
             var siParams = new NameValueCollection
             {
@@ -274,6 +426,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         }
 
 
+        #endregion
         public string GetTopicPrefix(int index)
         {
             return TopicPrefix[index].Replace("#time#", topicPrefixTime);
@@ -343,7 +496,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 var container = doc.GetElementbyId(id);
                 if (container == null) return;
                 //Debug.Print(container.InnerHtml);
-                var nc = container.SelectNodes("./li[@data-field]");
+                // Plan B Tolerant Mode
+                var nc = container.SelectNodes(".//li[contains(@class,'j_thread_list') and @data-field]");
                 if (nc == null) return;
                 topicQuery = topicQuery.Concat(nc);
             };
@@ -352,7 +506,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             string href;
             foreach (var eachLi in topicQuery)
             {
-                var linkNode = eachLi.SelectSingleNode(".//a[@class='j_th_tit']");
+                var linkNode = eachLi.SelectSingleNode(".//a[contains(@class,'j_th_tit')]");
                 if (linkNode == null) continue;
                 var title = HtmlEntity.DeEntitize(linkNode.GetAttributeValue("title", ""));
                 href = linkNode.GetAttributeValue("href", "");
@@ -374,9 +528,24 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 //Debug.Print(dataFieldStr);
                 //{"author_name":"Mark5ds","id":3540683824,"first_post_id":63285795913,
                 //"reply_num":1,"is_bakan":0,"vid":"","is_good":0,"is_top":0,"is_protal":0}
+                /*
+                 Plan B:
+{
+  "id": ....,
+  "author_name": "....",
+  "first_post_id": ....,
+  "reply_num": 2,
+  "is_bakan": null,
+  "vid": "",
+  "is_good": null,
+  "is_top": null,
+  "is_protal": null,
+  "is_membertop": null
+}
+                 */
                 var jo = JObject.Parse(dataFieldStr);
                 RegisterNewItem(new TopicVisitor((long)jo["id"], title,
-                    (int)jo["is_good"] != 0, (int)jo["is_top"] != 0,
+                    ((int?)jo["is_good"] ?? 0) != 0, ((int?)jo["is_top"] ?? 0) != 0,
                     (string)jo["author_name"], preview, (int)jo["reply_num"],
                     replyer, replyTime, Parent));
             }

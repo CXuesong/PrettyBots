@@ -62,8 +62,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 foreach (var ct in counter)
                 {
                     var result = c.DownloadString(string.Format(ClearNotificationsUrlFormat,
-                        (int)ct, Root.AccountInfo.Portrait, Utility.ToUnixDateTime(DateTime.Now)));
-                    Debug.Print("Counter:{0}, Result:{1}", ct, result);
+                        (int) ct + 1, Root.AccountInfo.Portrait, Utility.ToUnixDateTime(DateTime.Now)));
+                    Debug.Print("Clear counter:{0}, Result:{1}", ct, result);
                 }
             }
         }
@@ -73,7 +73,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public void ClearNotifications()
         {
-            ClearNotifications(MessageCounter.FollowedMe, MessageCounter.ReferredMe,
+            ClearNotifications(MessageCounter.FollowedMe, MessageCounter.RepliedMe,
                 MessageCounter.ReferredMe,
                 MessageCounter.PostsRecycled);
         }
@@ -118,9 +118,12 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                 await _ReferredMe.RefreshAsync();
                 posts.AddRange(_ReferredMe.EnumerateToEnd().Take(Math.Min(Counters.ReferredMe, MaxPeekedReplications)));
             }
-            return posts;
+            return posts.Distinct(PostEqualityComparer.Default).ToArray();
         }
 
+        /// <summary>
+        /// 异步获取回复或提到本账户的帖子。
+        /// </summary>
         public IList<PostStub> PeekReplications(bool clearNotifications)
         {
             return Utility.WaitForResult(PeekReplicationsAsync(clearNotifications));

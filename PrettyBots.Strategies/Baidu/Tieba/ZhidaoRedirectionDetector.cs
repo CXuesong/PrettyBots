@@ -9,12 +9,6 @@ using PrettyBots.Visitors.Baidu.Tieba;
 
 namespace PrettyBots.Strategies.Baidu.Tieba
 {
-
-    /// <summary>
-    /// 给定主题，生成指定主题的回复。
-    /// </summary>
-    public delegate string TopicReplyGenerator(TopicVisitor topic);
-
     /// <summary>
     /// 用于检查由百度知道重定向而来的贴吧主题。
     /// 规则：
@@ -37,6 +31,8 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         private static readonly XName XNAuthor = "author";
         private static readonly XName XNTime = "time";
         private static readonly XName XNEnabled = "enabled";
+
+        public const string ReplicationPostContentKey = "ZhidaoRedirectionDetector.Replication";
 
         private IList<string> _WeakMatcher;
         private List<string> internalWeakMatcher = new List<string>();
@@ -87,8 +83,6 @@ namespace PrettyBots.Strategies.Baidu.Tieba
 
         public TimeSpan LastReplyTimeLower { get; set; }
 
-        public TopicReplyGenerator ReplyGenerator { get; set; }
-
         private static bool InString(string test, string match, bool requireBeginWith = false)
         {
             if (string.IsNullOrEmpty(test)) return string.IsNullOrEmpty(match);
@@ -131,19 +125,39 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         {
             RepliesCountUpper = 20;
             AuthorLevelUpper = 4;
-        }
-
-        private string DefaultReplyGenerator(TopicVisitor topic)
-        {
-            return Prompts.ZhidaoRedirectionDetectorDefaultReply;
+            StrongMatcher = new[]
+            {
+                "不解释 ！！！！答的上的乃神人！",
+                "急急急 谢谢了",
+                "哪位大大知道呀，小弟在此感激不尽",
+                "谢谢吧里各位大爷，爱你们~",
+                "麻烦知道的说下～我在此先谢过",
+                "哪位高手如果知道是请告诉我一下，谢谢！",
+                "红旗镇楼跪求解答",
+                "求好心人解答~",
+                "本吧好心人解答一下吧~~~",
+                "求大神指导,好心人帮助",
+                "一楼喂百度。",
+                "新来贵吧，求解"
+            };
+            WeakMatcher = new[]
+            {
+                "是不是",
+                "有没有",
+                "怎么",
+                "什么",
+                "请问",
+                "谁"
+            };
         }
 
         private void ReplyAndRegisterSuspects(string forumName, IEnumerable<TopicVisitor> topics)
         {
-            var rg = ReplyGenerator ?? DefaultReplyGenerator;
             foreach (var topic in topics)
             {
-                if (topic.Reply(rg(topic)))
+                var content = Session.TextComposer.ComposePost(ReplicationPostContentKey,
+                    Prompts.ZhidaoRedirectionDetectorDefaultReply, topic.Posts.First());
+                if (topic.Reply(content))
                     RegisterTopic(forumName, topic);
             }
         }
@@ -175,10 +189,8 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                     }
                 }
             }
-            if (internalStrongMatcher.
-                Any(
-                    m =>
-                        string.Compare(m, t.PreviewText, StringComparison.CurrentCultureIgnoreCase) == 0))
+            if (internalStrongMatcher.Any(m =>
+                string.Compare(m, t.PreviewText, StringComparison.CurrentCultureIgnoreCase) == 0))
             {
                 Debug.Print("Strong Matcher: {0}", t);
                 return true;
@@ -210,12 +222,13 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                 .Where(InspectInTopic);
         }
 
-        public override void EntryPoint()
+        protected override void EntryPointCore()
         {
             if (StrongMatcher == null || StrongMatcher.Count == 0) return;
             var visitor = new BaiduVisitor(Session.WebSession);
             foreach (var xf in Status.Elements(XNForum).Where(e => (bool?)e.Attribute(XNEnabled) ?? true))
             {
+                //Logging.TraceInfo(this, "suspect : ", xf);
                 ReplyAndRegisterSuspects((string) xf.Attribute(XNName),
                     InspectForum((string) xf.Attribute(XNName), visitor));
             }

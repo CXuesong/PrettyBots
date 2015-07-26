@@ -70,11 +70,38 @@ namespace PrettyBots.Strategies {
         }
         
         /// <summary>
+        ///   查找类似 已关注本贴吧。 的本地化字符串。
+        /// </summary>
+        internal static string ForumJoinedInContent {
+            get {
+                return ResourceManager.GetString("ForumJoinedInContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在尝试加入本吧时发生了问题：{0}。 的本地化字符串。
+        /// </summary>
+        internal static string ForumJoinedInFailedContent {
+            get {
+                return ResourceManager.GetString("ForumJoinedInFailedContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 贴吧“{0}”不存在。 的本地化字符串。
         /// </summary>
         internal static string ForumNotExists {
             get {
                 return ResourceManager.GetString("ForumNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [emotion pic_type=1 width=48 height=48]http://tb2.bdstatic.com/tb/editor/images/face/i_f25.png?t=20140803[/emotion] 的本地化字符串。
+        /// </summary>
+        internal static string TiebaDefaultReply {
+            get {
+                return ResourceManager.GetString("TiebaDefaultReply", resourceCulture);
             }
         }
         

@@ -37,6 +37,12 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             HasSignedIn = hasSignedIn;
         }
 
+        internal void LoadData(int level, bool hasSignedIn)
+        {
+            Level = level;
+            HasSignedIn = hasSignedIn;
+        }
+
         internal FavoriteForum()
         { }
     }

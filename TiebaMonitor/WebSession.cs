@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PrettyBots.Visitors
@@ -28,6 +31,20 @@ namespace PrettyBots.Visitors
         /// 在此模式下，所有的发布操作都应当被忽略。
         /// </summary>
         public bool IsDryRun { get; set; }
+
+        internal bool CheckDryRun()
+        {
+            return Logging.Exit(this, IsDryRun);
+        }
+
+        /// <summary>
+        /// 检查网络连通性。
+        /// </summary>
+        public bool CheckConnectivity()
+        {
+            Logging.Enter(this);
+            return Logging.Exit(this, NetworkInterface.GetIsNetworkAvailable());
+        }
 
         ///// <summary>
         ///// 创建一个可以异步更新的缓存。
@@ -121,6 +138,36 @@ namespace PrettyBots.Visitors
         {
             if (VerificationCodeRecognizer == null) return null;
             return VerificationCodeRecognizer.Recognize(imageUrl, this);
+        }
+
+        private Dictionary<string, DateTime> intervalDict = new Dictionary<string, DateTime>();
+
+        /// <summary>
+        /// 检查指定操作的频率约束，并在有必要时进行延时。
+        /// </summary>
+        public void CheckIntervalConstraint(string key, TimeSpan minInterval)
+        {
+            DateTime lastOperation;
+            if (intervalDict.TryGetValue(key, out lastOperation))
+            {
+                var delta = DateTime.Now - lastOperation;
+                if (delta < minInterval) Thread.Sleep(minInterval - delta);
+            }
+            intervalDict[key] = DateTime.Now;
+        }
+
+        /// <summary>
+        /// 检查指定操作的频率约束，并在有必要时进行延时。
+        /// </summary>
+        public async Task CheckIntervalConstraintAsync(string key, TimeSpan minInterval)
+        {
+            DateTime lastOperation;
+            if (intervalDict.TryGetValue(key, out lastOperation))
+            {
+                var delta = DateTime.Now - lastOperation;
+                if (delta < minInterval) await Task.Delay(minInterval - delta);
+            }
+            intervalDict[key] = DateTime.Now;
         }
 
         public WebSession()
