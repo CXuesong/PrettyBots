@@ -3,6 +3,7 @@ using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using PrettyBots.Visitors.WeatherService;
 
 namespace UnitTestProject1
 {
@@ -26,6 +27,14 @@ namespace UnitTestProject1
             var obj = JsonConvert.DeserializeObject("");
             Trace.WriteLine(JsonConvert.SerializeObject(null));
             Trace.WriteLine(obj == null);
+        }
+
+        [TestMethod]
+        public void WeatherTest()
+        {
+            var v = new WeatherReportVisitor();
+            var w = v.GetWeather("北京");
+            Trace.WriteLine(w);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace PrettyBots.Visitors
 
         internal bool CheckDryRun()
         {
-            return Logging.Exit(this, IsDryRun);
+            return IsDryRun ? Logging.Exit(this, true) : false;
         }
 
         /// <summary>

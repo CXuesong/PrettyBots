@@ -165,4 +165,11 @@
   <data name="UnexpectedDataException" xml:space="preserve">
     <value>接收到了预期之外格式的数据。</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="WeatherReportCityInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>resources\weatherreportcityinfo.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="SubPostLongReplyTemplate" xml:space="preserve">
+    <value>回复 @{0} （{1}层于{2:F}的楼中楼） :[br]{3}</value>
+  </data>
 </root>

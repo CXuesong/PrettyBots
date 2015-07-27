@@ -24,6 +24,10 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         /// </summary>
         public override Task<bool> ReplyAsync(string contentCode)
         {
+            //如果长度超限，则回复至主题之下。
+            if (BaiduUtility.EvalContentLength(contentCode) > BaiduUtility.SubPostMaxContentLength)
+                return Topic.ReplyAsync(string.Format(Prompts.SubPostLongReplyTemplate,
+                    Author.Name, Post.Floor, this.SubmissionTime, contentCode));
             return Post.ReplyAsync(string.Format(Prompts.SubPostReplyTemplate, Author.Name, contentCode));
         }
 

@@ -108,6 +108,7 @@
     <Compile Include="Utility.cs" />
     <Compile Include="VerificationCodeRecognizer.cs" />
     <Compile Include="Visitor.cs" />
+    <Compile Include="WeatherService\WeatherReportVisitor.cs" />
     <Compile Include="WebSession.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +147,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\WeatherReportCityInfo.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

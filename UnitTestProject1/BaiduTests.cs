@@ -167,5 +167,12 @@ namespace UnitTestProject1
             var nd = new NewbieDetector(context.GetSession("primary"));
             Trace.WriteLine(string.Join("\n", nd.InspectForum("绝境狼王")));
         }
+
+        [TestMethod]
+        public void BaiduPostContentLengthTest()
+        {
+            var l = BaiduUtility.EvalContentLength("测试。[url]http://aaa[/url][img abc]def[/img]def");
+            Trace.WriteLine(l);
+        }
     }
 }

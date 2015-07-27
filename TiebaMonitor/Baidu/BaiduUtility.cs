@@ -35,6 +35,46 @@ namespace PrettyBots.Visitors.Baidu
             return builder.ToString();
         }
 
+        public const int SubPostMaxContentLength = 280;
+
+        public static int EvalContentLength(string contentCode)
+        {
+            if (string.IsNullOrEmpty(contentCode)) return 0;
+            var isInBrackets = false;
+            string bracketText = null;
+            var lengthCounter = 0;
+            foreach (var c in contentCode)
+            {
+                switch (c)
+                {
+                    case '[':
+                        if (isInBrackets) throw new ArgumentException();
+                        bracketText = null;
+                        isInBrackets = true;
+                        break;
+                    case ']':
+                        if (!isInBrackets) throw new ArgumentException();
+                        isInBrackets = false;
+                        lengthCounter++;
+                        break;
+                    default:
+                        if (isInBrackets)
+                        {
+                            bracketText += c;
+                        }
+                        else
+                        {
+                            if (!isInBrackets && bracketText == "img") continue;
+                            var asc = Convert.ToUInt32(c);
+                            lengthCounter += asc > 0xFF ? 2 : 1;
+                        }
+                        break;
+                }
+            }
+            return lengthCounter;
+        }
+
+
         /// <summary>
         /// 生成 mouse_pwd 参数。
         /// </summary>

@@ -187,6 +187,15 @@ namespace PrettyBots.Visitors {
         }
         
         /// <summary>
+        ///   查找类似 回复 @{0} （{1}层于{2:F}的楼中楼） :[br]{3} 的本地化字符串。
+        /// </summary>
+        internal static string SubPostLongReplyTemplate {
+            get {
+                return ResourceManager.GetString("SubPostLongReplyTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 回复 {0} :{1} 的本地化字符串。
         /// </summary>
         internal static string SubPostReplyTemplate {
@@ -201,6 +210,30 @@ namespace PrettyBots.Visitors {
         internal static string UnexpectedDataException {
             get {
                 return ResourceManager.GetString("UnexpectedDataException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+        ///&lt;cities&gt;
+        ///  &lt;city id=&quot;101010100&quot;&gt;北京&lt;/city&gt;
+        ///  &lt;city id=&quot;101010300&quot;&gt;朝阳&lt;/city&gt;
+        ///  &lt;city id=&quot;101010400&quot;&gt;顺义&lt;/city&gt;
+        ///  &lt;city id=&quot;101010500&quot;&gt;怀柔&lt;/city&gt;
+        ///  &lt;city id=&quot;101010600&quot;&gt;通州&lt;/city&gt;
+        ///  &lt;city id=&quot;101010700&quot;&gt;昌平&lt;/city&gt;
+        ///  &lt;city id=&quot;101010800&quot;&gt;延庆&lt;/city&gt;
+        ///  &lt;city id=&quot;101010900&quot;&gt;丰台&lt;/city&gt;
+        ///  &lt;city id=&quot;101011000&quot;&gt;石景山&lt;/city&gt;
+        ///  &lt;city id=&quot;101011100&quot;&gt;大兴&lt;/city&gt;
+        ///  &lt;city id=&quot;101011200&quot;&gt;房山&lt;/city&gt;
+        ///  &lt;city id=&quot;101011300&quot;&gt;密云&lt;/city&gt;
+        ///  &lt;city id=&quot;101011400&quot;&gt;门头沟&lt;/city&gt;
+        ///  &lt;city id=&quot;101011 [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        /// </summary>
+        internal static string WeatherReportCityInfo {
+            get {
+                return ResourceManager.GetString("WeatherReportCityInfo", resourceCulture);
             }
         }
     }

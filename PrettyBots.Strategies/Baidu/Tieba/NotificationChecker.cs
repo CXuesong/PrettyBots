@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using PrettyBots.Visitors;
 using PrettyBots.Visitors.Baidu;
 using PrettyBots.Visitors.Baidu.Tieba;
+using PrettyBots.Visitors.WeatherService;
 
 namespace PrettyBots.Strategies.Baidu.Tieba
 {
@@ -43,15 +44,29 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                 if (totalCounter < maxPosts)
                     content += "达到了" + counter + "篇。";
                 content += "还有，其实你可以试试 at 豌豆荚吧，问一下发帖量的。";
-                GenericReply(p, content);
+                GenericReply(p, string.Format(content, DateTime.Now));
             });
             RegisterSimpleAction("请?你?(报时|报?(一下)?时间)",
                 p => GenericReply(p, string.Format("现在是：{0:G}。", DateTime.Now)));
             RegisterSimpleAction("(问一下|请问)?你?(现在)?的?(状态|状况)(如何)?",
                 p => GenericReply(p, string.Format("还好吧，目前关注了{0}个贴吧。", 
                     p.Root.Tieba.FavoriteForums.Count)));
-            RegisterSimpleAction("(现在|明天|这几天|近来)天气(情况|状况)?(如何|怎么样)?",
-                p => GenericReply(p, string.Format("抱歉，现在还尚未实现……")));
+            RegisterSimpleAction("(?<c>.*?)(现在|今天|今儿|明天|这几天|近来)?(?<c>.*?)的?天气(情况|状况)?(如何|怎么样)?",
+                (p, m) =>
+                {
+                    var city = m.Groups["c"].Value;
+                    if (string.IsNullOrWhiteSpace(city))
+                    {
+                        GenericReply(p, string.Format("你想知道哪里的天气？请把句子写完整，然后再试一次。"));
+                        return;
+                    }
+                    var wr = new WeatherReportVisitor(WebSession);
+                    var w = wr.GetWeather(city.Trim());
+                    if (w == null)
+                        GenericReply(p, string.Format("抱歉，目前还无法查询{0}的天气。", city));
+                    else
+                        GenericReply(p, string.Format("{0}", w));
+                });
         }
 
         private bool JoinInForum(PostVisitorBase p)
@@ -115,6 +130,9 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             pc.Elements("at").Where(e => Utility.UserIdentity((string) e.Attribute("user"), accountUser)).Remove();
             //分析其余内容。
             var normalized = Utility.NormalizeString(pc.Value, true);
+            //移除“回复”二字
+            if (normalized.Substring(0, 2) == "回复")
+                normalized = normalized.Substring(2).TrimStart();
             foreach (var act in SimpleActions)
             {
                 var result = act.Item1.Match(normalized);
@@ -138,7 +156,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         private bool HandleMagic(PostVisitorBase p)
         {
             var normalized = Utility.NormalizeString(p.Content, true);
-            if (normalized.Contains("__LMBOT_SUPRESS_REPLY")) return false;
+            if (normalized.Contains("__SUPRESS_REPLY")) return false;
             return true;
         }
 

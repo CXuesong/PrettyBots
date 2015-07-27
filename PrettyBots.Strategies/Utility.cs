@@ -38,16 +38,19 @@ namespace PrettyBots.Strategies
                 if (char.IsWhiteSpace(c) || char.IsPunctuation(c) ||
                     char.IsSymbol(c) || char.IsControl(c) ||
                     char.IsSeparator(c))
-                    if (keepSeparators && !lastIsWhitespace)
+                    if (keepSeparators)
                     {
-                        builder.Append(' ');
-                        lastIsWhitespace = true;
+                        if (!lastIsWhitespace)
+                        {
+                            builder.Append(' ');
+                            lastIsWhitespace = true;
+                        }
                         continue;
                     }
                 builder.Append(char.ToUpper(c));
                 lastIsWhitespace = false;
             }
-            return builder.ToString();
+            return keepSeparators ? builder.ToString().Trim() : builder.ToString();
         }
 
         /// <summary>
