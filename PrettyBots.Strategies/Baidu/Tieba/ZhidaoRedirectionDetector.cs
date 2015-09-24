@@ -115,6 +115,19 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             SubmitStatus();
         }
 
+        public bool UnregisterTopic(long topicId)
+        {
+            var node = Status.Elements(XNForum).Elements(XNTopic)
+                .FirstOrDefault(e => (long) e.Attribute(XNTid) == topicId);
+            if (node != null)
+            {
+                node.Remove();
+                SubmitStatus();
+                return true;
+            }
+            return false;
+        }
+
         public bool HasRegistered(long topicId)
         {
             return Status.Elements(XNForum).Elements(XNTopic).Any(xt => (long) xt.Attribute(XNTid) == topicId);
@@ -134,6 +147,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                 "麻烦知道的说下～我在此先谢过",
                 "哪位高手如果知道是请告诉我一下，谢谢！",
                 "红旗镇楼跪求解答",
+                "求大神解答~",
                 "求好心人解答~",
                 "本吧好心人解答一下吧~~~",
                 "求大神指导,好心人帮助",
@@ -162,8 +176,9 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             }
         }
 
-        private bool InspectTopic(TopicVisitor t, ForumVisitor f)
+        private bool InspectTopic(TopicVisitor t)
         {
+            var f = t.Forum;
             if (t.IsTop || t.IsGood
                 || (t.LastReplyTime ?? DateTime.MinValue) - DateTime.Now > LastReplyTimeSpanUpper
                 || string.IsNullOrWhiteSpace(t.PreviewText)
@@ -217,7 +232,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             if (!forum.IsExists) return Enumerable.Empty<TopicVisitor>();
             //仅检查第一页。
             return forum.Topics
-                .Where(t => InspectTopic(t, forum))
+                .Where(InspectTopic)
                 .Where(t => !HasRegistered(t.Id))
                 .Where(InspectInTopic);
         }

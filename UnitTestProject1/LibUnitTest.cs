@@ -33,7 +33,11 @@ namespace UnitTestProject1
         public void WeatherTest()
         {
             var v = new WeatherReportVisitor();
-            var w = v.GetWeather("北京");
+            var w = v.GetWeather("哈尔滨");
+            Trace.WriteLine(w);
+            w = v.GetWeather("Zambia");
+            Trace.WriteLine(w);
+            w = v.GetWeather("东京");
             Trace.WriteLine(w);
         }
     }

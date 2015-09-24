@@ -13,7 +13,7 @@ namespace PrettyBots.Visitors
     {
         private static TraceSource source = new TraceSource("PrettyBots.Visitors");
 
-        public static void Enter(object obj, string param = null, [CallerMemberName] string memberName = null)
+        public static void Enter(object obj, object param = null, [CallerMemberName] string memberName = null)
         {
             source.TraceEvent(TraceEventType.Verbose, 10,
                 obj.GetType().Name + "#" + ToString(obj) + "." + memberName + " <| " + param);

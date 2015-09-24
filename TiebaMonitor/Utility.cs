@@ -176,6 +176,13 @@ namespace PrettyBots.Visitors
             return contentExpression;
         }
 
+        public static string GetRedirectionUrl(string html)
+        {
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            return GetRedirectionUrl(doc);
+        }
+
         /// <summary>
         /// 从指定的网页文档中查找 META 重定向指令，并返回重定向地址。
         /// </summary>

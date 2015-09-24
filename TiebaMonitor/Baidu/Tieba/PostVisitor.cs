@@ -143,12 +143,13 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             thisSp = thisSp.SelectToken(Convert.ToString(Parent.Id), false);
             if (thisSp != null)
             {
+                // 这里居然用 UTC……
                 RegisterNewItem(
                     thisSp["comment_info"].Select(et =>
                         new SubPostVisitor((long) et["comment_id"],
                             new UserStub((long) et["user_id"], (string) et["username"]),
                             (string) et["content"],
-                            Utility.FromUnixDateTime((long) et["now_time"]*1000),
+                            Utility.FromUnixDateTime((long) et["now_time"]*1000) + TimeSpan.FromHours(8.0),
                             this)));
             }
             _OverallSubPostsCache = null;

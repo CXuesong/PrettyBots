@@ -188,7 +188,6 @@ window.location.replace(url);
                     //验证码
                     var loginResult = Utility.ParseUriQuery(redirect.Query);
                     var loginResultCode = Convert.ToInt32(loginResult["error"]);
-                    Logging.Trace(this, "Login Result = {0}", loginResultCode);
                     TraceCookies(client);
                     switch (loginResultCode)
                     {
@@ -196,7 +195,7 @@ window.location.replace(url);
                             Session.OverrideCookies(client.CookieContainer);
                             Update(true);
                             Debug.Assert(IsLoggedIn);
-                            return true;
+                            return Logging.Exit(this, true);
                         case 1:
                         case 2:
                             throw new OperationFailedException(loginResultCode, Prompts.LoginException_UserName);

@@ -110,7 +110,8 @@ namespace PrettyBots.Visitors.Baidu.Tieba
             {
                 if (clearNotifications) ClearNotifications(MessageCounter.RepliedMe);
                 await _RepliedMe.RefreshAsync();
-                posts.AddRange(_RepliedMe.EnumerateToEnd().Take(Math.Min(Counters.RepliedMe, MaxPeekedReplications)));
+                posts.AddRange(_RepliedMe.EnumerateToEnd()
+                    .Take(Math.Min(Counters.RepliedMe, MaxPeekedReplications)));
             }
             if (Counters.ReferredMe > 0)
             {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyBots.Visitors", "TiebaMonitor\PrettyBots.Visitors.csproj", "{29478543-B265-45B1-99BF-4EB4E2EDBCDF}"
 EndProject
@@ -16,8 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyBots.Strategies", "PrettyBots.Strategies\PrettyBots.Strategies.csproj", "{BF5434C2-C8C9-4C64-A4FC-3B652CB41679}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PBRepositoryManager", "PBRepositoryManager\PBRepositoryManager.csproj", "{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LMBotTest", "_private\LMBotTest\LMBotTest.fsproj", "{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LMBot2", "_private\LMBot2\LMBot2.vbproj", "{5102F316-8A3C-4555-BCEC-2682368ECBDF}"
 EndProject
@@ -51,10 +49,6 @@ Global
 		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD14FBA3-82FC-4AD2-BDAD-9E1BD910BB8A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43191F96-5B5F-481F-A0AD-C0AB6806BE4F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5102F316-8A3C-4555-BCEC-2682368ECBDF}.Release|Any CPU.ActiveCfg = Release|Any CPU

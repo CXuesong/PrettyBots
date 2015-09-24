@@ -23,7 +23,7 @@ namespace PrettyBots.Strategies.Baidu.Tieba
         public NotificationChecker(Session session)
             : base(session)
         {
-            RegisterSimpleAction("发帖量", p =>
+            RegisterSimpleAction("查?(一下)?我?(今天|最近|现在)?的?发帖量", p =>
             {
                 const int maxPosts = 100;
                 var s = p.Root.Tieba.Search(userName: p.Author.Name);
@@ -33,40 +33,51 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                 var content = "我大概查了一下，你今天的发帖量";
                 foreach (var r in s.Result.EnumerateToEnd())
                 {
-                    if (totalCounter >= maxPosts)
-                        content += "超过了" + counter + "篇。";
+                    if (totalCounter >= maxPosts) break;
                     if (r.SubmissionTime.Date == today)
                         counter++;
                     else
                         break;
                     totalCounter++;
                 }
-                if (totalCounter < maxPosts)
+                if (counter == 0)
+                    content += "貌似是……零？";
+                else if (totalCounter < maxPosts)
                     content += "达到了" + counter + "篇。";
+                else
+                    content += "超过了" + counter + "篇。";
                 content += "还有，其实你可以试试 at 豌豆荚吧，问一下发帖量的。";
                 GenericReply(p, string.Format(content, DateTime.Now));
             });
-            RegisterSimpleAction("请?你?(报时|报?(一下)?时间)",
+            RegisterSimpleAction("请?你?(报时|(查|报)?(一下)?时间)",
                 p => GenericReply(p, string.Format("现在是：{0:G}。", DateTime.Now)));
-            RegisterSimpleAction("(问一下|请问)?你?(现在)?的?(状态|状况)(如何)?",
-                p => GenericReply(p, string.Format("还好吧，目前关注了{0}个贴吧。", 
-                    p.Root.Tieba.FavoriteForums.Count)));
-            RegisterSimpleAction("(?<c>.*?)(现在|今天|今儿|明天|这几天|近来)?(?<c>.*?)的?天气(情况|状况)?(如何|怎么样)?",
+            RegisterSimpleAction(@"(^|\s)(查一下)?(?<c1>[^\s]*?)(现在|今天|今儿|明天|这几天|近来)?\s*(?<c2>.*?)的?\s*天气(情况|状况)?\s*(如何|咋样|怎么?样)?",
                 (p, m) =>
                 {
-                    var city = m.Groups["c"].Value;
+                    var city = m.Groups["c1"].Value;
+                    if (string.IsNullOrWhiteSpace(city)) city = m.Groups["c2"].Value;
                     if (string.IsNullOrWhiteSpace(city))
                     {
                         GenericReply(p, string.Format("你想知道哪里的天气？请把句子写完整，然后再试一次。"));
                         return;
                     }
                     var wr = new WeatherReportVisitor(WebSession);
-                    var w = wr.GetWeather(city.Trim());
-                    if (w == null)
-                        GenericReply(p, string.Format("抱歉，目前还无法查询{0}的天气。", city));
-                    else
-                        GenericReply(p, string.Format("{0}", w));
+                    try
+                    {
+                        var w = wr.GetWeather(city.Trim());
+                        if (w == null)
+                            GenericReply(p, string.Format("抱歉，目前还无法查询{0}的天气。", city));
+                        else
+                            GenericReply(p, BaiduUtility.TiebaEscape(w.ToString()));
+                    }
+                    catch (Exception ex) when (!(ex is NonhumanException))
+                    {
+                        GenericReply(p, BaiduUtility.TiebaEscape("在查询天气的时候遇到了一些问题。嘛不过你可以稍后再试一下的 ^^"));
+                    }
                 });
+            RegisterSimpleAction("(问一下|请问)?你?(现在)?的?(状态|状况)(如何)?",
+                p => GenericReply(p, string.Format("还好吧，目前关注了{0}个贴吧。",
+                    p.Root.Tieba.FavoriteForums.Count)));
         }
 
         private bool JoinInForum(PostVisitorBase p)
@@ -124,14 +135,14 @@ namespace PrettyBots.Strategies.Baidu.Tieba
 
         private bool HandleActions(PostVisitorBase p)
         {
-            var pc = Utility.ParsePostContent(p.Content);
+            var pc = BaiduUtility.ParsePostContent(p.Content);
             var accountUser = p.Root.AccountInfo.UserName;
             //移除 @ 自己的节点。
             pc.Elements("at").Where(e => Utility.UserIdentity((string) e.Attribute("user"), accountUser)).Remove();
             //分析其余内容。
             var normalized = Utility.NormalizeString(pc.Value, true);
             //移除“回复”二字
-            if (normalized.Substring(0, 2) == "回复")
+            if (normalized.Length > 2 && normalized.Substring(0, 2) == "回复")
                 normalized = normalized.Substring(2).TrimStart();
             foreach (var act in SimpleActions)
             {
@@ -167,6 +178,21 @@ namespace PrettyBots.Strategies.Baidu.Tieba
             foreach (var rep in replies)
             {
                 var p = rep.GetPost(visitor);
+                //帖子可能被删掉了。
+                if (p == null) continue;
+                if (p is SubPostVisitor)
+                {
+                    var pc = BaiduUtility.ParsePostContent(p.Content);
+                    var text = pc.FirstNode as XText;
+                    if (text != null && text.Value != null && text.Value.Trim() == "回复")
+                    {
+                        var at = text.NextNode as XElement;
+                        // 不要回复没有回复自己的 LZL。
+                        if (at != null && !Utility.UserIdentity((string) at.Attribute("user"),
+                            visitor.AccountInfo.UserName))
+                            continue;
+                    }
+                }
                 Logging.TraceInfo(this, "Reply:{0}", p);
                 try
                 {

@@ -63,7 +63,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
 
         public override string ToString()
         {
-            return string.Format("[{0}][{1}]{2}", Id, Author, Utility.StringElipsis(Content, 50));
+            return string.Format("[{0}][{1}]{2}", Id, Author, Utility.StringElipsis(Content, 200));
         }
 
         protected PostVisitorBase(long id, int floor, UserStub author,

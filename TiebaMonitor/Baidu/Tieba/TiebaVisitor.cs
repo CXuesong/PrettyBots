@@ -204,7 +204,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
         public PostVisitorBase GetPost(long topicId, long postId)
         {
             var t = GetTopic(topicId, postId);
-            if (!t.IsExists) return null;
+            if (t == null || !t.IsExists) return null;
             return (PostVisitorBase)t.Posts.FirstOrDefault(p => p.Id == postId) ??
                    t.Posts.SelectMany(p => p.SubPosts).FirstOrDefault(sp => sp.Id == postId);
         }
