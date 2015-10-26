@@ -66,9 +66,24 @@ namespace PrettyBots.Strategies.Baidu.Tieba
                 if (!visitor.Tieba.HasOneKeySignedIn && visitor.Tieba.OneKeySignedInSignificant)
                 {
                     //先来一把一键签到。
-                    visitor.Tieba.OneKeySignIn();
-                    foreach (var f in visitor.Tieba.FavoriteForums)
-                        if (f.HasSignedIn) SetLastSignedInTime(f.Id, DateTime.Now);
+                    try
+                    {
+                        visitor.Tieba.OneKeySignIn();
+                        foreach (var f in visitor.Tieba.FavoriteForums)
+                            if (f.HasSignedIn) SetLastSignedInTime(f.Id, DateTime.Now);
+                    }
+                    catch (OperationFailedException ex)
+                    {
+                        switch (ex.ErrorCode)
+                        {
+                            case 340009:    //time error
+                                //现在的时间不宜签到。
+                                Logging.TraceInfo(this, "现在不能一键签到。");
+                                break;
+                            default:
+                                throw;
+                        }
+                    }
                 }
                 //现在从首页应该是看不到每个贴吧的签到状态了。杯具。
                 Func<FavoriteForum, bool> needSignInCriterion = f =>

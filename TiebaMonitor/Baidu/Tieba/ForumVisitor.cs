@@ -138,6 +138,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                         SignInRank = (int) userSignInInfo["is_sign_in"] != 0
                             ? (int?) userSignInInfo["user_sign_rank"]
                             : null;
+                    Logging.Trace(this, "Legacy page style");
                 }
                 else
                 {
@@ -208,7 +209,7 @@ namespace PrettyBots.Visitors.Baidu.Tieba
                         SignInRank = null;
                     }
                     MembersCount = (int) signMod["memberNumber"];
-                    Logging.Trace(this, "Plan B page style");
+                    //Logging.Trace(this, "Plan B page style");
                 }
                 /*
 <div class="th_footer_l">
